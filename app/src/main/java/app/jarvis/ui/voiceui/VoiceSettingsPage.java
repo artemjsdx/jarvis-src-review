@@ -68,6 +68,10 @@ public class VoiceSettingsPage extends SettingsPage {
         content.addView(speedCard());
         content.addView(Widgets.sectionTitle(ctx, "Приглушение музыки"));
         content.addView(duckCard());
+        content.addView(Widgets.sectionTitle(ctx, "Комментарии агента"));
+        content.addView(commentsCard());
+        content.addView(Widgets.sectionTitle(ctx, "Перед действием"));
+        content.addView(preActionCard());
         content.addView(Ui.space(ctx, 1, 4));
         content.addView(WrapButton.create(ctx, "Открыть Студию голоса", R.drawable.ic_voice, Ui.BTN_GLASS, new Runnable() { @Override public void run() {
             host.navigate("studio");
@@ -279,6 +283,62 @@ public class VoiceSettingsPage extends SettingsPage {
         card.addView(VoiceUiKit.note(ctx,
             "Плавное снижение и возврат за 200 мс. Пауза музыки не затрагивается; 10 % — исходное значение."),
             Ui.lpm(-1, -2, 0, 8, 0, 0));
+        return card;
+    }
+
+
+    private View commentsCard() {
+        LinearLayout card = Widgets.card(ctx);
+        card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14));
+        int n = Math.max(0, Math.min(20, j.settings.getInt("agent.commentEvery", 0)));
+        final TextView frequency = VoiceUiKit.caption(ctx, n == 0 ? "Комментарии выключены" : "Комментировать каждые " + n + " действий");
+        card.addView(frequency);
+        card.addView(Widgets.slider(ctx, 0f, 20f, 1f, n, new Widgets.SliderListener() {
+            @Override public void onValue(float value, boolean fromUser) {
+                int step = Math.max(0, Math.min(20, Math.round(value)));
+                frequency.setText(step == 0 ? "Комментарии выключены" : "Комментировать каждые " + step + " действий");
+                if (fromUser) j.settings.set("agent.commentEvery", String.valueOf(step));
+            }
+        }), Ui.lpm(-1, 32, 0, 6, 0, 0));
+        LinearLayout line = Ui.row(ctx);
+        line.addView(Ui.text(ctx, "Озвучивать комментарии", Ui.BODY), Ui.lpw(1f));
+        line.addView(Widgets.toggle(ctx, j.settings.getBool("agent.commentVoice", false), new Widgets.Toggle.Listener() {
+            @Override public void onChanged(boolean enabled) { j.settings.setBool("agent.commentVoice", enabled); }
+        }));
+        card.addView(line, Ui.lpm(-1, -2, 0, 8, 0, 0));
+        card.addView(VoiceUiKit.note(ctx,
+            "Короткие сообщения появляются в ленте во время длинной цепочки инструментов. Финальный ответ остаётся отдельным."),
+            Ui.lpm(-1, -2, 0, 8, 0, 0));
+        return card;
+    }
+
+    private View preActionCard() {
+        LinearLayout card = Widgets.card(ctx);
+        card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14));
+        LinearLayout enabled = Ui.row(ctx);
+        enabled.addView(Ui.text(ctx, "Реплика перед первым действием", Ui.BODY), Ui.lpw(1f));
+        enabled.addView(Widgets.toggle(ctx, j.settings.getBool("agent.preAction", true), new Widgets.Toggle.Listener() {
+            @Override public void onChanged(boolean value) { j.settings.setBool("agent.preAction", value); }
+        }));
+        card.addView(enabled);
+        LinearLayout voice = Ui.row(ctx);
+        voice.addView(Ui.text(ctx, "Произносить реплику", Ui.BODY), Ui.lpw(1f));
+        voice.addView(Widgets.toggle(ctx, j.settings.getBool("agent.preActionVoice", true), new Widgets.Toggle.Listener() {
+            @Override public void onChanged(boolean value) { j.settings.setBool("agent.preActionVoice", value); }
+        }));
+        card.addView(voice, Ui.lpm(-1, -2, 0, 8, 0, 0));
+        card.addView(VoiceUiKit.note(ctx,
+            "Если модель сразу вызывает инструмент, ассистент скажет, что собирается сделать. Уже прозвучавшее подтверждение не повторяется."),
+            Ui.lpm(-1, -2, 0, 8, 0, 0));
+        final EditText phrases = Widgets.field(ctx, "Свои фразы через | (необязательно)",
+            j.settings.get("agent.preActionPhrases", ""), true, false);
+        card.addView(Widgets.fieldBox(ctx, phrases), Ui.lpm(-1, -2, 0, 10, 0, 0));
+        card.addView(Ui.button(ctx, "Сохранить фразы", 0, Ui.BTN_GLASS, new Runnable() {
+            @Override public void run() {
+                j.settings.set("agent.preActionPhrases", phrases.getText().toString().trim());
+                host.overlays().toast("Фразы сохранены", 1);
+            }
+        }), Ui.lpm(-1, -2, 0, 8, 0, 0));
         return card;
     }
 

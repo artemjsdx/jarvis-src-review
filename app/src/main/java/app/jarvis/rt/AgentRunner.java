@@ -9,6 +9,7 @@ import app.jarvis.core.agent.ConfirmPolicy;
 import app.jarvis.core.net.LatencyBook;
 import app.jarvis.core.skills.SkillHint;
 import app.jarvis.core.tools.MemoryStore;
+import app.jarvis.core.agent.AgentCommentPolicy;
 import app.jarvis.core.agent.DirectCommands;
 import app.jarvis.core.agent.PromptReport;
 import app.jarvis.core.agent.Prompts;
@@ -232,6 +233,7 @@ public final class AgentRunner {
         long delay = Math.max(0, j.settings.getInt("ack.delayMs", 900));
         long sinceEnd = trace.span(TurnTrace.SPEECH_END, TurnTrace.SUBMIT);
         long already = Math.max(0, sinceEnd) + ms(t0);      // the delay counts from the end of the user's speech
+        run.ackBefore = a.lastPhrase();
         run.ackToken = a.arm(Math.max(0, delay - already));
         run.ack = a;
     }
@@ -456,6 +458,8 @@ public final class AgentRunner {
         StringBuilder ex = new StringBuilder();
         if (!call.isEmpty()) ex.append("Пользователь любит, когда его называют «").append(call).append("».\n");
         ex.append("Если пользователь ссылается на прошлый разговор — сначала session_search.\n");
+        if (j.settings.getInt("agent.commentEvery", 0) > 0)
+            ex.append("Промежуточные комментарии создаёт приложение; не дублируй их при ответе.\n");
         String favorite = j.settings.get(Settings.MUSIC_FAVORITE);
         ex.append("Любимая песня пользователя: ").append(favorite.isEmpty() ? "не выбрана (используй music_set_favorite, когда пользователь скажет, какая)" : favorite).append(".\n");
         if (j.settings.get("tts.chain").startsWith("elevenlabs") && j.settings.get("tts.elevenlabs.model", "eleven_flash_v2_5").startsWith("eleven_v"))
@@ -474,6 +478,17 @@ public final class AgentRunner {
     private boolean shouldSpeak(boolean voiceSource) {
         String mode = j.settings.get("tts.auto", "voice");
         return mode.equals("always") || (mode.equals("voice") && voiceSource);
+    }
+
+    /** A progress phrase is a separate assistant message; it never pretends to be a model or tool result. */
+    private void emitAgentComment(Run run, String text, boolean voice) {
+        if (run.cancel.isCancelled() || run.finalSeen || text == null || text.isEmpty()) return;
+        ChatItem c = new ChatItem();
+        c.convId = run.conv; c.kind = ChatItem.Kind.ASSISTANT; c.runId = run.id;
+        c.model = "progress"; c.text = text;
+        j.chat.add(c);
+        j.fireChat(ChatEvent.Type.ADDED, c, null, run.id);
+        if (voice && run.speak) j.speaker.speak(text);
     }
 
     // ---- listener: persistence + UI + speech --------------------------------------------------------------------
@@ -498,6 +513,10 @@ public final class AgentRunner {
             if (run.ack != null && stream.length() == 0 && run.streamedChars == 0) run.ack.onRealText(run.ackToken);
             stream.append(delta);
             run.streamedChars += delta.length();
+            if (run.completedActions > 0 && !delta.trim().isEmpty()) {
+                run.finalSeen = true;
+                if (run.pendingComment != null) run.pendingComment.cancel(false);
+            }
             j.fireChat(ChatEvent.Type.STREAM, null, stream.toString(), run.id);
             if (run.speak) run.streamer.feed(delta);
         }
@@ -506,6 +525,10 @@ public final class AgentRunner {
 
         @Override public void onMessage(ChatMessage m) {
             if (ChatMessage.ASSISTANT.equals(m.role)) {
+                if (!m.hasToolCalls() && m.content != null && !m.content.trim().isEmpty()) {
+                    run.finalSeen = true;
+                    if (run.pendingComment != null) run.pendingComment.cancel(false);
+                }
                 ChatItem a = new ChatItem();
                 a.convId = run.conv; a.kind = ChatItem.Kind.ASSISTANT; a.text = m.content; a.runId = run.id; a.model = run.model;
                 if (m.hasToolCalls()) { JSONArray arr = new JSONArray(); for (ToolCall c : m.toolCalls) arr.put(new ToolCall(c.id, c.name, AdbTools.redactArgs(c.name, c.arguments)).toJson()); a.toolCallsJson = arr.toString(); }
@@ -521,6 +544,15 @@ public final class AgentRunner {
 
         @Override public void onToolStart(ToolCall call) {
             run.toolCount++;
+            boolean ackPlayed = run.ack != null && !run.ackBefore.equals(run.ack.lastPhrase());
+            if (!run.preActionSent && AgentCommentPolicy.preAction(
+                    j.settings.getBool("agent.preAction", true), run.toolCount, run.streamedChars,
+                    run.cancel.isCancelled(), ackPlayed)) {
+                run.preActionSent = true;
+                if (run.ack != null) run.ack.onRealText(run.ackToken);
+                emitAgentComment(run, AgentCommentPolicy.preActionPhrase(call.name,
+                    j.settings.get("agent.preActionPhrases", "")), j.settings.getBool("agent.preActionVoice", true));
+            }
             toolSpans.put(call.id, run.trace.toolStart(call.name));
             j.setAgentState(AState.TOOL, call.name);
             ChatItem t = new ChatItem();
@@ -544,6 +576,18 @@ public final class AgentRunner {
             j.chat.update(t);
             j.fireChat(ChatEvent.Type.UPDATED, t, null, run.id);
             j.lastAction(describe(call, r), r.ok);
+            run.completedActions++;
+            final int every = j.settings.getInt("agent.commentEvery", 0);
+            if (AgentCommentPolicy.due(run.completedActions, every, run.cancel.isCancelled(), run.finalSeen)) {
+                if (run.pendingComment != null) run.pendingComment.cancel(false);
+                final String phrase = AgentCommentPolicy.progress(call.name, r.ok);
+                run.pendingComment = sch.schedule(new Runnable() {
+                    @Override public void run() {
+                        if (!run.cancel.isCancelled() && !run.finalSeen)
+                            emitAgentComment(run, phrase, j.settings.getBool("agent.commentVoice", false));
+                    }
+                }, 650, java.util.concurrent.TimeUnit.MILLISECONDS);
+            }
         }
 
         @Override public void onUsage(int step, LlmResult r) {
@@ -579,6 +623,8 @@ public final class AgentRunner {
 
     // ---- finishing --------------------------------------------------------------------------------------------------
     private void finishRun(Run run, AgentOutcome out, Jarvis.LlmChoice used, boolean voiceSource, long t0) {
+        run.finalSeen = true;
+        if (run.pendingComment != null) run.pendingComment.cancel(false);
         j.fireChat(ChatEvent.Type.STREAM_END, null, null, run.id);
         String status = out == null ? "ERROR" : out.status.name();
         String err = out == null ? "" : (out.errorText == null ? "" : out.errorText);
@@ -639,7 +685,12 @@ public final class AgentRunner {
         final TurnTrace trace;
         String model = "";
         int toolCount;
+        volatile int completedActions;
+        boolean preActionSent;
+        volatile boolean finalSeen;
         boolean toolFailed, recovered;
+        String ackBefore = "";
+        java.util.concurrent.ScheduledFuture<?> pendingComment;
         long streamedChars;
         SpeechStreamer streamer;
         AckPolicy ack;
