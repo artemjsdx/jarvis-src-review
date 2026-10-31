@@ -12,7 +12,10 @@ adb shell pm grant app.jarvis.uifix android.permission.POST_NOTIFICATIONS
 adb shell settings put global window_animation_scale 0.5
 adb shell settings put global transition_animation_scale 0.5
 adb shell settings put global animator_duration_scale 0.5
-adb shell monkey -p app.jarvis.uifix -c android.intent.category.LAUNCHER 1
+# Launch directly through ActivityManager: the emulator's launcher must not
+# gate the app smoke test (Pixel Launcher can ANR under software rendering).
+adb shell am start -W -a android.intent.action.MAIN \
+    -c android.intent.category.LAUNCHER -p app.jarvis.uifix
 sleep 8
 adb shell pidof app.jarvis.uifix
 adb shell screencap -p /sdcard/ui-home.png
