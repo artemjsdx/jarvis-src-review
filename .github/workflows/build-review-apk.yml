@@ -27,17 +27,18 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Platform 36 and build-tools
+      - name: Platform 36 and build-tools (preinstalled SDK)
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
         run: |
-          sdkmanager --install "platforms;android-36" "build-tools;36.0.0" >/dev/null \
-            || sdkmanager --install "platforms;android-36" "build-tools;35.0.0" >/dev/null
+          yes | "$ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
+          "$ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager" --install "platforms;android-36" "build-tools;36.0.0" >/dev/null \
+            || "$ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager" --install "platforms;android-36" "build-tools;35.0.0" >/dev/null
           BT=$(ls -d "$ANDROID_HOME/build-tools/36.0.0" 2>/dev/null || ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
           echo "build-tools: $BT"
           echo "$BT" >> "$GITHUB_PATH"
-          echo "ANDROID_JAR_DIR=$ANDROID_HOME/platforms/android-36" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
 
       - name: Project build inputs (android.jar, lambda stubs)
         run: bash tools/setup.sh
