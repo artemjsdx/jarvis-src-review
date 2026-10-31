@@ -14,8 +14,12 @@ adb shell settings put global transition_animation_scale 0.5
 adb shell settings put global animator_duration_scale 0.5
 # Launch directly through ActivityManager: the emulator's launcher must not
 # gate the app smoke test (Pixel Launcher can ANR under software rendering).
-adb shell am start -W -a android.intent.action.MAIN \
-    -c android.intent.category.LAUNCHER -p app.jarvis.uifix
+# Start by explicit component (no dependency on an intent resolver); the
+# package name differs from the Java class namespace in the side-by-side APK.
+adb shell am force-stop com.google.android.apps.nexuslauncher >/dev/null 2>&1 || true
+if ! adb shell am start -W -n app.jarvis.uifix/app.jarvis.MainActivity; then
+  adb shell monkey -p app.jarvis.uifix -c android.intent.category.LAUNCHER 1
+fi
 sleep 8
 adb shell pidof app.jarvis.uifix
 adb shell screencap -p /sdcard/ui-home.png
