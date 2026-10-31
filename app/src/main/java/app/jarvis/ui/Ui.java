@@ -237,6 +237,13 @@ public final class Ui {
         }), 0);
     }
 
+    /** Frosted outlined surface: translucent controls participate in the shared backdrop blur. */
+    public static Drawable glassOutlined(float rDp, int tint, int stroke) {
+        return Glass.surface(rDp, new android.graphics.drawable.LayerDrawable(new Drawable[]{
+            new GlassDrawable(rDp, false), outlined(rDp, tint, stroke)
+        }), 0);
+    }
+
     public static Drawable glassPressable(float rDp) { return Glass.surface(rDp, rippleOn(new GlassDrawable(rDp, false), rDp), 0); }
 
     /** Accent-filled button surface (lavender gradient) with a hairline edge. */
@@ -377,7 +384,7 @@ public final class Ui {
         TextView v = text(c, t, CAPTION, color);
         v.setTypeface(medium);
         v.setPadding(dp(10), dp(5), dp(10), dp(5));
-        v.setBackground(outlined(S.RADIUS_CHIP, alpha(color, 0.14f), alpha(color, 0.35f)));
+        v.setBackground(glassOutlined(S.RADIUS_CHIP, alpha(color, 0.14f), alpha(color, 0.35f)));
         v.setSingleLine(true);
         return v;
     }

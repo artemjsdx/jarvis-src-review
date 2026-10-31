@@ -169,7 +169,7 @@ public final class Widgets {
     public static LinearLayout segmented(final Context c, final String[] labels, int selected, final IntListener l) {
         final LinearLayout bar = Ui.row(c);
         bar.setPadding(Ui.dp(3), Ui.dp(3), Ui.dp(3), Ui.dp(3));
-        bar.setBackground(Ui.rect(Ui.P.field, 14));
+        bar.setBackground(Ui.glassTinted(14, Ui.P.field));
         final TextView[] tv = new TextView[labels.length];
         for (int i = 0; i < labels.length; i++) {
             final int idx = i;
@@ -285,7 +285,10 @@ public final class Widgets {
     public static FrameLayout fieldBox(Context c, EditText e) {
         final FrameLayout f = new FrameLayout(c);
         final GradientDrawable border = Ui.outlined(Ui.S.RADIUS_FIELD, Ui.P.field, Ui.P.strokeLo);
-        f.setBackground(border);
+        f.setBackground(app.jarvis.ui.glass.Glass.surface(Ui.S.RADIUS_FIELD,
+            new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{
+                new app.jarvis.ui.GlassDrawable(Ui.S.RADIUS_FIELD, false), border
+            }), 0));
         e.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override public void onFocusChange(View v, boolean hasFocus) {
                 Motion.stroke(border, Ui.hairline(), hasFocus ? Ui.P.strokeLo : Ui.P.accent, hasFocus ? Ui.P.accent : Ui.P.strokeLo, Motion.D_FAST);

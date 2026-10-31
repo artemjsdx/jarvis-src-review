@@ -134,7 +134,7 @@ public final class ChatAdapter implements ActionGroupView.State {
         TextView t = Ui.text(host.context(), ChatFormat.dayLabel(ts), Ui.CAPTION, Ui.P.text3);
         t.setTypeface(Ui.medium);
         t.setPadding(Ui.dp(12), Ui.dp(3), Ui.dp(12), Ui.dp(4));
-        t.setBackground(Ui.rect(Ui.P.dark ? 0x16000000 : 0x101B1740, 12));
+        t.setBackground(Ui.glassTinted(12, Ui.P.dark ? 0x16000000 : 0x101B1740));
         row.addView(t, Ui.lpm(-2, -2, 0, Ui.dp(7), 0, Ui.dp(5)));
         return row;
     }
@@ -193,7 +193,7 @@ public final class ChatAdapter implements ActionGroupView.State {
         for (final ChatItem.Attachment a : it.attachments) {
             LinearLayout chip = Ui.row(box.getContext());
             chip.setPadding(Ui.dp(10), Ui.dp(5), Ui.dp(10), Ui.dp(5));
-            chip.setBackground(Ui.rect(Ui.P.dark ? 0x1FFFFFFF : 0x141B1740, 12));
+            chip.setBackground(Ui.glassTinted(12, Ui.P.dark ? 0x1FFFFFFF : 0x141B1740));
             chip.addView(Ui.icon(box.getContext(), R.drawable.ic_file, 13, Ui.P.text2));
             TextView name = Ui.text(box.getContext(), a.name.isEmpty() ? a.path : a.name, Ui.CAPTION, Ui.P.text2);
             name.setSingleLine(true);
@@ -224,9 +224,7 @@ public final class ChatAdapter implements ActionGroupView.State {
         LinearLayout row = Ui.column(host.context());
         row.setPadding(Ui.dp(10), Ui.dp(3), Ui.dp(10), Ui.dp(3));
         LinearLayout card = Ui.column(host.context());
-        GradientDrawable bg = Ui.rect(0x12F08A9A, 16);
-        bg.setStroke(Math.max(1, Ui.dp(1)), 0x3DF08A9A);
-        card.setBackground(bg);
+        card.setBackground(Ui.glassOutlined(16, 0x12F08A9A, 0x3DF08A9A));
         card.setPadding(Ui.dp(12), Ui.dp(10), Ui.dp(12), Ui.dp(10));
         LinearLayout head = Ui.row(host.context());
         head.addView(Ui.icon(host.context(), R.drawable.ic_alert, 15, Ui.P.err));

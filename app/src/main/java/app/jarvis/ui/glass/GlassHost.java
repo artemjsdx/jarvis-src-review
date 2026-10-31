@@ -99,7 +99,9 @@ public final class GlassHost extends FrameLayout {
         region.setEmpty();
         collect(overlay);
         long t0 = System.nanoTime();
-        if (wallpaperWanted) captureWallpaper();
+        if (wallpaperWanted || (wallpaper != null && wallpaper.recorded()
+                && wallpaper.scale() != (GlassLevel.effective() == GlassLevel.FULL ? SCALE_FULL : SCALE_REDUCED)))
+            captureWallpaper();
         long t1 = System.nanoTime();
         if (glass.isEmpty()) { super.dispatchDraw(c); return; }
         drawChild(c, content, getDrawingTime());
@@ -191,21 +193,25 @@ public final class GlassHost extends FrameLayout {
         for (Lens lens : lenses) lens.drawLens(c, this, blur.snapshot(), blur.scale());
     }
 
-    /** Gathers overlay glass surfaces (and lenses) in overlay coordinates; adds their shapes to the clip path. */
+    /** Shared blur for marked overlay panels AND every nested GlassSurface. */
     private void collect(View v) {
         if (v.getVisibility() != VISIBLE || v.getAlpha() <= 0f) return;
         Glass.Mark m = Glass.markOf(v);
-        if (m != null && v.getWidth() > 0 && v.getHeight() > 0) {
+        GlassSurface surface = v.getBackground() instanceof GlassSurface
+            ? (GlassSurface) v.getBackground() : null;
+        if ((m != null || surface != null) && v.getWidth() > 0 && v.getHeight() > 0) {
             Glass.rectInHost(v, this, rect);
-            float r = Math.min(Ui.dpf(m.radiusDp) * v.getScaleX(), Math.min(rect.width(), rect.height()) / 2f);
-            clip.addRoundRect(rect, r, r, Path.Direction.CW);
+            float radiusDp = m != null ? m.radiusDp : surface.radiusDp();
+            float radius = Math.min(Ui.dpf(radiusDp) * v.getScaleX(),
+                Math.min(rect.width(), rect.height()) / 2f);
+            clip.addRoundRect(rect, radius, radius, Path.Direction.CW);
             if (region.isEmpty()) region.set(rect); else region.union(rect);
             glass.add(v);
         }
         if (v instanceof Lens) lenses.add((Lens) v);
         if (v instanceof ViewGroup) {
-            ViewGroup g = (ViewGroup) v;
-            for (int i = 0, n = g.getChildCount(); i < n; i++) collect(g.getChildAt(i));
+            ViewGroup group = (ViewGroup) v;
+            for (int i = 0; i < group.getChildCount(); i++) collect(group.getChildAt(i));
         }
     }
 
