@@ -203,9 +203,23 @@ adb("install","-r","smoke-input/Jarvis-uifix.apk",timeout=120)
 shell("pm","grant","app.jarvis.uifix","android.permission.POST_NOTIFICATIONS",check=False)
 for key in ["window_animation_scale","transition_animation_scale","animator_duration_scale"]:
     shell("settings","put","global",key,"0.5")
+# Pixel Launcher can show a system-level ANR on a software-rendered emulator.
+# Do not misclassify its UI as Jarvis or proceed under a system dialog.
+shell("am","force-stop","com.google.android.apps.nexuslauncher",check=False)
 shell("am","start","-W","-n","app.jarvis.uifix/app.jarvis.MainActivity",timeout=45)
 wait(3.0)
 tree,xml=dump()
+for _ in range(3):
+    if seek(tree,"Pixel Launcher isn't responding") is None and seek(tree,"Close app") is None:
+        break
+    log("system-launcher-anr",labels=texts(tree)[:5])
+    dismiss=seek(tree,"Close app")
+    if dismiss is not None:
+        cx,cy=center(dismiss);tap(cx,cy);wait(.7)
+    shell("am","force-stop","com.google.android.apps.nexuslauncher",check=False)
+    shell("am","start","-W","-n","app.jarvis.uifix/app.jarvis.MainActivity",timeout=45)
+    wait(2)
+    tree,xml=dump()
 results["home"]=capture("home","initial",tree,xml)
 log("home",texts=texts(tree)[:9])
 
@@ -273,7 +287,8 @@ def visit_settings_page(pid):
     process=screenrecord(root/"transition.mp4",7) if pid==GROUPS[group][0] else None
     tap(x,y);wait(.7)
     t,b=dump()
-    rec["opened"]=seek(t,title) is not None
+    # Menu label and destination header differ for the Telegram page.
+    rec["opened"]=seek(t,"Telegram" if pid=="telegram" else title) is not None
     rec["snapshots"].append(capture("settings/"+pid,"top",t,b))
     log("page-start",id=pid,ok=rec["opened"],texts=texts(t)[:8])
     if not rec["opened"]:
