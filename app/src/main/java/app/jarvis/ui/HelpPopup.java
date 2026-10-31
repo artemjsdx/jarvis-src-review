@@ -20,11 +20,11 @@ public final class HelpPopup {
         LinearLayout body = Ui.column(c);
         body.setPadding(Ui.dp(20), 0, Ui.dp(20), Ui.dp(8));
         for (int i = 0; i < lines.length; i++) {
-            body.addView(Ui.text(c, lines[i], Ui.BODY, Ui.P.text2), Ui.lpm(-1, -2, 0, i == 0 ? 0 : Ui.dp(8), 0, 0));
+            body.addView(Ui.text(c, lines[i], Ui.BODY, Ui.P.text2), Ui.lpm(-1, -2, 0, i == 0 ? 0 : 8, 0, 0));
         }
         final OverlayHost.Layer[] ly = new OverlayHost.Layer[1];
         View ok = Ui.button(c, "Понятно", 0, Ui.BTN_PRIMARY, new Runnable() { @Override public void run() { h.overlays().dismiss(ly[0]); } });
-        body.addView(ok, Ui.lpm(-1, -2, 0, Ui.dp(16), 0, 0));
+        body.addView(ok, Ui.lpm(-1, -2, 0, 16, 0, 0));
         ly[0] = Dialogs.sheet(h, title, body, true);
     }
 }

@@ -106,7 +106,7 @@ public class FilesScreen extends Screen {
         tools.addView(Ui.iconButton(ctx, R.drawable.ic_download, 42, Ui.P.text, new Runnable() { @Override public void run() { downloadByUrl(); }}), Ui.lpm(-2, -2, 0, 0, 4, 0));
         View space = Ui.space(ctx, 1, 1);
         tools.addView(space, Ui.lpw(1f));
-        freeSpace = Ui.text(ctx, "", Ui.CAPTION, Ui.P.text3);
+        freeSpace = Ui.text(ctx, "", Ui.CAPTION, Ui.P.text2);
         tools.addView(freeSpace, Ui.lpm(-2, -2, 0, 0, 6, 0));
         refreshBtn = Ui.iconButton(ctx, R.drawable.ic_refresh, 42, Ui.P.text2, new Runnable() { @Override public void run() {
             manualRefresh = true;
@@ -228,7 +228,7 @@ public class FilesScreen extends Screen {
         errorView.setVisibility(!atRoot && unreadable ? View.VISIBLE : View.GONE);
         buildCrumbs();
         FrameLayout up = (FrameLayout) rootView.findViewWithTag("up");
-        up.setVisibility(atRoot ? View.INVISIBLE : View.VISIBLE);
+        up.setVisibility(atRoot ? View.GONE : View.VISIBLE);
         freeSpace.setText(FileKit.size(free) + " свободно");
         if (atRoot) fillRoot(); else adapter.notifyDataSetChanged();
         setSpinning(false);
@@ -316,7 +316,7 @@ public class FilesScreen extends Screen {
                 n.setTypeface(Ui.medium);
                 FileKit.ellipsize(n);
                 card.addView(n, Ui.lpm(-2, -2, 0, 8, 0, 0));
-                TextView cnt = Ui.text(ctx, FileKit.entryCount(counts[k]), Ui.CAPTION, Ui.P.text3);
+                TextView cnt = Ui.text(ctx, FileKit.entryCount(counts[k]), Ui.CAPTION, Ui.P.text2);
                 FileKit.ellipsize(cnt);
                 card.addView(cnt, Ui.lpm(-2, -2, 0, 1, 0, 0));
                 // weight 1 (not width 0): lpm(0, ...) has no weight, so the root folder cards were laid out 0 px wide and the root looked empty
@@ -324,7 +324,11 @@ public class FilesScreen extends Screen {
                 clp.setMargins(0, 0, Ui.dp(10), Ui.dp(10));
                 row.addView(card, clp);
             }
-            if (i + 1 >= dirs.length) row.addView(Ui.space(ctx, 1, 1), Ui.lpw(1f));
+            if (i + 1 >= dirs.length) {
+                LinearLayout.LayoutParams emptyColumn = Ui.lpw(1f);
+                emptyColumn.rightMargin = Ui.dp(10);
+                row.addView(Ui.space(ctx, 1, 1), emptyColumn);
+            }
             rootScroll.addView(row, new LinearLayout.LayoutParams(-1, -2));
         }
 

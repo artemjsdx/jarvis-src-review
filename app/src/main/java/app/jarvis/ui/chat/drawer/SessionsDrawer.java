@@ -266,7 +266,9 @@ public final class SessionsDrawer extends FrameLayout {
         panel = new FrameLayout(c);
         panel.setClickable(true);
         panel.setBackground(Glass.surface(22, new LayerDrawable(new Drawable[]{
-            Ui.rect(Ui.P.dark ? 0xF2111019 : 0xF5FBFAFF, 22), new GlassDrawable(22, true)}), 0));
+            Ui.rect(Ui.P.dark ? 0xE51B1823 : 0xF0FBFAFF, 22), new GlassDrawable(22, true)}), 0));
+        Glass.mark(panel, 22);
+        Ui.clipToRounded(panel, 22);
         LinearLayout col = Ui.column(c);
         col.setPadding(Ui.dp(14), 0, Ui.dp(14), 0);
         col.addView(buildHeader(c), Ui.lpm(-1, -2, 0, 14, 0, 10));

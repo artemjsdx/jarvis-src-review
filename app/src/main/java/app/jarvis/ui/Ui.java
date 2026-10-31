@@ -249,9 +249,9 @@ public final class Ui {
         return g;
     }
 
-    /** Card surface: glass inset by half the gap, so neighbouring cards show a S.GAP space between them. */
+    /** Card surface fills View bounds so the border, ripple and outline share the same geometry. */
     public static Drawable cardSurface(float rDp) {
-        return Glass.surface(rDp, new GlassDrawable(rDp, false), dp(S.GAP / 2f));
+        return Glass.surface(rDp, new GlassDrawable(rDp, false), 0);
     }
 
     /**

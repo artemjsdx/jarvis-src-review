@@ -72,7 +72,7 @@ final class StudioKit {
     static LinearLayout noteLine(Context c, int icon, String text) {
         LinearLayout r = Ui.row(c);
         r.setGravity(android.view.Gravity.TOP);
-        if (icon != 0) r.addView(Ui.icon(c, icon, 14, Ui.P.text3), Ui.lpm(-2, -2, 0, Ui.dp(2), Ui.dp(7), 0));
+        if (icon != 0) r.addView(Ui.icon(c, icon, 14, Ui.P.text3), Ui.lpm(-2, -2, 0, 2, Ui.dp(7), 0));
         TextView t = Ui.text(c, text, Ui.CAPTION, Ui.P.text3);
         t.setMaxLines(3);
         t.setEllipsize(TextUtils.TruncateAt.END);
@@ -95,10 +95,10 @@ final class StudioKit {
 
     /** A "label: value" caption pair used inside provider cards. */
     static LinearLayout metaRow(Context c, String label, String value) {
-        LinearLayout r = Ui.row(c);
+        LinearLayout r = Ui.rowTop(c);
         TextView l = Ui.text(c, label, Ui.CAPTION, Ui.P.text3);
         l.setSingleLine(true);
-        r.addView(l, Ui.lpm(-2, -2, 0, 0, 6, 0));
+        r.addView(l, Ui.lpm(94, -2, 0, 0, 6, 0));
         TextView v = Ui.text(c, value, Ui.CAPTION, Ui.P.text2);
         v.setMaxLines(2);
         v.setEllipsize(TextUtils.TruncateAt.END);
@@ -118,7 +118,7 @@ final class StudioKit {
         head.addView(t, Ui.lpw(1f));
         card.addView(head);
         TextView b = Ui.text(c, body, Ui.CAPTION, Ui.P.text2);
-        card.addView(b, Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+        card.addView(b, Ui.lpm(-2, -2, 0, 6, 0, 0));
         return card;
     }
 

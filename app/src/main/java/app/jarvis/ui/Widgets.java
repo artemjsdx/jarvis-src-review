@@ -75,7 +75,7 @@ public final class Widgets {
         if (trailing != null) r.addView(trailing, Ui.lpm(-2, -2, 10, 0, 0, 0));
         else if (onClick != null) r.addView(Ui.icon(c, R.drawable.ic_chevron_right, 18, Ui.P.text3), Ui.lpm(-2, -2, 8, 0, 0, 0));
         if (onClick != null) {
-            r.setBackground(Ui.rippleOn(new ColorDrawable(0), 14));
+            r.setBackground(Ui.rippleOn(new ColorDrawable(0), Ui.S.RADIUS_CARD));
             r.setClickable(true);
             r.setFocusable(true);
             r.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { onClick.run(); } });

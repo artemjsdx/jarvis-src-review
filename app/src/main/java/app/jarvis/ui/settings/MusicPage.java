@@ -68,13 +68,13 @@ public class MusicPage extends SettingsPage {
         content.addView(Widgets.sectionTitle(ctx, "Утро"));
         LinearLayout morning = Widgets.card(ctx);
         morning.addView(Widgets.row(ctx, R.drawable.ic_sun, "Утреннее приветствие",
-            "По команде вроде «Джарвис, я проснулся» — поприветствовать и включить любимую", Widgets.toggle(ctx, j.settings.getBool(Settings.MUSIC_MORNING_GREETING, false),
+            "По команде вроде «Джарвис, я проснулся» — поприветствовать и включить любимую песню", Widgets.toggle(ctx, j.settings.getBool(Settings.MUSIC_MORNING_GREETING, false),
             new Widgets.Toggle.Listener() { @Override public void onChanged(boolean on) { j.settings.setBool(Settings.MUSIC_MORNING_GREETING, on); } }), null));
         Widgets.divide(morning);
         LinearLayout checkBlock = Ui.column(ctx);
-        checkBlock.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(12));
+        checkBlock.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(16));
         checkBlock.addView(Ui.button(ctx, "Проверить утренний сценарий", R.drawable.ic_play, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runMorningCheck(); } }));
-        checkResult = PageUi.note(ctx, "Запустит настоящий инструмент music_play: любимая песня → первый трек из music/ → последний присланный.");
+        checkResult = PageUi.caption(ctx, "Запустит настоящий инструмент music_play: любимая песня → первый трек из music/ → последний присланный.");
         checkResult.setPadding(Ui.dp(0), Ui.dp(8), Ui.dp(0), 0);
         checkBlock.addView(checkResult);
         morning.addView(checkBlock);

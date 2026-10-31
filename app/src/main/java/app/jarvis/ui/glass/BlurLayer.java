@@ -35,6 +35,7 @@ final class BlurLayer {
         height = h;
         scale = s;
         captured.setEmpty();
+        recorded = false;
         if (snap != null) snap.recycle();
         snap = Bitmap.createBitmap(Math.max(1, Math.round(w * s)), Math.max(1, Math.round(h * s)), Bitmap.Config.RGB_565);
         snapCanvas = new Canvas(snap);
@@ -57,12 +58,14 @@ final class BlurLayer {
     void capture(View content, RectF region, float blurRadiusHostPx) {
         if (snap == null) return;
         snapCanvas.save();
-        snapCanvas.clipRect(region.left * scale, region.top * scale, region.right * scale, region.bottom * scale);
+        // A partial bitmap capture can leave stale rectangular strips outside the
+        // sampled area. Render the full reduced-resolution frame to avoid seams.
+        // GlassHost still throttles captures and reduces quality when needed.
         snapCanvas.drawColor(0xFF000000, PorterDuff.Mode.SRC);
         snapCanvas.scale(scale, scale);
         content.draw(snapCanvas);
         snapCanvas.restore();
-        captured.set(region);
+        captured.set(0, 0, width, height);
         int sw = snap.getWidth(), sh = snap.getHeight();
         float r = Math.max(0.5f, blurRadiusHostPx * scale);
         blurNode.setPosition(0, 0, sw, sh);
