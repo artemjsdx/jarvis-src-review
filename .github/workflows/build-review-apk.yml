@@ -28,18 +28,19 @@ jobs:
           java-version: "21"
 
       - name: Platform 36 and build-tools (preinstalled SDK)
-        env:
-          ANDROID_HOME: /usr/local/lib/android/sdk
         run: |
-          yes | "$ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
-          "$ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager" --install "platforms;android-36" "build-tools;36.0.0" >/dev/null \
-            || "$ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager" --install "platforms;android-36" "build-tools;35.0.0" >/dev/null
-          BT=$(ls -d "$ANDROID_HOME/build-tools/36.0.0" 2>/dev/null || ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
-          echo "build-tools: $BT"
+          SDK="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          SDKM=$(command -v sdkmanager || find "$SDK" -name sdkmanager -type f 2>/dev/null | head -1)
+          echo "sdk: $SDK"; echo "sdkmanager: $SDKM"
+          test -n "$SDKM"
+          yes | "$SDKM" --licenses >/dev/null 2>&1 || true
+          "$SDKM" --install "platforms;android-36" "build-tools;36.0.0" >/dev/null \
+            || "$SDKM" --install "platforms;android-36" "build-tools;35.0.0" >/dev/null
+          BT=$(ls -d "$SDK/build-tools/36.0.0" 2>/dev/null || ls -d "$SDK"/build-tools/* | sort -V | tail -1)
+          echo "build-tools: $BT"; test -d "$BT"
           echo "$BT" >> "$GITHUB_PATH"
-          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
-
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
       - name: Project build inputs (android.jar, lambda stubs)
         run: bash tools/setup.sh
 
