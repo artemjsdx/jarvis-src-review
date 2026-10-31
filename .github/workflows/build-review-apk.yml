@@ -44,6 +44,9 @@ jobs:
       - name: Project build inputs (android.jar, lambda stubs)
         run: bash tools/setup.sh
 
+      - name: JVM policy tests (ducking and agent comments)
+        run: bash tools/run-tests.sh app.jarvis.core.audio.DuckPolicyTest app.jarvis.core.agent.AgentCommentPolicyTest
+
       - name: Test signing key from secrets
         env:
           KS_B64: ${{ secrets.JV_TEST_KEYSTORE_B64 }}
