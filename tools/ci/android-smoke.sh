@@ -7,6 +7,8 @@ trap 'adb logcat -d -v brief -s AndroidRuntime:E > smoke-output/runtime-errors.t
 
 adb wait-for-device
 adb install -r smoke-input/Jarvis-uifix.apk
+# Dismissable Android runtime permission prompts would make screenshots falsely green.
+adb shell pm grant app.jarvis.uifix android.permission.POST_NOTIFICATIONS
 adb shell settings put global window_animation_scale 0.5
 adb shell settings put global transition_animation_scale 0.5
 adb shell settings put global animator_duration_scale 0.5
@@ -23,6 +25,11 @@ width=${dimensions%x*}
 height=${dimensions#*x}
 adb shell input tap "$((width - 65))" "$((height * 8 / 100))"
 sleep 3
+adb shell uiautomator dump /sdcard/ui-settings.xml >/dev/null
+adb shell cat /sdcard/ui-settings.xml | grep -q 'text="Настройки"' || {
+  echo "::error::Tap did not navigate to the Settings screen"
+  exit 1
+}
 adb shell screencap -p /sdcard/ui-settings.png
 adb pull /sdcard/ui-settings.png smoke-output/settings.png
 
