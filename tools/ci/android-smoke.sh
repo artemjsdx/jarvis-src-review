@@ -30,7 +30,7 @@ dimensions=$(printf '%s' "$size" | grep -oE '[0-9]+x[0-9]+' | tail -1)
 test -n "$dimensions"
 width=${dimensions%x*}
 height=${dimensions#*x}
-adb shell input tap "$((width - 65))" "$((height * 8 / 100))"
+adb shell input tap "$((width / 2))" "$((height * 8 / 100))"
 sleep 3
 adb shell uiautomator dump /sdcard/ui-settings.xml >/dev/null
 adb shell cat /sdcard/ui-settings.xml | grep -q 'text="Настройки"' || {
