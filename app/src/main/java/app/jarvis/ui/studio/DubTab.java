@@ -194,7 +194,7 @@ public class DubTab {
                 Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
             card.addView(StudioKit.metaRow(ctx, "клонирование:", info.cloning ? info.cloningNote : "нет"),
                 Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
-            card.addView(StudioKit.metaRow(ctx, "отправляет данные на:", info.sendsDataTo),
+            card.addView(StudioKit.metaRow(ctx, "получатель данных:", info.sendsDataTo),
                 Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
             TextView lim = Ui.text(ctx, info.limitations, Ui.CAPTION, Ui.P.text2);
             lim.setSingleLine(false);

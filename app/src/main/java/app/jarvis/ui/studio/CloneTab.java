@@ -150,7 +150,7 @@ public class CloneTab {
             LinearLayout btns = Ui.column(ctx);
             View rec = Ui.button(ctx, "Записать с микрофона", R.drawable.ic_mic, Ui.BTN_GLASS, new Runnable() { @Override public void run() { startRecording(); } });
             btns.addView(rec, new LinearLayout.LayoutParams(-1, -2));
-            View imp = Ui.button(ctx, "Выбрать файл", R.drawable.ic_upload, Ui.BTN_GHOST, new Runnable() { @Override public void run() { pickFile(); } });
+            View imp = Ui.button(ctx, "Выбрать файл", R.drawable.ic_upload, Ui.BTN_GLASS, new Runnable() { @Override public void run() { pickFile(); } });
             btns.addView(imp, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
             card.addView(btns);
         }

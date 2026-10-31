@@ -195,8 +195,13 @@ public class TelegramPage extends SettingsPage {
         card.addView(actions, Ui.lpm(-1, -2, 14, 0, 14, 12));
         content.addView(card);
         if (!s.helperUp) {
-            if (s.helperProblem != null && !s.helperProblem.isEmpty())
-                content.addView(PageUi.note(ctx, s.helperProblem), Ui.lpm(-1, -2, 0, GAP_ITEM, 0, 0));
+            if (s.helperProblem != null && !s.helperProblem.isEmpty()) {
+                String problem = s.helperProblem;
+                int instruction = problem.indexOf("В Termux выполните:");
+                if (instruction >= 0) problem = problem.substring(0, instruction).trim();
+                if (!problem.isEmpty())
+                    content.addView(PageUi.note(ctx, problem), Ui.lpm(-1, -2, 0, GAP_ITEM, 0, 0));
+            }
             content.addView(termuxCommand("1. Установить Telegram-помощник",
                 "bash ~/jarvis/tools/tg/setup.sh"), Ui.lpm(-1, -2, 0, GAP_ITEM, 0, 0));
             content.addView(termuxCommand("2. Запустить помощник", HELPER_START),

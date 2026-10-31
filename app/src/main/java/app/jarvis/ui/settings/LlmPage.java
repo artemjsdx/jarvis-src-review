@@ -29,6 +29,7 @@ import app.jarvis.data.Settings;
 import app.jarvis.rt.Jarvis;
 import app.jarvis.ui.Dialogs;
 import app.jarvis.ui.Host;
+import app.jarvis.ui.HelpPopup;
 import app.jarvis.ui.Ui;
 import app.jarvis.ui.Widgets;
 import app.jarvis.ui.settings.llm.CapChips;
@@ -249,12 +250,16 @@ public class LlmPage extends SettingsPage {
         LinearLayout card = Widgets.card(ctx);
         // The provider name and long description are already in the selectable row above.
         // Do not repeat the same geo-restriction paragraph before the API key.
+        LinearLayout accessHead = Ui.row(ctx);
         TextView head = Ui.text(ctx, "Доступ к API", Ui.BODY);
         head.setTypeface(Ui.medium);
-        card.addView(head, Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(12), Ui.dp(16), 0));
-        if (p.verified != null && !p.verified.isEmpty())
-            card.addView(PageUi.caption(ctx, "Проверено: " + p.verified),
-                Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(4), Ui.dp(16), Ui.dp(12)));
+        accessHead.addView(head, Ui.lpw(1f));
+        accessHead.addView(HelpPopup.button(ctx, host, "Сведения о " + p.name,
+            p.note.isEmpty() ? "Нет дополнительного описания провайдера." : p.note,
+            p.verified == null || p.verified.isEmpty()
+                ? "Дата независимой проверки не указана."
+                : "Проверено: " + p.verified));
+        card.addView(accessHead, Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(8)));
 
         if (p.keyRequired || j.secrets.has("key." + pid)) {
             Widgets.divide(card);
