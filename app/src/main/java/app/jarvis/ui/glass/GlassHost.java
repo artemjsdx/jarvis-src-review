@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.SystemClock;
 import android.view.View;
@@ -39,6 +40,8 @@ public final class GlassHost extends FrameLayout {
     private final Path clip = new Path(), contentClip = new Path();
     private final Path surfacePath = new Path(), viewportPath = new Path();
     private final RectF rect = new RectF(), region = new RectF(), surfaceBounds = new RectF();
+    private final Rect overlayVisible = new Rect();
+    private final int[] hostOnScreen = new int[2];
     private final ArrayList<View> glass = new ArrayList<>();
     private final ArrayList<Lens> lenses = new ArrayList<>();
     private View backdrop;
@@ -95,6 +98,7 @@ public final class GlassHost extends FrameLayout {
         if (blur == null || !c.isHardwareAccelerated() || !GlassLevel.blur()) { super.dispatchDraw(c); return; }
         glass.clear();
         lenses.clear();
+        getLocationOnScreen(hostOnScreen);
         clip.rewind();
         region.setEmpty();
         collect(overlay);
@@ -204,9 +208,24 @@ public final class GlassHost extends FrameLayout {
             float radiusDp = m != null ? m.radiusDp : surface.radiusDp();
             float radius = Math.min(Ui.dpf(radiusDp) * v.getScaleX(),
                 Math.min(rect.width(), rect.height()) / 2f);
-            clip.addRoundRect(rect, radius, radius, Path.Direction.CW);
-            if (region.isEmpty()) region.set(rect); else region.union(rect);
-            glass.add(v);
+            // Clip to the real on-screen viewport of scroll containers and sheets.
+            // An off-screen child must not enlarge the blur capture area.
+            if (v.getGlobalVisibleRect(overlayVisible)) {
+                surfacePath.rewind();
+                surfacePath.addRoundRect(rect, radius, radius, Path.Direction.CW);
+                viewportPath.rewind();
+                viewportPath.addRect(overlayVisible.left - hostOnScreen[0],
+                    overlayVisible.top - hostOnScreen[1],
+                    overlayVisible.right - hostOnScreen[0],
+                    overlayVisible.bottom - hostOnScreen[1], Path.Direction.CW);
+                if (surfacePath.op(viewportPath, Path.Op.INTERSECT) && !surfacePath.isEmpty()) {
+                    clip.addPath(surfacePath);
+                    rect.intersect(overlayVisible.left - hostOnScreen[0], overlayVisible.top - hostOnScreen[1],
+                        overlayVisible.right - hostOnScreen[0], overlayVisible.bottom - hostOnScreen[1]);
+                    if (region.isEmpty()) region.set(rect); else region.union(rect);
+                    glass.add(v);
+                }
+            }
         }
         if (v instanceof Lens) lenses.add((Lens) v);
         if (v instanceof ViewGroup) {
