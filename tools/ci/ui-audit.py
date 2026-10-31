@@ -242,6 +242,53 @@ if group=="a":
                     snap["snapshots"].append(capture("dock/"+name,f"scroll-{i+1:02d}",t,b))
                     snap["scrollSteps"]+=1
                     if oldsig==snap["snapshots"][-1]["signature"]:break
+            if name=="studio":
+                snap["tabs"]={}
+                for label in ("Клонирование","Произношение"):
+                    tab={"snapshots":[],"opened":False,"bottomReached":False}
+                    ti,bi=dump()
+                    button=seek(ti,label)
+                    if button is None:
+                        tab["error"]="tab-label-not-found"
+                        results["warnings"].append("studio-tab:"+label+":not-found")
+                    else:
+                        xx,yy=center(button);tap(xx,yy);wait(.75)
+                        ti,bi=dump()
+                        tab["opened"]=seek(ti,"1. Образец голоса" if label=="Клонирование" else "Как будет прочитано") is not None
+                        slug="clone" if label=="Клонирование" else "pron"
+                        tab["snapshots"].append(capture("dock/studio/"+slug,"top",ti,bi))
+                        prior=signature(ti);same=0
+                        for i in range(1,15):
+                            if not scroll(ti):break
+                            ti,bi=dump()
+                            sn=capture("dock/studio/"+slug,f"scroll-{i:02d}",ti,bi)
+                            tab["snapshots"].append(sn)
+                            if sn["signature"]==prior:same+=1
+                            else:same=0
+                            prior=sn["signature"]
+                            if same>=2:
+                                tab["bottomReached"]=True
+                                break
+                    snap["tabs"][label]=tab
+                log("studio-tabs",tabs={k:len(v["snapshots"]) for k,v in snap["tabs"].items()})
+            if name=="agent":
+                drawer={"snapshots":[],"opened":False}
+                # The top-left hamburger only opens the session drawer; no chat data is mutated.
+                tap(int(W*.065),int(H*.075));wait(.6)
+                dt,db=dump()
+                drawer["snapshots"].append(capture("dock/agent/drawer","open",dt,db))
+                drawer["opened"]=seek(dt,"Чаты") is not None
+                if drawer["opened"]:
+                    for i in range(1,3):
+                        if not scroll(dt):break
+                        dt,db=dump()
+                        drawer["snapshots"].append(capture("dock/agent/drawer",f"scroll-{i:02d}",dt,db))
+                    back()
+                else:
+                    # A tap in empty space may fail on a cold start; note rather than claim coverage.
+                    drawer["error"]="drawer-not-detected"
+                snap["drawer"]=drawer
+                log("agent-drawer",opened=drawer["opened"],shots=len(drawer["snapshots"]))
             log("dock",name=name,screens=len(snap["snapshots"]),lastText=texts(t)[:5])
         except Exception as ex:
             snap["error"]=str(ex);results["warnings"].append("dock/"+name+":"+str(ex))
