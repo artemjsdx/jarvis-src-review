@@ -128,3 +128,49 @@ jobs:
           path: smoke-output/
           if-no-files-found: warn
           retention-days: 14
+
+  ui-audit:
+    needs: apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        audit_set: [a, b, c, d]
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download signed APK
+        uses: actions/download-artifact@v4
+        with:
+          name: jarvis-uifix-apk
+          path: smoke-input
+
+      - name: Validate audit runner
+        run: python3 -m py_compile tools/ci/ui-audit.py
+
+      - name: Enable virtualization
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; else echo "KVM unavailable"; fi
+
+      - name: Audit actual Android UI in shard
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect
+          disable-animations: false
+          script: python3 tools/ci/ui-audit.py ${{ matrix.audit_set }}
+
+      - name: Upload every screenshot, hierarchy, videos, and perf data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-ui-audit-${{ matrix.audit_set }}
+          path: audit-output/
+          if-no-files-found: warn
+          retention-days: 30
