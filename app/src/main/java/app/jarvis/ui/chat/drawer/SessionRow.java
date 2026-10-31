@@ -21,7 +21,7 @@ public final class SessionRow {
     public static LinearLayout build(Context c, final ChatStore.Conv conv, boolean active, Runnable onOpen, Runnable onMore) {
         LinearLayout row = Ui.row(c);
         row.setPadding(Ui.dp(14), Ui.dp(10), Ui.dp(4), Ui.dp(10));
-        row.setBackground(active ? Ui.rect(Ui.P.accentSoft, 14) : Ui.rippleOn(new android.graphics.drawable.ColorDrawable(0), 14));
+        row.setBackground(active ? Ui.glassTinted(14, Ui.P.accentSoft) : Ui.rippleOn(new android.graphics.drawable.ColorDrawable(0), 14));
 
         View bar = new View(c);
         bar.setBackground(Ui.rect(active ? Ui.P.accent : 0x00000000, 2));

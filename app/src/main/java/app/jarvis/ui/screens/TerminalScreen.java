@@ -419,7 +419,7 @@ public class TerminalScreen extends Screen {
     private void showPill(String text, boolean ok) {
         footer.setText(text);
         footer.setTextColor(ok ? Ui.P.ok : Ui.P.err);
-        footer.setBackground(Ui.rect(Ui.alpha(ok ? Ui.P.ok : Ui.P.err, 0.14f), 20));
+        footer.setBackground(Ui.glassTinted(20, Ui.alpha(ok ? Ui.P.ok : Ui.P.err, 0.14f)));
         footer.setVisibility(View.VISIBLE);
     }
 

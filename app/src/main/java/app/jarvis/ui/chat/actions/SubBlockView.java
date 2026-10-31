@@ -126,7 +126,7 @@ public final class SubBlockView extends LinearLayout {
 
     private static TextView mono(Context c, String s) {
         TextView t = Ui.text(c, s, Ui.MONO, Ui.P.text2);
-        t.setBackground(Ui.rect(Ui.P.dark ? 0x14000000 : 0x0F1B1740, 10));
+        t.setBackground(Ui.glassTinted(10, Ui.P.dark ? 0x14000000 : 0x0F1B1740));
         t.setPadding(Ui.dp(10), Ui.dp(8), Ui.dp(10), Ui.dp(8));
         return t;
     }

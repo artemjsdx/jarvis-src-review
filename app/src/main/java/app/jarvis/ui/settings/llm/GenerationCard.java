@@ -122,7 +122,7 @@ public final class GenerationCard {
             if (cells[i] == null) continue;
             boolean no = caps.reasoningLevel(LEVEL_VALUES[i]) == Cap.NO;
             boolean on = i == sel;
-            cells[i].setBackground(on ? Ui.rect(Ui.P.accent, 12) : Ui.rect(Ui.alpha(Ui.P.text2, 0.08f), 12));
+            cells[i].setBackground(on ? Ui.rect(Ui.P.accent, 12) : Ui.glassTinted(12, Ui.alpha(Ui.P.text2, 0.08f)));
             cells[i].setTextColor(on ? Ui.P.onAccent : (no ? Ui.alpha(Ui.P.text3, 0.55f) : Ui.P.text2));
         }
     }

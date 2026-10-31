@@ -110,7 +110,7 @@ final class StudioKit {
     static LinearLayout noteCard(Context c, int icon, String title, String body) {
         LinearLayout card = Ui.column(c);
         card.setPadding(Ui.dp(14), Ui.dp(12), Ui.dp(14), Ui.dp(12));
-        card.setBackground(Ui.rect(Ui.alpha(Ui.P.accent, 0.08f), 14));
+        card.setBackground(Ui.glassTinted(14, Ui.alpha(Ui.P.accent, 0.08f)));
         LinearLayout head = Ui.row(c);
         if (icon != 0) head.addView(Ui.icon(c, icon, 16, Ui.P.accent), Ui.lpm(-2, -2, 0, 0, 8, 0));
         TextView t = Ui.text(c, title, Ui.BODY);

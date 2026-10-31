@@ -83,7 +83,7 @@ public final class ActionGroupView extends LinearLayout {
         collapseAll = Ui.text(c, "свернуть всё", Ui.CAPTION, Ui.P.accent);
         collapseAll.setTypeface(Ui.medium);
         collapseAll.setPadding(Ui.dp(10), Ui.dp(5), Ui.dp(10), Ui.dp(5));
-        collapseAll.setBackground(Ui.rippleOn(Ui.rect(Ui.P.dark ? 0x122F2D3B : 0x12FFFFFF, 12), 12));
+        collapseAll.setBackground(Ui.glassPressable(12));
         collapseAll.setVisibility(GONE);
         collapseAll.setClickable(true);
         collapseAll.setOnClickListener(new View.OnClickListener() {
@@ -140,7 +140,7 @@ public final class ActionGroupView extends LinearLayout {
             ActionDotsView dots = new ActionDotsView(c, 16, Ui.P.accent);
             dots.setActive(true);
             f.addView(dots, new FrameLayout.LayoutParams(Ui.dp(16), Ui.dp(16), Gravity.CENTER));
-            if (rightmost) f.setBackground(Ui.rect(Ui.P.accentSoft, 8));
+            if (rightmost) f.setBackground(Ui.glassTinted(8, Ui.P.accentSoft));
             return f;
         }
         f.addView(Ui.icon(c, iconRes(ToolIcons.iconName(t.toolName)), 16, Ui.P.text3),
