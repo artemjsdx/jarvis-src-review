@@ -185,11 +185,17 @@ public class DubTab {
                 TextView pos = Ui.text(ctx, inChain, Ui.CAPTION, Ui.P.accent);
                 card.addView(pos, Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
             }
-            card.addView(StudioKit.metaRow(ctx, "голоса:", info.voices), Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
-            card.addView(StudioKit.metaRow(ctx, "доступ:", info.needsKey ? "нужен ключ API" : info.needsAccount ? "нужен аккаунт" : "без аккаунта и ключа"));
-            card.addView(StudioKit.metaRow(ctx, "квота:", info.freeQuota));
-            card.addView(StudioKit.metaRow(ctx, "клонирование:", info.cloning ? info.cloningNote : "нет"));
-            card.addView(StudioKit.metaRow(ctx, "отправляет данные на:", info.sendsDataTo));
+            card.addView(StudioKit.metaRow(ctx, "голоса:", info.voices),
+                Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
+            card.addView(StudioKit.metaRow(ctx, "доступ:",
+                info.needsKey ? "нужен ключ API" : info.needsAccount ? "нужен аккаунт" : "без аккаунта и ключа"),
+                Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+            card.addView(StudioKit.metaRow(ctx, "квота:", info.freeQuota),
+                Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+            card.addView(StudioKit.metaRow(ctx, "клонирование:", info.cloning ? info.cloningNote : "нет"),
+                Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+            card.addView(StudioKit.metaRow(ctx, "отправляет данные на:", info.sendsDataTo),
+                Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
             TextView lim = Ui.text(ctx, info.limitations, Ui.CAPTION, Ui.P.text2);
             lim.setSingleLine(false);
             card.addView(lim, Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));

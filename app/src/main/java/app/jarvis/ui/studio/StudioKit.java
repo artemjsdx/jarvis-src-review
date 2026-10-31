@@ -74,8 +74,9 @@ final class StudioKit {
         r.setGravity(android.view.Gravity.TOP);
         if (icon != 0) r.addView(Ui.icon(c, icon, 14, Ui.P.text3), Ui.lpm(-2, -2, 0, 2, Ui.dp(7), 0));
         TextView t = Ui.text(c, text, Ui.CAPTION, Ui.P.text3);
-        t.setMaxLines(3);
-        t.setEllipsize(TextUtils.TruncateAt.END);
+        // Explanatory text (quotas / remote services / consent) must never
+        // disappear after an ellipsis.
+        t.setSingleLine(false);
         r.addView(t, Ui.lpw(1f));
         return r;
     }
@@ -101,7 +102,7 @@ final class StudioKit {
         // Long values (quotas, cloning limitations) must remain fully readable.
         l.setSingleLine(false);
         l.setMaxLines(3);
-        r.addView(l, Ui.lpm(124, -2, 0, 0, 8, 0));
+        r.addView(l, Ui.lpm(Ui.dp(124), -2, 0, 0, 8, 0));
         TextView v = Ui.text(c, value == null ? "—" : value, Ui.CAPTION, Ui.P.text2);
         v.setSingleLine(false);
         r.addView(v, Ui.lpw(1f));

@@ -360,6 +360,7 @@ public final class Ui {
         if (style == BTN_DANGER) b.setBackground(glassPressable(14));
         b.setClickable(true);
         b.setFocusable(true);
+        if (label != null && label.length() > 0) b.setContentDescription(label.toString());
         if (onClick != null) b.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { onClick.run(); } });
         pressScale(b);
         return b;

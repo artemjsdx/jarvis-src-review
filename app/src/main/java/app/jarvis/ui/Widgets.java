@@ -82,6 +82,7 @@ public final class Widgets {
             r.setBackground(Ui.rippleOn(new ColorDrawable(0), Ui.S.RADIUS_CARD));
             r.setClickable(true);
             r.setFocusable(true);
+            r.setContentDescription(title.toString() + (subtitle == null || subtitle.length() == 0 ? "" : ". " + subtitle));
             r.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { onClick.run(); } });
         }
         return r;
