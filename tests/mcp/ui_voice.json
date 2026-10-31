@@ -1,0 +1,71 @@
+{
+ "scenarios": [
+  {
+   "name": "open studio, read the tree, take a screenshot",
+   "steps": [
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "studio"
+     }
+    },
+    {
+     "call": "ui_tree",
+     "args": {
+      "maxDepth": 14
+     },
+     "expect": [
+      {
+       "path": "$.nodes",
+       "gt": 5
+      }
+     ]
+    },
+    {
+     "call": "ui_screenshot",
+     "args": {
+      "scale": 0.3
+     },
+     "expect": [
+      {
+       "path": "@images",
+       "eq": 1
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "ui_navigate",
+    "ui_tree",
+    "ui_screenshot"
+   ],
+   "needsUi": true,
+   "jvm": false
+  },
+  {
+   "name": "navigate to studio and read the tree",
+   "steps": [
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "studio"
+     }
+    },
+    {
+     "call": "ui_tree",
+     "expect": [
+      {
+       "path": "$.root",
+       "exists": true
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "ui_navigate",
+    "ui_tree"
+   ],
+   "needsUi": true
+  }
+ ]
+}

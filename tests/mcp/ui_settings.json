@@ -1,0 +1,79 @@
+{
+ "scenarios": [
+  {
+   "name": "open settings and the bridge page",
+   "steps": [
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "settings"
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "text": "Мост для агента"
+      },
+      "timeoutMs": 5000
+     }
+    },
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "settings/mcp"
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "tag": "mcp.enabled"
+      },
+      "timeoutMs": 5000
+     }
+    },
+    {
+     "call": "ui_screenshot",
+     "args": {
+      "scale": 0.4
+     },
+     "expect": [
+      {
+       "path": "@images",
+       "eq": 1
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "ui_navigate",
+    "ui_wait",
+    "ui_screenshot"
+   ],
+   "needsUi": true,
+   "jvm": false
+  },
+  {
+   "name": "headless host returns the view tree",
+   "steps": [
+    {
+     "call": "ui_tree",
+     "args": {
+      "host": "headless",
+      "maxDepth": 4
+     },
+     "expect": [
+      {
+       "path": "$.root.class",
+       "exists": true
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "ui_tree"
+   ]
+  }
+ ]
+}

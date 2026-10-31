@@ -1,0 +1,54 @@
+{
+ "scenarios": [
+  {
+   "name": "theme can be read and set back",
+   "steps": [
+    {
+     "call": "ui_theme",
+     "expect": [
+      {
+       "path": "$.theme",
+       "exists": true
+      }
+     ],
+     "save": {
+      "t": "$.theme"
+     }
+    },
+    {
+     "call": "ui_theme",
+     "args": {
+      "mode": "$t"
+     },
+     "expect": [
+      {
+       "path": "$.theme",
+       "eq": "$t"
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "ui_theme"
+   ],
+   "jvm": false
+  },
+  {
+   "name": "hosts are described",
+   "steps": [
+    {
+     "call": "ui_hosts",
+     "expect": [
+      {
+       "path": "$.hosts.length",
+       "eq": 2
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "ui_hosts"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+{
+  "query": "погода Гомель",
+  "number_of_results": 0,
+  "results": [
+    {"url": "https://www.meteoblue.com/ru/погода/gomel", "title": "Погода Гомель — meteoblue", "content": "Прогноз погоды", "publishedDate": null, "engine": "duckduckgo", "score": 2.0},
+    {"url": "https://ru.wikipedia.org/wiki/Гомель", "title": "Гомель", "content": "Город в Белоруссии", "publishedDate": "2026-09-01T00:00:00", "engine": "wikipedia"}
+  ],
+  "answers": [],
+  "infoboxes": [],
+  "suggestions": ["погода гомель завтра"]
+}

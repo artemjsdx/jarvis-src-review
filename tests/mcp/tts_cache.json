@@ -1,0 +1,15 @@
+{"scenarios":[
+ {"name":"tts_cache stats: size and entry count",
+  "needs":["tts_cache"],
+  "steps":[{"call":"tts_cache","args":{"action":"stats"},
+    "expect":[{"path":"$.action","eq":"stats"},{"path":"$.bytes","gte":0},{"path":"$.entries","gte":0}]}]},
+ {"name":"tts_cache list returns an array of entries",
+  "needs":["tts_cache"],
+  "steps":[{"call":"tts_cache","args":{"action":"list"},"expect":[{"path":"$.list","exists":true}]}]},
+ {"name":"tts_cache rejects an unknown action",
+  "needs":["tts_cache"],
+  "steps":[{"call":"tts_cache","args":{"action":"purge"},"expectError":"INVALID_ARGS"}]},
+ {"name":"tts_cache clear empties the cache",
+  "needs":["tts_cache"],
+  "steps":[{"call":"tts_cache","args":{"action":"clear"},"expect":[{"path":"$.action","eq":"clear"},{"path":"$.entries","eq":0}]}]}
+]}

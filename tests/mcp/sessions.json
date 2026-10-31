@@ -1,0 +1,261 @@
+{
+ "scenarios": [
+  {
+   "name": "new sessions are hidden test sessions and clear_context leaves a marker",
+   "steps": [
+    {
+     "call": "chat_new",
+     "args": {
+      "title": "smoke-a-${rand}"
+     },
+     "expect": [
+      {
+       "path": "$.title",
+       "contains": "mcp-"
+      }
+     ],
+     "save": {
+      "a": "$.session",
+      "t": "$.title"
+     }
+    },
+    {
+     "call": "chat_new",
+     "args": {
+      "title": "smoke-b-${rand}"
+     },
+     "save": {
+      "b": "$.session"
+     }
+    },
+    {
+     "call": "chat_sessions",
+     "expect": [
+      {
+       "path": "$.count",
+       "gte": 2
+      },
+      {
+       "path": "@text",
+       "contains": "smoke-a-${rand}"
+      }
+     ]
+    },
+    {
+     "call": "chat_clear_context",
+     "args": {
+      "session": "$a"
+     },
+     "expect": [
+      {
+       "path": "$.cleared",
+       "eq": true
+      }
+     ]
+    },
+    {
+     "call": "chat_history",
+     "args": {
+      "session": "$a"
+     },
+     "expect": [
+      {
+       "path": "@text",
+       "contains": "контекст очищен"
+      }
+     ]
+    },
+    {
+     "call": "chat_delete",
+     "args": {
+      "session": "$a"
+     },
+     "expect": [
+      {
+       "path": "$.deleted",
+       "eq": true
+      }
+     ]
+    },
+    {
+     "call": "chat_delete",
+     "args": {
+      "session": "$b"
+     },
+     "expect": [
+      {
+       "path": "$.deleted",
+       "eq": true
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "chat_new",
+    "chat_sessions",
+    "chat_clear_context",
+    "chat_delete"
+   ]
+  },
+  {
+   "name": "unknown session is a clear error",
+   "steps": [
+    {
+     "call": "chat_history",
+     "args": {
+      "session": "no-such-session-xyz"
+     },
+     "expectError": "NOT_FOUND"
+    }
+   ],
+   "needs": [
+    "chat_history"
+   ]
+  },
+  {
+   "name": "sessions_* over rt/Sessions: create, rename, pin, search, archive, delete",
+   "needs": [
+    "sessions_create",
+    "sessions_list",
+    "sessions_rename",
+    "sessions_pin",
+    "sessions_search",
+    "sessions_archive",
+    "sessions_clear_context"
+   ],
+   "steps": [
+    {
+     "call": "sessions_create",
+     "args": {
+      "title": "mcp sess smoke"
+     },
+     "save": {
+      "s": "$.id"
+     },
+     "expect": [
+      {
+       "path": "$.id",
+       "gt": 0
+      }
+     ]
+    },
+    {
+     "call": "sessions_rename",
+     "args": {
+      "id": "$s",
+      "title": "mcp sess renamed"
+     },
+     "expect": [
+      {
+       "path": "$.id",
+       "gt": 0
+      }
+     ]
+    },
+    {
+     "call": "sessions_pin",
+     "args": {
+      "id": "$s",
+      "on": true
+     },
+     "expect": [
+      {
+       "path": "$.pinned",
+       "eq": true
+      }
+     ]
+    },
+    {
+     "call": "sessions_search",
+     "args": {
+      "query": "renamed"
+     },
+     "expect": [
+      {
+       "path": "$.sessions[0].title",
+       "contains": "renamed"
+      }
+     ]
+    },
+    {
+     "call": "sessions_archive",
+     "args": {
+      "id": "$s",
+      "on": true
+     },
+     "expect": [
+      {
+       "path": "$.archived",
+       "eq": true
+      }
+     ]
+    },
+    {
+     "call": "sessions_list",
+     "args": {
+      "includeArchived": true
+     },
+     "expect": [
+      {
+       "path": "$.sessions[0].id",
+       "gt": 0
+      }
+     ]
+    },
+    {
+     "call": "sessions_clear_context",
+     "args": {
+      "id": "$s"
+     },
+     "expect": [
+      {
+       "path": "$.id",
+       "gt": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "sessions_delete removes a session (needs mcp.allowDestructive)",
+   "requires": [
+    "destructive"
+   ],
+   "needs": [
+    "sessions_create",
+    "sessions_delete",
+    "sessions_select"
+   ],
+   "steps": [
+    {
+     "call": "sessions_create",
+     "args": {
+      "title": "mcp sess delete ${rand}"
+     },
+     "save": {
+      "s": "$.id"
+     }
+    },
+    {
+     "call": "sessions_delete",
+     "args": {
+      "id": "$s"
+     },
+     "expect": [
+      {
+       "path": "$.deleted",
+       "gt": 0
+      }
+     ]
+    },
+    {
+     "call": "sessions_select",
+     "args": {
+      "id": "$s"
+     },
+     "expectError": "NOT_FOUND"
+    }
+   ]
+  }
+ ]
+}

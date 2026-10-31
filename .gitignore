@@ -1,0 +1,20 @@
+# build outputs and heavy reproducible caches (see tools/setup.sh)
+/build/
+/.cache/
+*.class
+*.dex
+# release binaries are rebuilt from source + signing key; checksums/notes are tracked
+/releases/*.apk
+# never commit secrets
+*.jks
+*.p12
+*.keystore
+keystore.pass
+*.pass
+.env
+secrets.*
+local.properties
+__pycache__/
+__pycache__/
+*.pyc
+!tests/mcp/secrets.json

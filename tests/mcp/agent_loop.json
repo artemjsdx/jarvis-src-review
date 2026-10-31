@@ -1,0 +1,130 @@
+{
+ "scenarios": [
+  {
+   "name": "tool list, prompt and traces",
+   "steps": [
+    {
+     "call": "agent_tools_list",
+     "args": {
+      "schemas": false
+     },
+     "expect": [
+      {
+       "path": "$.count",
+       "gte": 10
+      },
+      {
+       "path": "@text",
+       "contains": "fs_read"
+      }
+     ]
+    },
+    {
+     "call": "chat_new",
+     "args": {
+      "title": "smoke-prompt-${rand}"
+     },
+     "save": {
+      "s": "$.session"
+     }
+    },
+    {
+     "call": "agent_prompt_dump",
+     "args": {
+      "session": "$s"
+     },
+     "expect": [
+      {
+       "path": "$.system",
+       "exists": true
+      },
+      {
+       "path": "$.chars.total",
+       "gt": 0
+      },
+      {
+       "path": "$.toolCount",
+       "gte": 10
+      }
+     ]
+    },
+    {
+     "call": "perf_prompt_size",
+     "args": {
+      "session": "$s"
+     },
+     "expect": [
+      {
+       "path": "$.system",
+       "gt": 0
+      }
+     ]
+    },
+    {
+     "call": "trace_recent",
+     "args": {
+      "n": 3
+     },
+     "expect": [
+      {
+       "path": "$.traces",
+       "exists": true
+      }
+     ]
+    },
+    {
+     "call": "perf_turns",
+     "args": {
+      "n": 2
+     },
+     "expect": [
+      {
+       "path": "$.count",
+       "gte": 0
+      }
+     ]
+    },
+    {
+     "call": "chat_delete",
+     "args": {
+      "session": "$s"
+     }
+    }
+   ],
+   "needs": [
+    "agent_tools_list",
+    "agent_prompt_dump",
+    "perf_prompt_size",
+    "trace_recent",
+    "perf_turns",
+    "chat_new",
+    "chat_delete"
+   ],
+   "jvm": false
+  },
+  {
+   "name": "agent tool list",
+   "steps": [
+    {
+     "call": "agent_tools_list",
+     "args": {
+      "schemas": false
+     },
+     "expect": [
+      {
+       "path": "$.count",
+       "gte": 10
+      },
+      {
+       "path": "@text",
+       "contains": "fs_read"
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "agent_tools_list"
+   ]
+  }
+ ]
+}

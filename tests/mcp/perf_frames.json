@@ -1,0 +1,19 @@
+{
+ "scenarios": [
+  {
+   "name": "perf_frames on the visible window (device only)",
+   "jvm": false,
+   "needs": ["perf_frames"],
+   "steps": [
+    {
+     "call": "perf_frames",
+     "args": {"durationMs": 2000},
+     "expect": [
+      {"path": "$.durationMs", "eq": 2000},
+      {"path": "$.frames", "gte": 0}
+     ]
+    }
+   ]
+  }
+ ]
+}

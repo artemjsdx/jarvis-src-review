@@ -1,0 +1,13 @@
+{
+  "type": "search",
+  "query": {"original": "погода Гомель"},
+  "web": {
+    "type": "search",
+    "results": [
+      {"title": "Погода в <strong>Гомеле</strong> — прогноз", "url": "https://www.gismeteo.by/weather-gomel-4944/", "description": "Прогноз погоды в <strong>Гомеле</strong> на 10 дней.", "page_age": "2026-10-28T08:00:00", "profile": {"name": "Gismeteo"}},
+      {"title": "Гомель — Википедия", "url": "https://ru.wikipedia.org/wiki/Гомель", "description": "Гомель — город в Белоруссии &amp; центр области."},
+      {"title": "Duplicate tracking", "url": "https://ru.wikipedia.org/wiki/Гомель?utm_source=brave#history", "description": "Same page with tracking."},
+      {"title": "Погода сегодня", "url": "http://pogoda.by/gomel/", "description": "Текущая погода."}
+    ]
+  }
+}

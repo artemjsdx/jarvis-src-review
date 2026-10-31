@@ -1,0 +1,64 @@
+{
+ "scenarios": [
+  {
+   "name": "headless shell opens, renders and reports frames",
+   "needs": ["ui_host_open", "ui_hosts", "ui_navigate", "ui_tree", "ui_screenshot"],
+   "needsUi": true,
+   "jvm": false,
+   "steps": [
+    {"call": "ui_host_open", "args": {"kind": "headless", "width": 1080, "height": 2340},
+     "expect": [{"path": "$.open", "eq": true}, {"path": "$.visible", "eq": false}]},
+    {"call": "ui_navigate", "args": {"host": "headless", "screen": "home"}},
+    {"call": "ui_tree", "args": {"host": "headless", "maxDepth": 14},
+     "expect": [{"path": "$.nodes", "gt": 20}, {"path": "$.host", "eq": "headless"}]},
+    {"call": "ui_screenshot", "args": {"host": "headless", "scale": 0.3},
+     "expect": [{"path": "@images", "eq": 1}]},
+    {"call": "ui_hosts",
+     "expect": [{"path": "$.hosts.length", "eq": 2}]}
+   ]
+  },
+  {
+   "name": "every dock screen renders on the headless shell",
+   "needs": ["ui_navigate", "ui_screenshot", "ui_hosts"],
+   "needsUi": true,
+   "jvm": false,
+   "steps": [
+    {"call": "ui_navigate", "args": {"host": "headless", "screen": "agent"}},
+    {"call": "ui_navigate", "args": {"host": "headless", "screen": "files"}},
+    {"call": "ui_navigate", "args": {"host": "headless", "screen": "terminal"}},
+    {"call": "ui_navigate", "args": {"host": "headless", "screen": "studio"}},
+    {"call": "ui_navigate", "args": {"host": "headless", "screen": "log"}},
+    {"call": "ui_navigate", "args": {"host": "headless", "screen": "settings"}},
+    {"call": "ui_screenshot", "args": {"host": "headless", "scale": 0.25},
+     "expect": [{"path": "@images", "eq": 1}]},
+    {"call": "ui_navigate", "args": {"host": "headless", "screen": "home"}}
+   ]
+  },
+  {
+   "name": "tap, type and key on the headless shell",
+   "needs": ["ui_tap", "ui_type", "ui_key", "ui_wait", "ui_navigate"],
+   "needsUi": true,
+   "jvm": false,
+   "steps": [
+    {"call": "ui_navigate", "args": {"host": "headless", "screen": "home"}},
+    {"call": "ui_tap", "args": {"host": "headless", "selector": {"tag": "agent"}}},
+    {"call": "ui_wait", "args": {"host": "headless", "selector": {"tag": "agent"}, "timeoutMs": 3000}},
+    {"call": "ui_navigate", "args": {"host": "headless", "screen": "terminal"}},
+    {"call": "ui_type", "args": {"host": "headless", "text": "pwd", "selector": {"class": "EditText"}}},
+    {"call": "ui_key", "args": {"host": "headless", "code": "ENTER"}},
+    {"call": "ui_key", "args": {"host": "headless", "code": "BACK"}}
+   ]
+  },
+  {
+   "name": "animation probe on a dock item of the headless shell",
+   "needs": ["ui_anim_probe", "ui_tap"],
+   "needsUi": true,
+   "jvm": false,
+   "steps": [
+    {"call": "ui_navigate", "args": {"host": "headless", "screen": "home"}},
+    {"call": "ui_anim_probe", "args": {"host": "headless", "selector": {"tag": "files"}, "property": "scaleX", "durationMs": 800},
+     "expect": [{"path": "$.frames", "gt": 2}]}
+  ]
+  }
+ ]
+}

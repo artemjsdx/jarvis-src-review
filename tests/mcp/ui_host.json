@@ -1,0 +1,108 @@
+{
+ "scenarios": [
+  {
+   "name": "hosts and screens are described",
+   "needs": [
+    "ui_hosts",
+    "ui_screens",
+    "ui_host_open"
+   ],
+   "steps": [
+    {
+     "call": "ui_hosts",
+     "expect": [
+      {
+       "path": "$.hosts.length",
+       "eq": 2
+      }
+     ]
+    },
+    {
+     "call": "ui_screens",
+     "expect": [
+      {
+       "path": "$.screens.length",
+       "gte": 6
+      }
+     ]
+    },
+    {
+     "call": "ui_host_open",
+     "args": {
+      "kind": "headless"
+     },
+     "expect": [
+      {
+       "path": "$.available",
+       "eq": true
+      },
+      {
+       "path": "$.visible",
+       "eq": false
+      }
+     ]
+    }
+   ],
+   "jvm": false
+  },
+  {
+   "name": "input on the live window",
+   "needs": [
+    "ui_navigate",
+    "ui_tap",
+    "ui_long_press",
+    "ui_swipe",
+    "ui_key",
+    "ui_wait"
+   ],
+   "needsUi": true,
+   "jvm": false,
+   "steps": [
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "settings/mcp"
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "tag": "mcp.enabled"
+      },
+      "timeoutMs": 15000
+     }
+    },
+    {
+     "call": "ui_swipe",
+     "args": {
+      "x1": 540,
+      "y1": 1600,
+      "x2": 540,
+      "y2": 800,
+      "ms": 300
+     }
+    },
+    {
+     "call": "ui_long_press",
+     "args": {
+      "x": 540,
+      "y": 200
+     }
+    },
+    {
+     "call": "ui_key",
+     "args": {
+      "code": "BACK"
+     }
+    },
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "home"
+     }
+    }
+   ]
+  }
+ ]
+}

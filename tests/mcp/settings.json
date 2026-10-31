@@ -1,0 +1,119 @@
+{
+ "scenarios": [
+  {
+   "name": "set, get, list, protected keys",
+   "steps": [
+    {
+     "call": "settings_set",
+     "args": {
+      "key": "smoke.key",
+      "value": "v-${rand}"
+     },
+     "expect": [
+      {
+       "path": "$.value",
+       "eq": "v-${rand}"
+      }
+     ]
+    },
+    {
+     "call": "settings_get",
+     "args": {
+      "key": "smoke.key"
+     },
+     "expect": [
+      {
+       "path": "$.value",
+       "eq": "v-${rand}"
+      },
+      {
+       "path": "$.set",
+       "eq": true
+      }
+     ]
+    },
+    {
+     "call": "settings_list",
+     "args": {
+      "prefix": "smoke."
+     },
+     "expect": [
+      {
+       "path": "$.count",
+       "gte": 1
+      }
+     ]
+    },
+    {
+     "call": "settings_set",
+     "args": {
+      "key": "mcp.allowDestructive",
+      "value": "true"
+     },
+     "expectError": "FORBIDDEN"
+    }
+   ],
+   "needs": [
+    "settings_set",
+    "settings_get",
+    "settings_list"
+   ]
+  },
+  {
+   "name": "reset needs allowDestructive",
+   "steps": [
+    {
+     "call": "settings_reset",
+     "args": {
+      "key": "smoke.key"
+     },
+     "expectError": "FORBIDDEN"
+    }
+   ],
+   "needs": [
+    "settings_reset"
+   ],
+   "gate": "destructive_off"
+  },
+  {
+   "name": "reset removes a key when allowed",
+   "steps": [
+    {
+     "call": "settings_set",
+     "args": {
+      "key": "smoke.key2",
+      "value": "x"
+     }
+    },
+    {
+     "call": "settings_reset",
+     "args": {
+      "key": "smoke.key2"
+     },
+     "expect": [
+      {
+       "path": "$.removed",
+       "eq": true
+      }
+     ]
+    },
+    {
+     "call": "settings_get",
+     "args": {
+      "key": "smoke.key2"
+     },
+     "expect": [
+      {
+       "path": "$.set",
+       "eq": false
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "settings_reset"
+   ],
+   "gate": "destructive_on"
+  }
+ ]
+}

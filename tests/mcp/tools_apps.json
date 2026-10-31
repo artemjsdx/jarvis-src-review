@@ -1,0 +1,26 @@
+{
+ "scenarios": [
+  {
+   "name": "app_state answers",
+   "steps": [
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "app_state",
+      "args": {}
+     },
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": true
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "agent_tool_call"
+   ],
+   "jvm": false
+  }
+ ]
+}

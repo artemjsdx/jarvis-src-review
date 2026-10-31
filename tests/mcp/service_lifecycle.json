@@ -1,0 +1,61 @@
+{
+ "scenarios": [
+  {
+   "name": "process health",
+   "steps": [
+    {
+     "call": "app_health",
+     "expect": [
+      {
+       "path": "$.memory.javaUsedMb",
+       "exists": true
+      },
+      {
+       "path": "$.threads",
+       "gt": 0
+      }
+     ]
+    },
+    {
+     "call": "perf_snapshot",
+     "expect": [
+      {
+       "path": "$.memory",
+       "exists": true
+      },
+      {
+       "path": "$.agentRunning",
+       "eq": false
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "app_health",
+    "perf_snapshot"
+   ]
+  },
+  {
+   "name": "own-process logcat",
+   "needs": [
+    "logcat_tail"
+   ],
+   "jvm": false,
+   "steps": [
+    {
+     "call": "logcat_tail",
+     "args": {
+      "n": 20,
+      "level": "I"
+     },
+     "expect": [
+      {
+       "path": "$.pid",
+       "gt": 0
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

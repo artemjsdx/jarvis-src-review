@@ -1,0 +1,9 @@
+{"scenarios":[
+ {"name":"Google (gTTS): synthesis to a WAV file with timings (phone only, needs internet)",
+  "needs":["voice_speak"],
+  "jvm":false,
+  "steps":[
+    {"call":"voice_speak","args":{"text":"Проверка связи с Google.","provider":"gtts","output":"file"},
+     "expect":[{"path":"$.provider","eq":"gtts"},{"path":"$.bytes","gte":1000},{"path":"$.totalMs","lt":30000},{"path":"$.path","exists":true}]}
+  ]}
+]}

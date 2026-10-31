@@ -1,0 +1,110 @@
+{
+ "scenarios": [
+  {
+   "name": "app_info and journal audit",
+   "steps": [
+    {
+     "call": "app_info",
+     "expect": [
+      {
+       "path": "$.package",
+       "exists": true
+      },
+      {
+       "path": "$.mcp.tools",
+       "gte": 20
+      },
+      {
+       "path": "$.uptimeMs",
+       "gt": 0
+      }
+     ]
+    },
+    {
+     "call": "journal_mark",
+     "args": {
+      "label": "smoke-${rand}"
+     },
+     "expect": [
+      {
+       "path": "$.id",
+       "gt": 0
+      }
+     ],
+     "save": {
+      "m": "$.id"
+     }
+    },
+    {
+     "call": "app_info"
+    },
+    {
+     "call": "journal_tail",
+     "args": {
+      "afterId": "$m",
+      "cat": "mcp",
+      "text": "MCP app_info"
+     },
+     "expect": [
+      {
+       "path": "$.count",
+       "gte": 1
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "app_info",
+    "journal_mark",
+    "journal_tail"
+   ]
+  },
+  {
+   "name": "every catalog feature has its tools",
+   "steps": [
+    {
+     "call": "app_capabilities",
+     "expect": [
+      {
+       "path": "$.features.length",
+       "gte": 30
+      },
+      {
+       "path": "$.broken",
+       "eq": 0
+      },
+      {
+       "path": "$.covered",
+       "gte": 20
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "app_capabilities"
+   ],
+   "jvm": false
+  },
+  {
+   "name": "capabilities report is readable",
+   "steps": [
+    {
+     "call": "app_capabilities",
+     "expect": [
+      {
+       "path": "$.features.length",
+       "gte": 30
+      },
+      {
+       "path": "$.planned",
+       "gte": 1
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "app_capabilities"
+   ]
+  }
+ ]
+}

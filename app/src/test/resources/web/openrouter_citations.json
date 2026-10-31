@@ -1,0 +1,6 @@
+{
+  "id": "gen-2",
+  "choices": [{"index": 0, "message": {"role": "assistant", "content": "Ответ [1]."}, "finish_reason": "stop"}],
+  "citations": ["https://example.org/a", "not-a-url", "https://example.org/b"],
+  "usage": {"prompt_tokens": 40, "completion_tokens": 5}
+}

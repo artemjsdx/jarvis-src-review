@@ -1,0 +1,63 @@
+{
+ "scenarios": [
+  {
+   "name": "http_fetch reads the bridge's own /health",
+   "steps": [
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "http_fetch",
+      "args": {
+       "url": "${base}/health"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.data.status",
+       "eq": 200
+      },
+      {
+       "path": "$.data.body",
+       "contains": "app"
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "agent_tool_call"
+   ]
+  },
+  {
+   "name": "web_fetch reads the bridge's own /health (device: web tools registered)",
+   "jvm": false,
+   "needs": [
+    "agent_tool_call"
+   ],
+   "steps": [
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "web_fetch",
+      "args": {
+       "url": "${base}/health"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": true
+      },
+      {
+       "path": "$.data.status",
+       "eq": 200
+      },
+      {
+       "path": "$.data.text",
+       "contains": "app"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

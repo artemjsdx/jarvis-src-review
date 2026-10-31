@@ -1,0 +1,77 @@
+{
+ "scenarios": [
+  {
+   "name": "config lists providers without keys",
+   "steps": [
+    {
+     "call": "llm_config",
+     "expect": [
+      {
+       "path": "$.provider",
+       "exists": true
+      },
+      {
+       "path": "$.providers.length",
+       "gte": 3
+      },
+      {
+       "path": "@text",
+       "contains": "hasKey"
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "llm_config"
+   ],
+   "jvm": false
+  },
+  {
+   "name": "live ping of the selected model",
+   "steps": [
+    {
+     "call": "llm_ping",
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": true
+      },
+      {
+       "path": "$.totalMs",
+       "lt": 60000
+      }
+     ],
+     "timeoutS": 100
+    }
+   ],
+   "needs": [
+    "llm_ping"
+   ],
+   "needsLlm": true,
+   "jvm": false
+  },
+  {
+   "name": "models list",
+   "steps": [
+    {
+     "call": "llm_models",
+     "args": {
+      "limit": 5
+     },
+     "expect": [
+      {
+       "path": "$.models",
+       "len_gte": 1
+      }
+     ],
+     "timeoutS": 70
+    }
+   ],
+   "needs": [
+    "llm_models"
+   ],
+   "needsLlm": true,
+   "jvm": false
+  }
+ ]
+}

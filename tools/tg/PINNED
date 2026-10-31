@@ -1,0 +1,4 @@
+# Pinned upstream for the Telegram MCP server (read by setup.sh). Re-check the README before bumping.
+REPO=https://github.com/chigwell/telegram-mcp.git
+COMMIT=49710879809c07188b226427e66b10745d83cf36
+VERSION=2.0.1

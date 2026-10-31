@@ -1,0 +1,11 @@
+{
+  "query": "погода Гомель",
+  "follow_up_questions": null,
+  "answer": null,
+  "images": [],
+  "results": [
+    {"title": "Weather Gomel", "url": "https://weather.example.com/gomel", "content": "Gomel forecast: sunny, +12.", "score": 0.91, "raw_content": null},
+    {"title": "Gomel news", "url": "https://news.example.com/gomel-today", "content": "Today in Gomel.", "score": 0.72, "published_date": "Tue, 28 Oct 2026 07:10:00 GMT"}
+  ],
+  "response_time": 1.12
+}

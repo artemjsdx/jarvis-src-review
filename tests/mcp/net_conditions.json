@@ -1,0 +1,54 @@
+{
+ "scenarios": [
+  {
+   "name": "net_throttle on, read back, off",
+   "needs": ["net_throttle", "net_state"],
+   "steps": [
+    {
+     "call": "net_throttle",
+     "args": {"latencyMs": 0, "kbpsUp": 0, "kbpsDown": 0, "lossPct": 0, "durationMs": 30000},
+     "expect": [{"path": "$.active", "eq": true}, {"path": "$.remainingMs", "gt": 0}]
+    },
+    {
+     "call": "net_state",
+     "args": {},
+     "expect": [{"path": "$.active", "eq": true}]
+    },
+    {
+     "call": "net_throttle",
+     "args": {"off": true},
+     "expect": [{"path": "$.active", "eq": false}]
+    }
+   ]
+  },
+  {
+   "name": "net_throttle rejects out-of-range values",
+   "needs": ["net_throttle"],
+   "steps": [
+    {
+     "call": "net_throttle",
+     "args": {"latencyMs": 99999},
+     "expectError": "BAD_ARGS"
+    }
+   ]
+  },
+  {
+   "name": "net_probe reaches the bridge's own /health and measures an upload",
+   "needs": ["net_probe"],
+   "steps": [
+    {
+     "call": "net_probe",
+     "args": {"hosts": ["${base}/health"], "timeoutMs": 5000, "uploadUrl": "${base}/health", "uploadKb": 16},
+     "expect": [
+      {"path": "$.okCount", "eq": 1},
+      {"path": "$.hosts[0].ok", "eq": true},
+      {"path": "$.hosts[0].status", "contains": "200"},
+      {"path": "$.hosts[0].firstByteMs", "gte": 0},
+      {"path": "$.upload.bytes", "eq": 16384},
+      {"path": "$.upload.ok", "eq": true}
+     ]
+    }
+   ]
+  }
+ ]
+}

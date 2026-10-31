@@ -1,0 +1,10 @@
+# TASK integ3 — integrate the finished branches wire1 and search1 into master-quality code, proven by CI
+
+Read first: `docs/AGENT_BRIEF.md` (Wave 3), `docs/STATE.md` (sections 3 and 4: merging rules, hot spots of conflicts), `docs/CI.md`-style notes in `docs/TASK_CI.md` (how to use `tools/ci/gh.sh`). Worktree/branch: `integ3` (created from master). Model: Haiku.
+
+## Job
+1. `git merge --no-edit wire1`, then `git merge --no-edit search1` (in your worktree, branch integ3). Resolve conflicts keeping the intent of BOTH sides (typical: both added fields/imports/settings rows/help entries; `SettingsScreen` has parallel arrays PAGES/TITLES/ICONS/HELP that must stay the same length; `Prompts.Info`; `Jarvis.java` fields; `ui/screens/AgentScreen`, `LogScreen`). Never drop a side's feature. After each merge run `bash tools/quickcheck.sh <conflicted files>` (a stale-R error about `R.drawable.*` is a known false alarm: a full build removes it).
+2. `bash build.sh debug` and `HOME=/data/data/com.termux/files/home bash tools/run-tests.sh` locally in the background (poll the log), fix what the merge broke (a lint test `UiSourceLintTest` forbids bare `new View(` spacers and `Ui.lpm(0, …)` without weight).
+3. Push the branch to the CI mirror and prove it: `source tools/ci/gh.sh; export CI_BRANCH=integ3; ci_push HEAD:refs/heads/integ3; ci_run -f emulator=true; ci_watch 30`. All three jobs (apk, jvm tests, emulator) must be green. Read failing logs with `ci_logs 150`. Download the emulator report (`ci_fetch ci-emulator`, unzip) and LOOK at the screenshots (`shots/live_*.png`): every screen must appear alone (no piled-up screens), the Settings list must show the new rows (Контекст и промпт / Триггеры if search1 added them) and the dock must look right. Fix visible defects you caused.
+4. Do NOT push to master. Do not change `.github/**` or `tools/ci/**` (another agent, ci1, works there).
+5. Report (<= 40 lines): conflicts and how you resolved each, test counts, the CI run id/url and result of each job, the PNG names you inspected and what you saw, what remains.

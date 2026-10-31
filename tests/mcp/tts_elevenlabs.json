@@ -1,0 +1,42 @@
+{
+ "scenarios": [
+  {
+   "name": "ElevenLabs: synthesis to a WAV file with timings (phone only, needs the ElevenLabs key)",
+   "needs": [
+    "voice_speak"
+   ],
+   "jvm": false,
+   "steps": [
+    {
+     "call": "voice_speak",
+     "args": {
+      "text": "Проверка связи с ElevenLabs.",
+      "provider": "elevenlabs",
+      "output": "file"
+     },
+     "expect": [
+      {
+       "path": "$.provider",
+       "eq": "elevenlabs"
+      },
+      {
+       "path": "$.bytes",
+       "gte": 1000
+      },
+      {
+       "path": "$.firstByteMs",
+       "gte": 0
+      },
+      {
+       "path": "$.totalMs",
+       "lt": 30000
+      }
+     ]
+    }
+   ],
+   "requires": [
+    "key:elevenlabs"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,614 @@
+{
+ "data": [
+  {
+   "id": "deepseek/deepseek-v4-flash",
+   "canonical_slug": "deepseek/deepseek-v4-flash-20260423",
+   "hugging_face_id": "deepseek-ai/DeepSeek-V4-Flash",
+   "name": "DeepSeek: DeepSeek V4 Flash 0423",
+   "created": 1777000666,
+   "context_length": 1048576,
+   "architecture": {
+    "modality": "text->text",
+    "input_modalities": [
+     "text"
+    ],
+    "output_modalities": [
+     "text"
+    ],
+    "tokenizer": "DeepSeek",
+    "instruct_type": null
+   },
+   "pricing": {
+    "prompt": "0.000000091",
+    "completion": "0.000000182",
+    "input_cache_read": "0.0000000182"
+   },
+   "top_provider": {
+    "context_length": 1048575,
+    "max_completion_tokens": 943717,
+    "is_moderated": false
+   },
+   "supported_parameters": [
+    "frequency_penalty",
+    "include_reasoning",
+    "logit_bias",
+    "logprobs",
+    "max_completion_tokens",
+    "max_tokens",
+    "min_p",
+    "presence_penalty",
+    "reasoning",
+    "reasoning_effort",
+    "repetition_penalty",
+    "response_format",
+    "seed",
+    "stop",
+    "structured_outputs",
+    "temperature",
+    "tool_choice",
+    "tools",
+    "top_a",
+    "top_k",
+    "top_logprobs",
+    "top_p"
+   ],
+   "knowledge_cutoff": null,
+   "expiration_date": null,
+   "benchmarks": {
+    "design_arena": [
+     {
+      "arena": "models",
+      "category": "3d",
+      "elo": 1186,
+      "win_rate": 49.3,
+      "rank": 56
+     },
+     {
+      "arena": "models",
+      "category": "asciiart",
+      "elo": 1107,
+      "win_rate": 42.7,
+      "rank": 59
+     },
+     {
+      "arena": "models",
+      "category": "codecategories",
+      "elo": 1204,
+      "win_rate": 48.9,
+      "rank": 63
+     },
+     {
+      "arena": "models",
+      "category": "dataviz",
+      "elo": 1127,
+      "win_rate": 40.7,
+      "rank": 93
+     },
+     {
+      "arena": "models",
+      "category": "gamedev",
+      "elo": 1197,
+      "win_rate": 50.2,
+      "rank": 58
+     },
+     {
+      "arena": "models",
+      "category": "svg",
+      "elo": 1152,
+      "win_rate": 48.4,
+      "rank": 47
+     },
+     {
+      "arena": "models",
+      "category": "uicomponent",
+      "elo": 1159,
+      "win_rate": 44.7,
+      "rank": 76
+     },
+     {
+      "arena": "models",
+      "category": "website",
+      "elo": 1206,
+      "win_rate": 49.1,
+      "rank": 63
+     }
+    ],
+    "artificial_analysis": {
+     "intelligence_index": null,
+     "coding_index": 56.2,
+     "agentic_index": 22.2
+    }
+   },
+   "reasoning": {
+    "mandatory": false,
+    "supported_efforts": [
+     "xhigh",
+     "high",
+     "none"
+    ],
+    "default_effort": "high"
+   }
+  },
+  {
+   "id": "inception/mercury-3",
+   "canonical_slug": "inception/mercury-3-20261019",
+   "hugging_face_id": null,
+   "name": "Inception: Mercury 3",
+   "created": 1792158337,
+   "context_length": 1000000,
+   "architecture": {
+    "modality": "text->text",
+    "input_modalities": [
+     "text"
+    ],
+    "output_modalities": [
+     "text"
+    ],
+    "tokenizer": "Other",
+    "instruct_type": null
+   },
+   "pricing": {
+    "prompt": "0.0000001",
+    "completion": "0.00000035",
+    "input_cache_read": "0.00000001"
+   },
+   "top_provider": {
+    "context_length": 1000000,
+    "max_completion_tokens": 131072,
+    "is_moderated": false
+   },
+   "supported_parameters": [
+    "include_reasoning",
+    "max_tokens",
+    "reasoning",
+    "reasoning_effort",
+    "response_format",
+    "stop",
+    "structured_outputs",
+    "temperature",
+    "tool_choice",
+    "tools"
+   ],
+   "knowledge_cutoff": null,
+   "expiration_date": null,
+   "benchmarks": {
+    "design_arena": [
+     {
+      "arena": "models",
+      "category": "codecategories",
+      "elo": 1229,
+      "win_rate": 45.2,
+      "rank": 52
+     },
+     {
+      "arena": "models",
+      "category": "dataviz",
+      "elo": 1207,
+      "win_rate": 45.5,
+      "rank": 56
+     },
+     {
+      "arena": "models",
+      "category": "gamedev",
+      "elo": 1220,
+      "win_rate": 44.2,
+      "rank": 48
+     },
+     {
+      "arena": "models",
+      "category": "svg",
+      "elo": 1179,
+      "win_rate": 43.2,
+      "rank": 38
+     },
+     {
+      "arena": "models",
+      "category": "uicomponent",
+      "elo": 1232,
+      "win_rate": 45.6,
+      "rank": 48
+     },
+     {
+      "arena": "models",
+      "category": "website",
+      "elo": 1229,
+      "win_rate": 45.4,
+      "rank": 54
+     }
+    ]
+   },
+   "reasoning": {
+    "mandatory": false,
+    "default_enabled": true,
+    "supported_efforts": [
+     "high",
+     "medium",
+     "low",
+     "none"
+    ],
+    "default_effort": "medium"
+   }
+  },
+  {
+   "id": "deepseek/deepseek-chat",
+   "canonical_slug": "deepseek/deepseek-chat-v3",
+   "hugging_face_id": "deepseek-ai/DeepSeek-V3",
+   "name": "DeepSeek: DeepSeek V3",
+   "created": 1735241320,
+   "context_length": 163840,
+   "architecture": {
+    "modality": "text->text",
+    "input_modalities": [
+     "text"
+    ],
+    "output_modalities": [
+     "text"
+    ],
+    "tokenizer": "DeepSeek",
+    "instruct_type": null
+   },
+   "pricing": {
+    "prompt": "0.0000002574",
+    "completion": "0.0000010287"
+   },
+   "top_provider": {
+    "context_length": 128000,
+    "max_completion_tokens": 16000,
+    "is_moderated": false
+   },
+   "supported_parameters": [
+    "frequency_penalty",
+    "logit_bias",
+    "max_tokens",
+    "min_p",
+    "presence_penalty",
+    "repetition_penalty",
+    "response_format",
+    "seed",
+    "stop",
+    "structured_outputs",
+    "temperature",
+    "tool_choice",
+    "tools",
+    "top_k",
+    "top_p"
+   ],
+   "knowledge_cutoff": "2024-07-31",
+   "expiration_date": null,
+   "benchmarks": {
+    "design_arena": [
+     {
+      "arena": "models",
+      "category": "3d",
+      "elo": 1084,
+      "win_rate": 50.5,
+      "rank": 92
+     },
+     {
+      "arena": "models",
+      "category": "codecategories",
+      "elo": 1106,
+      "win_rate": 48.4,
+      "rank": 106
+     },
+     {
+      "arena": "models",
+      "category": "dataviz",
+      "elo": 1089,
+      "win_rate": 50,
+      "rank": 104
+     },
+     {
+      "arena": "models",
+      "category": "gamedev",
+      "elo": 1053,
+      "win_rate": 43.7,
+      "rank": 113
+     },
+     {
+      "arena": "models",
+      "category": "svg",
+      "elo": 973,
+      "win_rate": 38.8,
+      "rank": 94
+     },
+     {
+      "arena": "models",
+      "category": "uicomponent",
+      "elo": 1088,
+      "win_rate": 52.7,
+      "rank": 102
+     },
+     {
+      "arena": "models",
+      "category": "website",
+      "elo": 1118,
+      "win_rate": 48.5,
+      "rank": 105
+     }
+    ]
+   }
+  },
+  {
+   "id": "particle-ai/particle-1",
+   "canonical_slug": "particle-ai/particle-1-20261027",
+   "hugging_face_id": null,
+   "name": "Particle AI: Particle-1",
+   "created": 1793207893,
+   "context_length": 1048576,
+   "architecture": {
+    "modality": "text+image->text",
+    "input_modalities": [
+     "text",
+     "image"
+    ],
+    "output_modalities": [
+     "text"
+    ],
+    "tokenizer": "Other",
+    "instruct_type": null
+   },
+   "pricing": {
+    "prompt": "0.00000025",
+    "completion": "0.000001",
+    "input_cache_read": "0.00000003"
+   },
+   "top_provider": {
+    "context_length": 1048576,
+    "max_completion_tokens": 131072,
+    "is_moderated": false
+   },
+   "supported_parameters": [
+    "frequency_penalty",
+    "include_reasoning",
+    "logprobs",
+    "max_tokens",
+    "min_p",
+    "presence_penalty",
+    "reasoning",
+    "reasoning_effort",
+    "repetition_penalty",
+    "response_format",
+    "seed",
+    "stop",
+    "structured_outputs",
+    "temperature",
+    "tool_choice",
+    "tools",
+    "top_k",
+    "top_logprobs",
+    "top_p"
+   ],
+   "knowledge_cutoff": null,
+   "expiration_date": null,
+   "reasoning": {
+    "mandatory": false,
+    "default_enabled": true,
+    "supported_efforts": [
+     "max",
+     "xhigh",
+     "high",
+     "medium",
+     "low",
+     "minimal",
+     "none"
+    ],
+    "default_effort": "high"
+   }
+  },
+  {
+   "id": "openai/gpt-4o-mini",
+   "canonical_slug": "openai/gpt-4o-mini",
+   "hugging_face_id": null,
+   "name": "OpenAI: GPT-4o-mini",
+   "created": 1721260800,
+   "context_length": 128000,
+   "architecture": {
+    "modality": "text+image+file->text",
+    "input_modalities": [
+     "text",
+     "image",
+     "file"
+    ],
+    "output_modalities": [
+     "text"
+    ],
+    "tokenizer": "GPT",
+    "instruct_type": null
+   },
+   "pricing": {
+    "prompt": "0.00000015",
+    "completion": "0.0000006",
+    "input_cache_read": "0.000000075"
+   },
+   "top_provider": {
+    "context_length": 128000,
+    "max_completion_tokens": 16384,
+    "is_moderated": true
+   },
+   "supported_parameters": [
+    "frequency_penalty",
+    "logit_bias",
+    "logprobs",
+    "max_completion_tokens",
+    "max_tokens",
+    "prediction",
+    "presence_penalty",
+    "response_format",
+    "seed",
+    "stop",
+    "structured_outputs",
+    "temperature",
+    "tool_choice",
+    "tools",
+    "top_logprobs",
+    "top_p",
+    "web_search_options"
+   ],
+   "knowledge_cutoff": "2023-10-31",
+   "expiration_date": null,
+   "benchmarks": {
+    "design_arena": [],
+    "artificial_analysis": {
+     "intelligence_index": null,
+     "coding_index": 11.4,
+     "agentic_index": null
+    }
+   }
+  },
+  {
+   "id": "deepseek/deepseek-r1-0528",
+   "canonical_slug": "deepseek/deepseek-r1-0528",
+   "hugging_face_id": "deepseek-ai/DeepSeek-R1-0528",
+   "name": "DeepSeek: R1 0528",
+   "created": 1748455170,
+   "context_length": 163840,
+   "architecture": {
+    "modality": "text->text",
+    "input_modalities": [
+     "text"
+    ],
+    "output_modalities": [
+     "text"
+    ],
+    "tokenizer": "DeepSeek",
+    "instruct_type": "deepseek-r1"
+   },
+   "pricing": {
+    "prompt": "0.0000005",
+    "completion": "0.00000215",
+    "input_cache_read": "0.00000035"
+   },
+   "top_provider": {
+    "context_length": 163840,
+    "max_completion_tokens": 32768,
+    "is_moderated": false
+   },
+   "supported_parameters": [
+    "frequency_penalty",
+    "include_reasoning",
+    "logit_bias",
+    "logprobs",
+    "max_tokens",
+    "min_p",
+    "presence_penalty",
+    "reasoning",
+    "repetition_penalty",
+    "response_format",
+    "seed",
+    "stop",
+    "structured_outputs",
+    "temperature",
+    "tool_choice",
+    "tools",
+    "top_k",
+    "top_logprobs",
+    "top_p"
+   ],
+   "knowledge_cutoff": "2025-03-31",
+   "expiration_date": null,
+   "benchmarks": {
+    "design_arena": [
+     {
+      "arena": "models",
+      "category": "3d",
+      "elo": 1108,
+      "win_rate": 53.3,
+      "rank": 88
+     },
+     {
+      "arena": "models",
+      "category": "codecategories",
+      "elo": 1137,
+      "win_rate": 52.6,
+      "rank": 97
+     },
+     {
+      "arena": "models",
+      "category": "dataviz",
+      "elo": 1182,
+      "win_rate": 60.9,
+      "rank": 65
+     },
+     {
+      "arena": "models",
+      "category": "gamedev",
+      "elo": 1097,
+      "win_rate": 49.3,
+      "rank": 99
+     },
+     {
+      "arena": "models",
+      "category": "svg",
+      "elo": 1035,
+      "win_rate": 48.7,
+      "rank": 81
+     },
+     {
+      "arena": "models",
+      "category": "uicomponent",
+      "elo": 1097,
+      "win_rate": 54.9,
+      "rank": 96
+     },
+     {
+      "arena": "models",
+      "category": "website",
+      "elo": 1149,
+      "win_rate": 52.7,
+      "rank": 94
+     }
+    ]
+   },
+   "reasoning": {
+    "mandatory": true
+   }
+  },
+  {
+   "id": "recursive/flint-v1.0:free",
+   "canonical_slug": "recursive/flint-v1.0-20261021",
+   "hugging_face_id": "RecursiveSI/flint",
+   "name": "Recursive: Flint (free)",
+   "created": 1792622765,
+   "context_length": 262144,
+   "architecture": {
+    "modality": "text->text",
+    "input_modalities": [
+     "text"
+    ],
+    "output_modalities": [
+     "text"
+    ],
+    "tokenizer": "Other",
+    "instruct_type": null
+   },
+   "pricing": {
+    "prompt": "0",
+    "completion": "0"
+   },
+   "top_provider": {
+    "context_length": 262144,
+    "max_completion_tokens": 235929,
+    "is_moderated": false
+   },
+   "supported_parameters": [
+    "include_reasoning",
+    "logprobs",
+    "max_tokens",
+    "reasoning",
+    "response_format",
+    "seed",
+    "stop",
+    "temperature",
+    "tools",
+    "top_logprobs",
+    "top_p"
+   ],
+   "knowledge_cutoff": null,
+   "expiration_date": null,
+   "reasoning": {
+    "mandatory": true
+   }
+  }
+ ]
+}

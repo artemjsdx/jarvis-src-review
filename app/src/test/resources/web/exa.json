@@ -1,0 +1,9 @@
+{
+  "requestId": "abc123",
+  "resolvedSearchType": "neural",
+  "results": [
+    {"id": "https://docs.example.dev/guide", "title": "Guide", "url": "https://docs.example.dev/guide", "publishedDate": "2026-10-20T00:00:00.000Z", "author": null, "text": "A short guide to the API.", "score": 0.5},
+    {"id": "https://blog.example.dev/post", "title": "Post", "url": "https://blog.example.dev/post", "publishedDate": null, "author": "anon", "text": "Post body."}
+  ],
+  "costDollars": {"total": 0.007}
+}

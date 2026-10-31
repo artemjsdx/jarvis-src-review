@@ -1,0 +1,61 @@
+{
+ "scenarios": [
+  {
+   "name": "mark and tail",
+   "steps": [
+    {
+     "call": "journal_mark",
+     "args": {
+      "label": "m-${rand}"
+     },
+     "save": {
+      "m": "$.id"
+     }
+    },
+    {
+     "call": "journal_tail",
+     "args": {
+      "afterId": "$m",
+      "n": 20
+     },
+     "expect": [
+      {
+       "path": "$.rows",
+       "exists": true
+      }
+     ]
+    },
+    {
+     "call": "journal_tail",
+     "args": {
+      "n": 5,
+      "level": "WARN"
+     },
+     "expect": [
+      {
+       "path": "$.count",
+       "gte": 0
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "journal_mark",
+    "journal_tail"
+   ]
+  },
+  {
+   "name": "clear needs allowDestructive",
+   "steps": [
+    {
+     "call": "journal_clear",
+     "expectError": "FORBIDDEN"
+    }
+   ],
+   "needs": [
+    "journal_clear"
+   ],
+   "gate": "destructive_off"
+  }
+ ]
+}

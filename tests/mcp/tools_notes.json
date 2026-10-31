@@ -1,0 +1,62 @@
+{
+ "scenarios": [
+  {
+   "name": "note_create writes a markdown file",
+   "steps": [
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "note_create",
+      "args": {
+       "title": "smoke-${rand}",
+       "text": "проверка моста"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": true
+      }
+     ],
+     "save": {
+      "p": "$.data.path"
+     }
+    },
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "fs_read",
+      "args": {
+       "path": "$p"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.data.content",
+       "contains": "проверка моста"
+      }
+     ]
+    },
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "fs_delete",
+      "args": {
+       "path": "$p"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": true
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "agent_tool_call"
+   ],
+   "jvm": false
+  }
+ ]
+}

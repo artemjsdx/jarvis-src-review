@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material parent (not DeviceDefault) so vendor skins cannot re-tint controls. All accent
+         channels are lavender: no blue ripple/selection/handles anywhere in the app. -->
+    <style name="Theme.Jarvis" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/jv_black</item>
+        <item name="android:statusBarColor">@color/jv_transparent</item>
+        <item name="android:navigationBarColor">@color/jv_transparent</item>
+        <item name="android:colorPrimary">@color/jv_black</item>
+        <item name="android:colorPrimaryDark">@color/jv_black</item>
+        <item name="android:colorAccent">@color/jv_lavender</item>
+        <item name="android:colorControlActivated">@color/jv_lavender</item>
+        <item name="android:colorControlHighlight">@color/jv_ripple</item>
+        <item name="android:colorControlNormal">@color/jv_lavender</item>
+        <item name="android:textColorHighlight">#66B9A6FF</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+</resources>

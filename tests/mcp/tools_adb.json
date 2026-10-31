@@ -1,0 +1,22 @@
+{
+ "scenarios": [
+  {
+   "name": "adb status is readable",
+   "steps": [
+    {
+     "call": "adb_status",
+     "expect": [
+      {
+       "path": "$.ok",
+       "exists": true
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "adb_status"
+   ],
+   "jvm": false
+  }
+ ]
+}

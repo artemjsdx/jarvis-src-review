@@ -1,0 +1,105 @@
+{
+ "scenarios": [
+  {
+   "name": "perf_summary: medians split by source (seeded turns, --jvm only)",
+   "needs": [
+    "perf_summary",
+    "trace_recent",
+    "trace_current"
+   ],
+   "steps": [
+    {
+     "call": "perf_summary",
+     "args": {
+      "n": 10
+     },
+     "expect": [
+      {
+       "path": "$.turns",
+       "eq": 2
+      },
+      {
+       "path": "$.voice.turns",
+       "eq": 1
+      },
+      {
+       "path": "$.text.turns",
+       "eq": 1
+      },
+      {
+       "path": "$.voice.to_sound.n",
+       "eq": 1
+      },
+      {
+       "path": "$.voice.llm_ttft.n",
+       "eq": 1
+      },
+      {
+       "path": "$.all.to_sound.medianMs",
+       "gte": 0
+      }
+     ]
+    },
+    {
+     "call": "trace_recent",
+     "args": {
+      "n": 5
+     },
+     "expect": [
+      {
+       "path": "$.count",
+       "eq": 2
+      },
+      {
+       "path": "$.traces[0].source",
+       "eq": "voice"
+      },
+      {
+       "path": "$.traces[1].source",
+       "eq": "text"
+      }
+     ]
+    },
+    {
+     "call": "trace_current",
+     "args": {}
+    }
+   ],
+   "requires": [
+    "seeded-turns"
+   ]
+  },
+  {
+   "name": "perf_summary: shape of the summary without turns",
+   "needs": [
+    "perf_summary"
+   ],
+   "steps": [
+    {
+     "call": "perf_summary",
+     "args": {
+      "n": 10
+     },
+     "expect": [
+      {
+       "path": "$.turns",
+       "gte": 0
+      },
+      {
+       "path": "$.all.turns",
+       "gte": 0
+      },
+      {
+       "path": "$.voice.turns",
+       "gte": 0
+      },
+      {
+       "path": "$.text.turns",
+       "gte": 0
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

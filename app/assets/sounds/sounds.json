@@ -1,0 +1,142 @@
+[
+ {
+  "id": "crystal",
+  "title_ru": "Хрусталь",
+  "family": "crystal/glass chimes",
+  "start": "crystal_start.ogg",
+  "stop": "crystal_stop.ogg",
+  "error": "crystal_error.ogg",
+  "durationMs": {
+   "start": 320,
+   "stop": 380,
+   "error": 420
+  },
+  "license": "generated (CC0)"
+ },
+ {
+  "id": "marimba",
+  "title_ru": "Тёплая маримба",
+  "family": "wooden marimba",
+  "start": "marimba_start.ogg",
+  "stop": "marimba_stop.ogg",
+  "error": "marimba_error.ogg",
+  "durationMs": {
+   "start": 260,
+   "stop": 300,
+   "error": 400
+  },
+  "license": "generated (CC0)"
+ },
+ {
+  "id": "water",
+  "title_ru": "Капля",
+  "family": "water drop",
+  "start": "water_start.ogg",
+  "stop": "water_stop.ogg",
+  "error": "water_error.ogg",
+  "durationMs": {
+   "start": 200,
+   "stop": 260,
+   "error": 340
+  },
+  "license": "generated (CC0)"
+ },
+ {
+  "id": "bell",
+  "title_ru": "Мягкий колокольчик",
+  "family": "soft bell",
+  "start": "bell_start.ogg",
+  "stop": "bell_stop.ogg",
+  "error": "bell_error.ogg",
+  "durationMs": {
+   "start": 350,
+   "stop": 400,
+   "error": 450
+  },
+  "license": "generated (CC0)"
+ },
+ {
+  "id": "breath",
+  "title_ru": "Лёгкое дыхание",
+  "family": "airy breath",
+  "start": "breath_start.ogg",
+  "stop": "breath_stop.ogg",
+  "error": "breath_error.ogg",
+  "durationMs": {
+   "start": 300,
+   "stop": 360,
+   "error": 400
+  },
+  "license": "generated (CC0)"
+ },
+ {
+  "id": "piano",
+  "title_ru": "Фетровое пианино",
+  "family": "felt piano",
+  "start": "piano_start.ogg",
+  "stop": "piano_stop.ogg",
+  "error": "piano_error.ogg",
+  "durationMs": {
+   "start": 300,
+   "stop": 380,
+   "error": 450
+  },
+  "license": "generated (CC0)"
+ },
+ {
+  "id": "musicbox",
+  "title_ru": "Музыкальная шкатулка",
+  "family": "music box",
+  "start": "musicbox_start.ogg",
+  "stop": "musicbox_stop.ogg",
+  "error": "musicbox_error.ogg",
+  "durationMs": {
+   "start": 300,
+   "stop": 380,
+   "error": 420
+  },
+  "license": "generated (CC0)"
+ },
+ {
+  "id": "harp",
+  "title_ru": "Арфа",
+  "family": "harp pluck",
+  "start": "harp_start.ogg",
+  "stop": "harp_stop.ogg",
+  "error": "harp_error.ogg",
+  "durationMs": {
+   "start": 300,
+   "stop": 380,
+   "error": 420
+  },
+  "license": "generated (CC0)"
+ },
+ {
+  "id": "bowed",
+  "title_ru": "Смычок по стеклу",
+  "family": "bowed glass",
+  "start": "bowed_start.ogg",
+  "stop": "bowed_stop.ogg",
+  "error": "bowed_error.ogg",
+  "durationMs": {
+   "start": 340,
+   "stop": 400,
+   "error": 440
+  },
+  "license": "generated (CC0)"
+ },
+ {
+  "id": "click",
+  "title_ru": "Тихий щелчок",
+  "family": "silent click (minimal)",
+  "start": "click_start.ogg",
+  "stop": "click_stop.ogg",
+  "error": "click_error.ogg",
+  "durationMs": {
+   "start": 130,
+   "stop": 160,
+   "error": 220
+  },
+  "license": "generated (CC0)"
+ }
+]

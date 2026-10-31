@@ -1,0 +1,14 @@
+{
+  "id": "gen-1",
+  "model": "deepseek/deepseek-v4.1-flash",
+  "object": "chat.completion",
+  "choices": [
+    {"index": 0, "finish_reason": "stop",
+     "message": {"role": "assistant", "content": "Гомель сегодня: солнечно, около +12 °C [1][2].",
+       "annotations": [
+         {"type": "url_citation", "url_citation": {"url": "https://www.gismeteo.by/weather-gomel-4944/?utm_medium=cpc", "title": "Погода в Гомеле", "content": "Прогноз на 10 дней", "start_index": 0, "end_index": 10}},
+         {"type": "url_citation", "url_citation": {"url": "https://ru.wikipedia.org/wiki/Гомель", "title": "Гомель — Википедия", "content": "Город", "start_index": 11, "end_index": 20}}
+       ]}}
+  ],
+  "usage": {"prompt_tokens": 512, "completion_tokens": 31, "total_tokens": 543, "cost": 0.0000421}
+}

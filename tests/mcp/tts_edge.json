@@ -1,0 +1,21 @@
+{"scenarios":[
+ {"name":"Edge: synthesis to a WAV file with timings, then the same phrase from the cache (phone only)",
+  "needs":["voice_speak"],
+  "jvm":false,
+  "steps":[
+    {"call":"voice_speak","args":{"text":"Проверка связи с Edge.","provider":"edge","output":"file"},
+     "expect":[{"path":"$.provider","eq":"edge"},{"path":"$.bytes","gte":1000},{"path":"$.durationMs","gte":300},{"path":"$.totalMs","lt":20000},{"path":"$.voiceApplied","eq":false}]},
+    {"call":"voice_speak","args":{"text":"Проверка связи с Edge.","provider":"edge","output":"file"},
+     "expect":[{"path":"$.provider","eq":"edge"},{"path":"$.cacheHit","eq":true}]}
+  ]},
+ {"name":"voice_speak rejects an empty text",
+  "needs":["voice_speak"],
+  "steps":[{"call":"voice_speak","args":{"text":"   "},"expectError":"INVALID_ARGS"}]},
+ {"name":"voice_speak rejects speed out of range",
+  "needs":["voice_speak"],
+  "steps":[{"call":"voice_speak","args":{"text":"Тест","speed":5},"expectError":"INVALID_ARGS"}]},
+ {"name":"voice_speak to the speaker needs mcp.allowAudio",
+  "needs":["voice_speak"],
+  "gate":"audio_off",
+  "steps":[{"call":"voice_speak","args":{"text":"Тест","output":"speaker"},"expectError":"FORBIDDEN"}]}
+]}

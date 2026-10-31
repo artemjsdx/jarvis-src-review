@@ -1,0 +1,64 @@
+{
+ "scenarios": [
+  {
+   "name": "echo through the agent shell and shell_exec",
+   "steps": [
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "shell_exec",
+      "args": {
+       "command": "echo smoke-${rand}"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.data.stdout",
+       "contains": "smoke-${rand}"
+      },
+      {
+       "path": "$.data.exit_code",
+       "eq": 0
+      }
+     ]
+    },
+    {
+     "call": "shell_exec",
+     "args": {
+      "cmd": "echo bridge-${rand}"
+     },
+     "expect": [
+      {
+       "path": "$.stdout",
+       "contains": "bridge-${rand}"
+      },
+      {
+       "path": "$.exitCode",
+       "eq": 0
+      }
+     ]
+    },
+    {
+     "call": "shell_exec",
+     "args": {
+      "cmd": "exit 3"
+     },
+     "expect": [
+      {
+       "path": "$.exitCode",
+       "eq": 3
+      },
+      {
+       "path": "$.ok",
+       "eq": false
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "agent_tool_call",
+    "shell_exec"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,26 @@
+{
+ "scenarios": [
+  {
+   "name": "player status answers",
+   "steps": [
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "music_status",
+      "args": {}
+     },
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": true
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "agent_tool_call"
+   ],
+   "jvm": false
+  }
+ ]
+}

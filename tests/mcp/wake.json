@@ -1,0 +1,22 @@
+{"scenarios":[
+ {"name":"wake_state reports the enabled flag and the wake phrases",
+  "needs":["wake_state"],
+  "steps":[{"call":"wake_state","args":{},"expect":[{"path":"$.enabled","exists":true},{"path":"$.phrases","exists":true}]}]},
+ {"name":"wake_arm off is always allowed",
+  "needs":["wake_arm"],
+  "steps":[{"call":"wake_arm","args":{"on":false},"expect":[{"path":"$.enabled","eq":false}]}]},
+ {"name":"wake_arm on needs mcp.allowAudio",
+  "needs":["wake_arm"],
+  "gate":"audio_off",
+  "steps":[{"call":"wake_arm","args":{"on":true},"expectError":"FORBIDDEN"}]},
+ {"name":"wake_arm needs the on flag",
+  "needs":["wake_arm"],
+  "steps":[{"call":"wake_arm","args":{},"expectError":"INVALID_ARGS"}]},
+ {"name":"spoken wake phrase with a command reaches the agent (phone only, needs LLM key)",
+  "needs":["voice_speak","voice_inject"],
+  "jvm":false,
+  "needsLlm":true,
+  "steps":[{"call":"voice_speak","args":{"text":"Джарвис, который час?","provider":"gtts","output":"file"},"save":{"p":"$.path"}},
+    {"call":"voice_inject","args":{"path":"$p","mode":"wake"},
+     "expect":[{"path":"$.transcript","contains":"час","ci":true},{"path":"$.turn.complete","exists":true},{"path":"$.bypassed","exists":true}]}]}
+]}

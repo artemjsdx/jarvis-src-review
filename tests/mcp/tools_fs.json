@@ -1,0 +1,160 @@
+{
+ "scenarios": [
+  {
+   "name": "write, read, list, delete through the agent tools",
+   "steps": [
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "fs_write",
+      "args": {
+       "path": "work/smoke-${rand}.txt",
+       "content": "привет, мост"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": true
+      }
+     ]
+    },
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "fs_read",
+      "args": {
+       "path": "work/smoke-${rand}.txt"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.data.content",
+       "eq": "привет, мост"
+      }
+     ]
+    },
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "fs_list",
+      "args": {
+       "path": "work"
+      }
+     },
+     "expect": [
+      {
+       "path": "@text",
+       "contains": "smoke-${rand}.txt"
+      }
+     ]
+    },
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "fs_delete",
+      "args": {
+       "path": "work/smoke-${rand}.txt"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": true
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "agent_tool_call"
+   ]
+  },
+  {
+   "name": "files_* tools see the same sandbox",
+   "steps": [
+    {
+     "call": "files_write",
+     "args": {
+      "path": "work/smoke2-${rand}.txt",
+      "text": "abc"
+     },
+     "expect": [
+      {
+       "path": "$.bytes",
+       "eq": 3
+      }
+     ]
+    },
+    {
+     "call": "files_read",
+     "args": {
+      "path": "work/smoke2-${rand}.txt"
+     },
+     "expect": [
+      {
+       "path": "$.text",
+       "eq": "abc"
+      }
+     ]
+    },
+    {
+     "call": "files_list",
+     "args": {
+      "path": "work"
+     },
+     "expect": [
+      {
+       "path": "@text",
+       "contains": "smoke2-${rand}.txt"
+      }
+     ]
+    },
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "fs_delete",
+      "args": {
+       "path": "work/smoke2-${rand}.txt"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": true
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "files_write",
+    "files_read",
+    "files_list",
+    "agent_tool_call"
+   ]
+  },
+  {
+   "name": "a path outside the sandbox is refused",
+   "steps": [
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "fs_read",
+      "args": {
+       "path": "/data/data/com.termux/files/usr/etc/passwd"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": false
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "agent_tool_call"
+   ],
+   "jvm": false
+  }
+ ]
+}

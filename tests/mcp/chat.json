@@ -1,0 +1,123 @@
+{
+ "scenarios": [
+  {
+   "name": "one-word reply, history and cleanup",
+   "steps": [
+    {
+     "call": "chat_new",
+     "args": {
+      "title": "smoke-chat-${rand}"
+     },
+     "save": {
+      "s": "$.session"
+     }
+    },
+    {
+     "call": "chat_send",
+     "args": {
+      "session": "$s",
+      "text": "Ответь одним словом: ок",
+      "wait": true,
+      "timeoutMs": 90000
+     },
+     "expect": [
+      {
+       "path": "$.reply",
+       "contains": "ок",
+       "ci": true
+      },
+      {
+       "path": "$.timings.totalMs",
+       "lt": 120000
+      }
+     ],
+     "timeoutS": 130
+    },
+    {
+     "call": "chat_history",
+     "args": {
+      "session": "$s"
+     },
+     "expect": [
+      {
+       "path": "$.items",
+       "len_gte": 2
+      }
+     ]
+    },
+    {
+     "call": "chat_state",
+     "expect": [
+      {
+       "path": "$.agentRunning",
+       "eq": false
+      }
+     ]
+    },
+    {
+     "call": "chat_wait_idle",
+     "args": {
+      "timeoutMs": 5000
+     },
+     "expect": [
+      {
+       "path": "$.idle",
+       "eq": true
+      }
+     ]
+    },
+    {
+     "call": "chat_delete",
+     "args": {
+      "session": "$s"
+     },
+     "expect": [
+      {
+       "path": "$.deleted",
+       "eq": true
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "chat_new",
+    "chat_send"
+   ],
+   "needsLlm": true
+  },
+  {
+   "name": "cancel when idle is harmless",
+   "steps": [
+    {
+     "call": "chat_cancel",
+     "expect": [
+      {
+       "path": "$.wasRunning",
+       "exists": true
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "chat_cancel"
+   ]
+  },
+  {
+   "name": "voice source is refused without allowAudio",
+   "steps": [
+    {
+     "call": "chat_send",
+     "args": {
+      "text": "привет",
+      "source": "voice"
+     },
+     "expectError": "FORBIDDEN"
+    }
+   ],
+   "needs": [
+    "chat_send"
+   ],
+   "gate": "audio_off"
+  }
+ ]
+}

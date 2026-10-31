@@ -1,0 +1,82 @@
+{
+ "scenarios": [
+  {
+   "name": "schema and integrity",
+   "steps": [
+    {
+     "call": "db_schema",
+     "expect": [
+      {
+       "path": "$.tables.length",
+       "gte": 4
+      },
+      {
+       "path": "@text",
+       "contains": "item"
+      }
+     ]
+    },
+    {
+     "call": "db_query",
+     "args": {
+      "sql": "PRAGMA integrity_check"
+     },
+     "expect": [
+      {
+       "path": "$.rows[0][0]",
+       "eq": "ok"
+      }
+     ]
+    },
+    {
+     "call": "db_query",
+     "args": {
+      "sql": "SELECT COUNT(*) FROM conv"
+     },
+     "expect": [
+      {
+       "path": "$.count",
+       "eq": 1
+      }
+     ]
+    },
+    {
+     "call": "db_query",
+     "args": {
+      "sql": "DELETE FROM conv"
+     },
+     "expectError": "FORBIDDEN"
+    },
+    {
+     "call": "db_query",
+     "args": {
+      "sql": "SELECT 1; DROP TABLE conv"
+     },
+     "expectError": "FORBIDDEN"
+    }
+   ],
+   "needs": [
+    "db_schema",
+    "db_query"
+   ],
+   "jvm": false
+  },
+  {
+   "name": "db_exec needs allowDestructive",
+   "steps": [
+    {
+     "call": "db_exec",
+     "args": {
+      "sql": "DELETE FROM log WHERE id < 0"
+     },
+     "expectError": "FORBIDDEN"
+    }
+   ],
+   "needs": [
+    "db_exec"
+   ],
+   "gate": "destructive_off",
+   "jvm": false
+  }
+ ]
+}

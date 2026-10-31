@@ -1,0 +1,58 @@
+{
+ "scenarios": [
+  {
+   "name": "save, search, get, delete",
+   "steps": [
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "memory_save",
+      "args": {
+       "key": "smoke-${rand}",
+       "value": "значение-${rand}"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": true
+      }
+     ]
+    },
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "memory_search",
+      "args": {
+       "query": "smoke-${rand}"
+      }
+     },
+     "expect": [
+      {
+       "path": "@text",
+       "contains": "значение-${rand}"
+      }
+     ]
+    },
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "memory_delete",
+      "args": {
+       "key": "smoke-${rand}"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": true
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "agent_tool_call"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,988 @@
+{
+ "scenarios": [
+  {
+   "name": "chat screens: short exchange (dark)",
+   "requires": [
+    "destructive"
+   ],
+   "needs": [
+    "chat_seed",
+    "perf_frames",
+    "sessions_create",
+    "ui_navigate",
+    "ui_screenshot"
+   ],
+   "steps": [
+    {
+     "call": "ui_theme",
+     "args": {
+      "mode": "dark"
+     }
+    },
+    {
+     "call": "sessions_create",
+     "args": {
+      "title": "Шот: обмен"
+     },
+     "save": {
+      "sid": "$.id"
+     }
+    },
+    {
+     "call": "chat_seed",
+     "args": {
+      "session": "${sid}",
+      "items": [
+       {
+        "kind": "user",
+        "text": "Какая сегодня погода в Минске?"
+       },
+       {
+        "kind": "assistant",
+        "text": "Сейчас +12 °C, облачно, без осадков. Вечером похолодает до +7 °C — возьмите куртку.",
+        "model": "deepseek/deepseek-v4.1-flash"
+       },
+       {
+        "kind": "user",
+        "text": "Спасибо"
+       },
+       {
+        "kind": "assistant",
+        "text": "Пожалуйста! Если нужно, напомню про куртку за час до выхода.",
+        "model": "deepseek/deepseek-v4.1-flash"
+       }
+      ]
+     }
+    },
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "agent"
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "desc": "Прикрепить"
+      },
+      "timeoutMs": 20000
+     }
+    },
+    {
+     "call": "ui_screenshot",
+     "args": {
+      "scale": 0.5
+     },
+     "expect": [
+      {
+       "path": "@images",
+       "eq": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "chat screens: long answer (dark)",
+   "requires": [
+    "destructive"
+   ],
+   "needs": [
+    "chat_seed",
+    "perf_frames",
+    "sessions_create",
+    "ui_navigate",
+    "ui_screenshot"
+   ],
+   "steps": [
+    {
+     "call": "ui_theme",
+     "args": {
+      "mode": "dark"
+     }
+    },
+    {
+     "call": "sessions_create",
+     "args": {
+      "title": "Шот: длинный ответ"
+     },
+     "save": {
+      "sid": "$.id"
+     }
+    },
+    {
+     "call": "chat_seed",
+     "args": {
+      "session": "${sid}",
+      "items": [
+       {
+        "kind": "user",
+        "text": "Расскажи, как устроен мост MCP в Jarvis"
+       },
+       {
+        "kind": "assistant",
+        "text": "Мост MCP — это HTTP-сервер внутри приложения на 127.0.0.1. Клиент отправляет JSON-RPC на `/mcp` с токеном.\n\n## Что видит агент\n\n- **Каталог инструментов**: `app_info`, `ui_*`, `chat_*`, `settings_*`, `perf_*` и другие области.\n- **Результаты** в JSON: при ошибке `isError: true` и поле `error` с кодом и текстом.\n- **Снимки экрана** как изображения, без записи на диск телефона.\n\n## Как проверять\n\n1. Открыть приложение один раз, чтобы поднялся сервер.\n2. Выполнить `python3 tools/jv-check.py` — будет сводка: что доступно и что нет.\n3. Запустить сценарии: `python3 tools/mcp-smoke.py --only chat`.\n\n```\npython3 tools/jv.py chat_send '{\"text\":\"ок\"}'\n```\n\nТестовые чаты скрыты в меню, пока не включено «показывать тестовые». Опасные операции требуют отдельного флага.",
+        "model": "deepseek/deepseek-v4.1-flash"
+       }
+      ]
+     }
+    },
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "agent"
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "desc": "Прикрепить"
+      },
+      "timeoutMs": 20000
+     }
+    },
+    {
+     "call": "ui_screenshot",
+     "args": {
+      "scale": 0.5
+     },
+     "expect": [
+      {
+       "path": "@images",
+       "eq": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "chat screens: error turn (dark)",
+   "requires": [
+    "destructive"
+   ],
+   "needs": [
+    "chat_seed",
+    "perf_frames",
+    "sessions_create",
+    "ui_navigate",
+    "ui_screenshot"
+   ],
+   "steps": [
+    {
+     "call": "ui_theme",
+     "args": {
+      "mode": "dark"
+     }
+    },
+    {
+     "call": "sessions_create",
+     "args": {
+      "title": "Шот: ошибка"
+     },
+     "save": {
+      "sid": "$.id"
+     }
+    },
+    {
+     "call": "chat_seed",
+     "args": {
+      "session": "${sid}",
+      "items": [
+       {
+        "kind": "user",
+        "text": "Найди последние новости про Android 16"
+       },
+       {
+        "kind": "error",
+        "text": "Не удалось выполнить запрос: сеть недоступна, сервер не ответил за 30 с. Попробуйте ещё раз."
+       },
+       {
+        "kind": "assistant",
+        "text": "Похоже, сеть сейчас недоступна. Напишите, когда будете готовы — повторю поиск.",
+        "model": "deepseek/deepseek-v4.1-flash"
+       }
+      ]
+     }
+    },
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "agent"
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "desc": "Прикрепить"
+      },
+      "timeoutMs": 20000
+     }
+    },
+    {
+     "call": "ui_screenshot",
+     "args": {
+      "scale": 0.5
+     },
+     "expect": [
+      {
+       "path": "@images",
+       "eq": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "chat screens: 3 parallel actions, collapsed (dark)",
+   "requires": [
+    "destructive"
+   ],
+   "needs": [
+    "chat_seed",
+    "perf_frames",
+    "sessions_create",
+    "ui_navigate",
+    "ui_screenshot"
+   ],
+   "steps": [
+    {
+     "call": "ui_theme",
+     "args": {
+      "mode": "dark"
+     }
+    },
+    {
+     "call": "sessions_create",
+     "args": {
+      "title": "Шот: три действия"
+     },
+     "save": {
+      "sid": "$.id"
+     }
+    },
+    {
+     "call": "chat_seed",
+     "args": {
+      "session": "${sid}",
+      "items": [
+       {
+        "kind": "user",
+        "text": "Сделай три дела: запиши «молоко, хлеб» в файл покупок, проверь погоду в Минске и сохрани заметку о таймере"
+       },
+       {
+        "kind": "tool",
+        "tool": "fs_write",
+        "args": {
+         "path": "покупки.txt",
+         "text": "молоко, хлеб"
+        },
+        "summary": "Записано 13 символов в покупки.txt",
+        "ms": 340,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "tool",
+        "tool": "web_fetch",
+        "args": {
+         "url": "https://wttr.in/Minsk?format=3"
+        },
+        "summary": "Загружено 1,2 КБ",
+        "ms": 1210,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "tool",
+        "tool": "memory_save",
+        "args": {
+         "key": "таймер",
+         "value": "5 минут"
+        },
+        "summary": "Сохранено в памяти",
+        "ms": 90,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "assistant",
+        "text": "Готово: список покупок записан, в Минске +12 °C, облачно, заметка о таймере сохранена.",
+        "model": "deepseek/deepseek-v4.1-flash"
+       }
+      ]
+     }
+    },
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "agent"
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "desc": "Прикрепить"
+      },
+      "timeoutMs": 20000
+     }
+    },
+    {
+     "call": "ui_screenshot",
+     "args": {
+      "scale": 0.5
+     },
+     "expect": [
+      {
+       "path": "@images",
+       "eq": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "chat screens: 3 parallel actions, expanded (dark)",
+   "requires": [
+    "destructive"
+   ],
+   "needs": [
+    "chat_seed",
+    "perf_frames",
+    "sessions_create",
+    "ui_navigate",
+    "ui_screenshot"
+   ],
+   "steps": [
+    {
+     "call": "ui_theme",
+     "args": {
+      "mode": "dark"
+     }
+    },
+    {
+     "call": "sessions_create",
+     "args": {
+      "title": "Шот: три действия раскрыто"
+     },
+     "save": {
+      "sid": "$.id"
+     }
+    },
+    {
+     "call": "chat_seed",
+     "args": {
+      "session": "${sid}",
+      "items": [
+       {
+        "kind": "user",
+        "text": "Сделай три дела: запиши «молоко, хлеб» в файл покупок, проверь погоду в Минске и сохрани заметку о таймере"
+       },
+       {
+        "kind": "tool",
+        "tool": "fs_write",
+        "args": {
+         "path": "покупки.txt",
+         "text": "молоко, хлеб"
+        },
+        "summary": "Записано 13 символов в покупки.txt",
+        "ms": 340,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "tool",
+        "tool": "web_fetch",
+        "args": {
+         "url": "https://wttr.in/Minsk?format=3"
+        },
+        "summary": "Загружено 1,2 КБ",
+        "ms": 1210,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "tool",
+        "tool": "memory_save",
+        "args": {
+         "key": "таймер",
+         "value": "5 минут"
+        },
+        "summary": "Сохранено в памяти",
+        "ms": 90,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "assistant",
+        "text": "Готово: список покупок записан, в Минске +12 °C, облачно, заметка о таймере сохранена.",
+        "model": "deepseek/deepseek-v4.1-flash"
+       }
+      ]
+     }
+    },
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "agent"
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "desc": "Прикрепить"
+      },
+      "timeoutMs": 20000
+     }
+    },
+    {
+     "call": "ui_tap",
+     "args": {
+      "selector": {
+       "text": "действия ·"
+      }
+     }
+    },
+    {
+     "call": "perf_frames",
+     "args": {
+      "durationMs": 1500
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "text": "Список"
+      },
+      "timeoutMs": 20000
+     }
+    },
+    {
+     "call": "ui_screenshot",
+     "args": {
+      "scale": 0.5
+     },
+     "expect": [
+      {
+       "path": "@images",
+       "eq": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "chat screens: 10 actions, icon strip (dark)",
+   "requires": [
+    "destructive"
+   ],
+   "needs": [
+    "chat_seed",
+    "perf_frames",
+    "sessions_create",
+    "ui_navigate",
+    "ui_screenshot"
+   ],
+   "steps": [
+    {
+     "call": "ui_theme",
+     "args": {
+      "mode": "dark"
+     }
+    },
+    {
+     "call": "sessions_create",
+     "args": {
+      "title": "Шот: десять действий"
+     },
+     "save": {
+      "sid": "$.id"
+     }
+    },
+    {
+     "call": "chat_seed",
+     "args": {
+      "session": "${sid}",
+      "items": [
+       {
+        "kind": "user",
+        "text": "Проверь все системы и покажи, что нашёл"
+       },
+       {
+        "kind": "tool",
+        "tool": "fs_list",
+        "args": {
+         "path": "."
+        },
+        "summary": "Список из 14 файлов",
+        "ms": 150,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "tool",
+        "tool": "fs_stat",
+        "args": {
+         "path": "покупки.txt"
+        },
+        "summary": "Размер 13 Б",
+        "ms": 190,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "tool",
+        "tool": "fs_read",
+        "args": {
+         "path": "покупки.txt"
+        },
+        "summary": "Прочитано 13 символов",
+        "ms": 230,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "tool",
+        "tool": "memory_get",
+        "args": {
+         "key": "таймер"
+        },
+        "summary": "Найдено",
+        "ms": 270,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "tool",
+        "tool": "memory_search",
+        "args": {
+         "query": "погода"
+        },
+        "summary": "2 записи",
+        "ms": 310,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "tool",
+        "tool": "web_fetch",
+        "args": {
+         "url": "https://example.com"
+        },
+        "summary": "Загружено 0,8 КБ",
+        "ms": 350,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "tool",
+        "tool": "docs_search",
+        "args": {
+         "query": "мост"
+        },
+        "summary": "5 фрагментов",
+        "ms": 390,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "tool",
+        "tool": "shell_exec",
+        "args": {
+         "cmd": "uptime"
+        },
+        "summary": "Код выхода 0",
+        "ms": 430,
+        "ok": true,
+        "result": {
+         "ok": true
+        }
+       },
+       {
+        "kind": "tool",
+        "tool": "http_fetch",
+        "args": {
+         "url": "https://example.com/health"
+        },
+        "summary": "Сервер ответил 503",
+        "ms": 470,
+        "ok": false,
+        "result": {
+         "ok": false,
+         "error": "Сервер ответил 503"
+        }
+       },
+       {
+        "kind": "tool",
+        "tool": "download",
+        "args": {
+         "url": "https://example.com/a.zip"
+        },
+        "summary": "Не удалось скачать",
+        "ms": 510,
+        "ok": false,
+        "result": {
+         "ok": false,
+         "error": "Не удалось скачать"
+        }
+       },
+       {
+        "kind": "assistant",
+        "text": "Проверил: восемь действий прошли, два не сработали: сервер проверки отвечает 503, загрузка не удалась.",
+        "model": "deepseek/deepseek-v4.1-flash"
+       }
+      ]
+     }
+    },
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "agent"
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "desc": "Прикрепить"
+      },
+      "timeoutMs": 20000
+     }
+    },
+    {
+     "call": "ui_screenshot",
+     "args": {
+      "scale": 0.5
+     },
+     "expect": [
+      {
+       "path": "@images",
+       "eq": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "chat screens: sessions drawer open (dark)",
+   "requires": [
+    "destructive"
+   ],
+   "needs": [
+    "chat_seed",
+    "perf_frames",
+    "sessions_create",
+    "ui_navigate",
+    "ui_screenshot"
+   ],
+   "steps": [
+    {
+     "call": "ui_theme",
+     "args": {
+      "mode": "dark"
+     }
+    },
+    {
+     "call": "sessions_create",
+     "args": {
+      "title": "Шот: меню"
+     },
+     "save": {
+      "sid": "$.id"
+     }
+    },
+    {
+     "call": "chat_seed",
+     "args": {
+      "session": "${sid}",
+      "items": [
+       {
+        "kind": "user",
+        "text": "Какая сегодня погода в Минске?"
+       },
+       {
+        "kind": "assistant",
+        "text": "Сейчас +12 °C, облачно, без осадков. Вечером похолодает до +7 °C — возьмите куртку.",
+        "model": "deepseek/deepseek-v4.1-flash"
+       }
+      ]
+     }
+    },
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "agent"
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "desc": "Прикрепить"
+      },
+      "timeoutMs": 20000
+     }
+    },
+    {
+     "call": "ui_tap",
+     "args": {
+      "selector": {
+       "desc": "Сессии"
+      }
+     }
+    },
+    {
+     "call": "perf_frames",
+     "args": {
+      "durationMs": 1500
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "text": "Чаты"
+      },
+      "timeoutMs": 20000
+     }
+    },
+    {
+     "call": "ui_screenshot",
+     "args": {
+      "scale": 0.5
+     },
+     "expect": [
+      {
+       "path": "@images",
+       "eq": 1
+      }
+     ]
+    },
+    {
+     "call": "ui_key",
+     "args": {
+      "code": "BACK"
+     }
+    }
+   ]
+  },
+  {
+   "name": "chat screens: attach sheet (dark)",
+   "requires": [
+    "destructive"
+   ],
+   "needs": [
+    "chat_seed",
+    "perf_frames",
+    "sessions_create",
+    "ui_navigate",
+    "ui_screenshot"
+   ],
+   "steps": [
+    {
+     "call": "ui_theme",
+     "args": {
+      "mode": "dark"
+     }
+    },
+    {
+     "call": "sessions_create",
+     "args": {
+      "title": "Шот: вложения"
+     },
+     "save": {
+      "sid": "$.id"
+     }
+    },
+    {
+     "call": "chat_seed",
+     "args": {
+      "session": "${sid}",
+      "items": [
+       {
+        "kind": "user",
+        "text": "Что на фото?"
+       },
+       {
+        "kind": "assistant",
+        "text": "Жду фото: прикрепите его кнопкой скрепки.",
+        "model": "deepseek/deepseek-v4.1-flash"
+       }
+      ]
+     }
+    },
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "agent"
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "desc": "Прикрепить"
+      },
+      "timeoutMs": 20000
+     }
+    },
+    {
+     "call": "ui_tap",
+     "args": {
+      "selector": {
+       "desc": "Прикрепить"
+      }
+     }
+    },
+    {
+     "call": "perf_frames",
+     "args": {
+      "durationMs": 1500
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "text": "Файл"
+      },
+      "timeoutMs": 20000
+     }
+    },
+    {
+     "call": "ui_screenshot",
+     "args": {
+      "scale": 0.5
+     },
+     "expect": [
+      {
+       "path": "@images",
+       "eq": 1
+      }
+     ]
+    },
+    {
+     "call": "ui_key",
+     "args": {
+      "code": "BACK"
+     }
+    }
+   ]
+  },
+  {
+   "name": "chat screens: exchange (light)",
+   "requires": [
+    "destructive"
+   ],
+   "needs": [
+    "chat_seed",
+    "perf_frames",
+    "sessions_create",
+    "ui_navigate",
+    "ui_screenshot"
+   ],
+   "steps": [
+    {
+     "call": "ui_theme",
+     "args": {
+      "mode": "light"
+     }
+    },
+    {
+     "call": "sessions_create",
+     "args": {
+      "title": "Шот: светлая"
+     },
+     "save": {
+      "sid": "$.id"
+     }
+    },
+    {
+     "call": "chat_seed",
+     "args": {
+      "session": "${sid}",
+      "items": [
+       {
+        "kind": "user",
+        "text": "Какая сегодня погода в Минске?"
+       },
+       {
+        "kind": "assistant",
+        "text": "Сейчас +12 °C, облачно, без осадков. Вечером похолодает до +7 °C — возьмите куртку.",
+        "model": "deepseek/deepseek-v4.1-flash"
+       },
+       {
+        "kind": "error",
+        "text": "Не удалось выполнить запрос: сеть недоступна."
+       }
+      ]
+     }
+    },
+    {
+     "call": "ui_navigate",
+     "args": {
+      "screen": "agent"
+     }
+    },
+    {
+     "call": "ui_wait",
+     "args": {
+      "selector": {
+       "desc": "Прикрепить"
+      },
+      "timeoutMs": 20000
+     }
+    },
+    {
+     "call": "ui_screenshot",
+     "args": {
+      "scale": 0.5
+     },
+     "expect": [
+      {
+       "path": "@images",
+       "eq": 1
+      }
+     ]
+    },
+    {
+     "call": "ui_theme",
+     "args": {
+      "mode": "dark"
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="jv_black">#FF07070B</color>
+    <color name="jv_lavender">#FFB9A6FF</color>
+    <color name="jv_violet">#FF7C5CFF</color>
+    <color name="jv_ripple">#2EB9A6FF</color>
+    <color name="jv_transparent">#00000000</color>
+</resources>

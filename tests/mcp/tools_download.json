@@ -1,0 +1,47 @@
+{
+ "scenarios": [
+  {
+   "name": "download saves the bridge's /health into the sandbox",
+   "steps": [
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "download",
+      "args": {
+       "url": "${base}/health",
+       "path": "downloads/smoke-${rand}.json"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": true
+      },
+      {
+       "path": "$.data.bytes",
+       "gt": 10
+      }
+     ]
+    },
+    {
+     "call": "agent_tool_call",
+     "args": {
+      "name": "fs_delete",
+      "args": {
+       "path": "downloads/smoke-${rand}.json"
+      }
+     },
+     "expect": [
+      {
+       "path": "$.ok",
+       "eq": true
+      }
+     ]
+    }
+   ],
+   "needs": [
+    "agent_tool_call"
+   ]
+  }
+ ]
+}
