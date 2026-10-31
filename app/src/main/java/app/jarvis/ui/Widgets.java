@@ -119,8 +119,51 @@ public final class Widgets {
             this.listener = l;
             setClickable(true);
             setFocusable(true);
+            setContentDescription("Переключатель настройки");
+            updateA11yState();
             setLayoutParams(new ViewGroup.LayoutParams(Ui.dp(46), Ui.dp(28)));
             setOnClickListener(new OnClickListener() { @Override public void onClick(View v) { Motion.tick(v); setChecked(!Toggle.this.on, true); } });
+        }
+
+        @Override protected void onAttachedToWindow() {
+            super.onAttachedToWindow();
+            // All settings toggles sit inside a labelled row. Prefer that label
+            // over the generic role so TalkBack names the setting being changed.
+            android.view.ViewParent p = getParent();
+            if (p instanceof ViewGroup) {
+                String label = findA11yLabel((ViewGroup) p);
+                if (!label.isEmpty()) setContentDescription(label);
+            }
+        }
+
+        private static String findA11yLabel(ViewGroup parent) {
+            for (int i = 0; i < parent.getChildCount(); i++) {
+                View child = parent.getChildAt(i);
+                if (child instanceof TextView) {
+                    CharSequence t = ((TextView) child).getText();
+                    if (t != null && t.length() > 0) return t.toString();
+                }
+            }
+            for (int i = 0; i < parent.getChildCount(); i++) {
+                View child = parent.getChildAt(i);
+                if (child instanceof LinearLayout) {
+                    String t = findA11yLabel((ViewGroup) child);
+                    if (!t.isEmpty()) return t;
+                }
+            }
+            return "";
+        }
+
+        private void updateA11yState() {
+            if (android.os.Build.VERSION.SDK_INT >= 30)
+                setStateDescription(on ? "Включено" : "Выключено");
+        }
+
+        @Override public void onInitializeAccessibilityNodeInfo(android.view.accessibility.AccessibilityNodeInfo info) {
+            super.onInitializeAccessibilityNodeInfo(info);
+            info.setClassName("android.widget.Switch");
+            info.setCheckable(true);
+            info.setChecked(on);
         }
 
         @Override protected void onMeasure(int w, int h) { setMeasuredDimension(Ui.dp(46), Ui.dp(28)); }
@@ -131,6 +174,7 @@ public final class Widgets {
         public void setChecked(boolean v, boolean notify) {
             if (v == on) return;
             on = v;
+            updateA11yState();
             long d = Motion.move(Motion.D_BASE);
             if (d == 0) { t = on ? 1f : 0f; invalidate(); }
             else {

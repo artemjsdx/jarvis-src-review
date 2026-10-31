@@ -123,6 +123,8 @@ public class DiagnosticsPage extends SettingsPage {
             row.addView(trail, Ui.lpm(-2, -2, Ui.dp(8), 0, 0, 0));
             row.setBackground(Ui.rippleOn(new android.graphics.drawable.ColorDrawable(0), 14));
             row.setClickable(true);
+            row.setFocusable(true);
+            row.setContentDescription("Проверить: " + c.name);
             row.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { runOne(c); } });
             rowsHost.addView(row);
             paint(c);

@@ -176,12 +176,19 @@ def capture(folder,label,tree=None,xml=None):
     if xml is None:xml=ET.tostring(tree,encoding="utf-8")
     (target/f"{label}.xml").write_bytes(xml)
     t=texts(tree)
+    unlabeled = []
+    for n in getnodes(tree):
+        at = n.attrib
+        if at.get("clickable") == "true" and not at.get("text") and not at.get("content-desc"):
+            unlabeled.append({"class":at.get("class",""), "bounds":at.get("bounds","")})
     flags=[]
     for v in t:
         if len(v)>7 and (v.endswith("…") or v.endswith("...")):
             flags.append("ellipsis:"+v[:90])
     return {"shot":str((target/name).relative_to(Path("audit-output"))),"xml":str((target/f"{label}.xml").relative_to(Path("audit-output"))),
-            "textCount":len(t),"texts":t[:80],"flags":flags,"signature":signature(tree)}
+            "textCount":len(t),"texts":t[:80],"flags":flags,
+            "unlabeledClickTargets":unlabeled[:40],"unlabeledClickCount":len(unlabeled),
+            "signature":signature(tree)}
 
 def log(event,**kw):
     results["events"].append({"at":round(time.time()-results["started"],2),"event":event,**kw})
@@ -359,7 +366,9 @@ def visit_settings_page(pid):
     # Help overlay can be safely examined on the first page: click a visible '?' button
     # only if the uiautomator tree exposes a precise label (avoid random tap on controls).
     if pid==GROUPS[group][0]:
-        candidates=[n for n in getnodes(t) if n.attrib.get("content-desc","") in ("Справка","Подсказка","Помощь","?")]
+        candidates=[n for n in getnodes(t) if
+            n.attrib.get("content-desc","").startswith(("Справка", "Подсказка", "Помощь"))
+            or n.attrib.get("content-desc","") == "?"]
         if candidates:
             try:
                 x,y=center(candidates[0]);tap(x,y);wait(.55)
