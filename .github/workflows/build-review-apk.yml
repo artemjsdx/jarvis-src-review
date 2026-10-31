@@ -88,3 +88,69 @@ jobs:
           path: build/outputs/Jarvis-uifix.apk
           if-no-files-found: error
           retention-days: 30
+
+
+  android-smoke:
+    needs: apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download signed test APK
+        uses: actions/download-artifact@v4
+        with:
+          name: jarvis-uifix-apk
+          path: smoke-input
+
+      - name: Enable hardware virtualization
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; else echo "KVM device not available"; fi
+
+      - name: Boot Android and collect real UI screenshots
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect
+          disable-animations: false
+          script: |
+            set -euo pipefail
+            mkdir -p smoke-output
+            adb install smoke-input/Jarvis-uifix.apk
+            adb shell settings put global window_animation_scale 0.5
+            adb shell settings put global transition_animation_scale 0.5
+            adb shell settings put global animator_duration_scale 0.5
+            adb shell monkey -p app.jarvis.uifix -c android.intent.category.LAUNCHER 1
+            sleep 8
+            adb shell pidof app.jarvis.uifix
+            adb shell screencap -p /sdcard/ui-home.png
+            adb pull /sdcard/ui-home.png smoke-output/home.png
+            adb shell input tap 1015 185
+            sleep 3
+            adb shell screencap -p /sdcard/ui-settings.png
+            adb pull /sdcard/ui-settings.png smoke-output/settings.png
+            adb shell input swipe 510 1600 510 650 520
+            sleep 2
+            adb shell screencap -p /sdcard/ui-settings-scroll.png
+            adb pull /sdcard/ui-settings-scroll.png smoke-output/settings-scroll.png
+            adb shell dumpsys gfxinfo app.jarvis.uifix framestats > smoke-output/gfxinfo.txt
+            adb logcat -d -v brief -s AndroidRuntime:E > smoke-output/runtime-errors.txt
+            if grep -E 'FATAL EXCEPTION|Process: app.jarvis.uifix' smoke-output/runtime-errors.txt; then
+              echo "::error::Android runtime exception detected"
+              exit 1
+            fi
+            adb shell pidof app.jarvis.uifix
+
+      - name: Upload emulator screenshots and frame metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-uifix-emulator-smoke
+          path: smoke-output/
+          if-no-files-found: warn
+          retention-days: 14

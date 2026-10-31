@@ -212,7 +212,8 @@ public class SettingsScreen extends Screen {
             pageColumn.setAlpha(0f);
             pageColumn.animate().translationX(0f).alpha(1f).setDuration(app.jarvis.ui.motion.Motion.screenTime(220))
                 .withEndAction(new Runnable() { @Override public void run() { if (current != null) listScroll.setVisibility(View.INVISIBLE); } }).start();
-            listScroll.animate().translationX(-Ui.dp(48)).alpha(0.35f).setDuration(Ui.ms(220)).start();
+            listScroll.animate().translationX(-Ui.dp(48)).alpha(0.35f)
+                .setDuration(app.jarvis.ui.motion.Motion.screenTime(220)).start();
         } else {
             pageColumn.setTranslationX(0);
             pageColumn.setAlpha(1f);
@@ -239,7 +240,8 @@ public class SettingsScreen extends Screen {
             pc.animate().translationX(Ui.dp(64)).alpha(0f).setDuration(app.jarvis.ui.motion.Motion.screenTime(180)).withEndAction(new Runnable() { @Override public void run() {
                 pc.setTranslationX(0); pc.setAlpha(1f); finish.run();
             } }).start();
-            listScroll.animate().translationX(0).alpha(1f).setDuration(Ui.ms(180)).start();
+            listScroll.animate().translationX(0).alpha(1f)
+                .setDuration(app.jarvis.ui.motion.Motion.screenTime(180)).start();
         } else finish.run();
         refreshStatuses();
     }
