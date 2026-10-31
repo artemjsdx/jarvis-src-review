@@ -247,12 +247,14 @@ public class LlmPage extends SettingsPage {
         }
         final String pid = p.id;
         LinearLayout card = Widgets.card(ctx);
-        TextView head = Ui.text(ctx, p.name, Ui.BODY);
+        // The provider name and long description are already in the selectable row above.
+        // Do not repeat the same geo-restriction paragraph before the API key.
+        TextView head = Ui.text(ctx, "Доступ к API", Ui.BODY);
         head.setTypeface(Ui.medium);
         card.addView(head, Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(12), Ui.dp(16), 0));
-        if (!p.note.isEmpty()) card.addView(PageUi.caption(ctx, p.note), Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(4), Ui.dp(16), 0));
-        card.addView(PageUi.note(ctx, "Проверено: " + (p.verified == null || p.verified.isEmpty() ? "нет данных" : p.verified)),
-            Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(3), Ui.dp(16), Ui.dp(12)));
+        if (p.verified != null && !p.verified.isEmpty())
+            card.addView(PageUi.caption(ctx, "Проверено: " + p.verified),
+                Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(4), Ui.dp(16), Ui.dp(12)));
 
         if (p.keyRequired || j.secrets.has("key." + pid)) {
             Widgets.divide(card);

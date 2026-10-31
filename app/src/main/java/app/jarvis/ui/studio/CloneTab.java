@@ -147,12 +147,11 @@ public class CloneTab {
         card.addView(recordPanel);
         if (recording) renderRecording();
         else {
-            LinearLayout btns = Ui.row(ctx);
+            LinearLayout btns = Ui.column(ctx);
             View rec = Ui.button(ctx, "Записать с микрофона", R.drawable.ic_mic, Ui.BTN_GLASS, new Runnable() { @Override public void run() { startRecording(); } });
-            btns.addView(rec, Ui.lpw(1f));
-            btns.addView(Ui.space(ctx, 6, 1));
+            btns.addView(rec, new LinearLayout.LayoutParams(-1, -2));
             View imp = Ui.button(ctx, "Выбрать файл", R.drawable.ic_upload, Ui.BTN_GHOST, new Runnable() { @Override public void run() { pickFile(); } });
-            btns.addView(imp, Ui.lpw(1f));
+            btns.addView(imp, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
             card.addView(btns);
         }
         if (!samplePath.isEmpty()) {

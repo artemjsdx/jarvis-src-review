@@ -366,6 +366,40 @@ public final class Ui {
     }
 
     public static FrameLayout iconButton(Context c, int iconRes, float sizeDp, int color, final Runnable onClick) {
+        return iconButton(c, iconRes, sizeDp, color, iconActionLabel(c, iconRes), onClick);
+    }
+
+    private static String iconActionLabel(Context c, int id) {
+        String raw;
+        try { raw = c.getResources().getResourceEntryName(id); }
+        catch (Throwable ignored) { return "Действие"; }
+        if (raw.startsWith("ic_")) raw = raw.substring(3);
+        switch (raw) {
+            case "settings": return "Настройки";
+            case "help": case "info": return "Справка";
+            case "close": return "Закрыть";
+            case "back": case "arrow_left": return "Назад";
+            case "check": return "Подтвердить";
+            case "copy": return "Копировать";
+            case "trash": return "Удалить";
+            case "edit": return "Изменить";
+            case "play": return "Воспроизвести";
+            case "pause": return "Пауза";
+            case "stop": return "Остановить";
+            case "refresh": return "Обновить";
+            case "plus": return "Добавить";
+            case "arrow_up": return "Назад по истории";
+            case "arrow_down": return "Вперёд по истории";
+            case "paperclip": return "Вставить из буфера";
+            case "upload": return "Выбрать файл";
+            case "volume": return "Включить голос";
+            case "volume_off": return "Выключить голос";
+            default: return "Действие: " + raw.replace('_', ' ');
+        }
+    }
+
+    public static FrameLayout iconButton(Context c, int iconRes, float sizeDp, int color, String description,
+                                          final Runnable onClick) {
         FrameLayout f = new FrameLayout(c);
         ImageView ic = icon(c, iconRes, sizeDp * 0.5f, color);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(dp(sizeDp * 0.5f), dp(sizeDp * 0.5f), Gravity.CENTER);
@@ -373,6 +407,8 @@ public final class Ui {
         f.setBackground(rippleOn(new ColorDrawable(0), sizeDp / 2f));
         f.setClickable(true);
         f.setFocusable(true);
+        f.setContentDescription(description);
+        f.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
         f.setLayoutParams(new LinearLayout.LayoutParams(dp(sizeDp), dp(sizeDp)));
         if (onClick != null) f.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { onClick.run(); } });
         pressScale(f);

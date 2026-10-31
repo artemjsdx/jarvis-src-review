@@ -77,7 +77,7 @@ public class PronTab {
         previewOut = Ui.text(ctx, "", Ui.BODY, Ui.P.accent);
         previewOut.setTypeface(Ui.mono);
         card.addView(previewOut, Ui.lpm(-2, -2, 0, Ui.dp(10), 0, 0));
-        card.addView(StudioKit.metaRow(ctx, "для провайдера:", providerLabel()), Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+        card.addView(StudioKit.metaRow(ctx, "для провайдера:", providerLabel()), Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
         card.addView(caption(ctx, "Так текст уйдёт в синтез: числа и даты словами, эмодзи и разметка убраны, словарь применён."),
             Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
         previewInput.addTextChangedListener(new TextWatcher() {

@@ -151,9 +151,13 @@ public class AdbSettingsPage extends SettingsPage {
         card.addView(Widgets.fieldBox(ctx, pairCode), Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(8), Ui.dp(16), 0));
         connPort = numField("Порт подключения", Settings.ADB_PORT, card);
 
-        LinearLayout btns = VoiceUiKit.buttonRow(ctx,
-            WrapButton.create(ctx, "Сопрячь", R.drawable.ic_link, Ui.BTN_PRIMARY, new Runnable() { @Override public void run() { runPair(); } }),
-            WrapButton.create(ctx, "Подключить", R.drawable.ic_plug, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runConnect(); } }));
+        // One action per full-width row: avoid breaking «Подключить» beside its icon.
+        LinearLayout btns = Ui.column(ctx);
+        btns.addView(WrapButton.create(ctx, "Сопрячь", R.drawable.ic_link, Ui.BTN_PRIMARY,
+            new Runnable() { @Override public void run() { runPair(); } }), new LinearLayout.LayoutParams(-1, -2));
+        btns.addView(WrapButton.create(ctx, "Подключить", R.drawable.ic_plug, Ui.BTN_GLASS,
+            new Runnable() { @Override public void run() { runConnect(); } }),
+            Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
         card.addView(btns, Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14)));
         card.addView(VoiceUiKit.note(ctx, "Код сопряжения одноразовый: после успешного сопряжения он не нужен и не сохраняется."),
             Ui.lpm(-2, -2, Ui.dp(16), 0, Ui.dp(16), Ui.dp(12)));

@@ -44,7 +44,8 @@ public class TerminalScreen extends Screen {
     private static final long FLUSH_MS = 66;                 // ~15 flushes/s
     private static final String[] QUICK = {"ls", "pwd", "df -h", "uname -a", "ps", "date"};
 
-    private TextView output;                                  // monospace, spannable
+    private TextView output;
+    private TextView emptyOutput;                                  // monospace, spannable
     private ScrollView outputScroll;
     private boolean autoFollow = true;
     private final SpannableStringBuilder buf = new SpannableStringBuilder();
@@ -97,6 +98,13 @@ public class TerminalScreen extends Screen {
         FrameLayout outputCard = new FrameLayout(ctx);
         outputCard.setBackground(Ui.glass(16));
         outputCard.addView(outputScroll, new FrameLayout.LayoutParams(-1, -1));
+        emptyOutput = Ui.text(ctx,
+            "Терминал готов\n\nВведите команду в строке ниже или выберите команду из быстрых кнопок.\n" +
+            "Команды выполняются в ограниченном Android shell без root.", Ui.CAPTION, Ui.P.text2);
+        emptyOutput.setPadding(Ui.dp(16), Ui.dp(16), Ui.dp(16), Ui.dp(16));
+        emptyOutput.setClickable(false);
+        FrameLayout.LayoutParams emptyLp = new FrameLayout.LayoutParams(-1, -2, android.view.Gravity.TOP);
+        outputCard.addView(emptyOutput, emptyLp);
         LinearLayout.LayoutParams outLp = new LinearLayout.LayoutParams(-1, 0, 1f);
         outLp.setMargins(0, 0, 0, Ui.dp(6));
         root.addView(outputCard, outLp);
@@ -188,6 +196,7 @@ public class TerminalScreen extends Screen {
         noteRow.addView(Ui.iconButton(ctx, R.drawable.ic_trash, 34, Ui.P.text2, new Runnable() { @Override public void run() {
             buf.clear();
             output.setText("");
+            updateEmptyOutput();
             footer.setVisibility(View.GONE);
         }}));
         TextView note = Ui.text(ctx, "Android shell (mksh/toybox), без root", Ui.CAPTION, Ui.P.text3);
@@ -359,6 +368,10 @@ public class TerminalScreen extends Screen {
         input.setAlpha(on ? 0.5f : 1f);
     }
 
+    private void updateEmptyOutput() {
+        if (emptyOutput != null) emptyOutput.setVisibility(buf.length() == 0 ? View.VISIBLE : View.GONE);
+    }
+
     // ---------------------------------------------------------------------------------------------- output buffer
     private void enqueue(String text, boolean stderr) {
         synchronized (pending) { pending.add(new Chunk(text, stderr)); }
@@ -384,6 +397,7 @@ public class TerminalScreen extends Screen {
         }
         enforceCap();
         output.setText(buf);
+        updateEmptyOutput();
         if (autoFollow) outputScroll.post(new Runnable() { @Override public void run() { outputScroll.fullScroll(View.FOCUS_DOWN); }});
     }
 
@@ -403,6 +417,7 @@ public class TerminalScreen extends Screen {
         buf.setSpan(new ForegroundColorSpan(Ui.P.accent), start, buf.length(), 0);
         buf.setSpan(new StyleSpan(Typeface.BOLD), start, start + prompt.length(), 0);
         output.setText(buf);
+        updateEmptyOutput();
         outputScroll.post(new Runnable() { @Override public void run() { outputScroll.fullScroll(View.FOCUS_DOWN); }});
     }
 
@@ -413,6 +428,7 @@ public class TerminalScreen extends Screen {
         buf.append(sb.toString()).append("\n\n");
         buf.setSpan(new ForegroundColorSpan(ok ? Ui.P.text3 : Ui.P.err), start, buf.length(), 0);
         output.setText(buf);
+        updateEmptyOutput();
         if (autoFollow) outputScroll.fullScroll(View.FOCUS_DOWN);
     }
 

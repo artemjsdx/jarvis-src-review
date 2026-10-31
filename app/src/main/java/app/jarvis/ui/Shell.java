@@ -112,7 +112,7 @@ public final class Shell extends FrameLayout {
         header.addView(stateDot, Ui.lpm(Ui.dp(8), Ui.dp(8), 0, 0, 8, 0));
         stateView = Ui.text(c, "", Ui.CAPTION);
         header.addView(stateView, Ui.lpm(-2, -2, 0, 0, 6, 0));
-        header.addView(Ui.iconButton(c, R.drawable.ic_settings, 44, Ui.P.text2, new Runnable() { @Override public void run() { navigate("settings"); } }));
+        header.addView(Ui.iconButton(c, R.drawable.ic_settings, 44, Ui.P.text2, "Открыть настройки", new Runnable() { @Override public void run() { navigate("settings"); } }));
         col.addView(header, new LinearLayout.LayoutParams(-1, -2));
         screenHost = new FrameLayout(c);
         col.addView(screenHost, new LinearLayout.LayoutParams(-1, 0, 1f));
@@ -158,6 +158,8 @@ public final class Shell extends FrameLayout {
             lb.setSingleLine(true);
             item.addView(lb, Ui.lpm(-2, -2, 6, 0, 0, 0));
             item.setClickable(true);
+            item.setFocusable(true);
+            item.setContentDescription("Раздел: " + Screens.DOCK_LABELS[i]);
             item.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { navigate(id); } });
             Ui.pressScale(item);
             dockRow.addView(item, new LinearLayout.LayoutParams(-2, -2));

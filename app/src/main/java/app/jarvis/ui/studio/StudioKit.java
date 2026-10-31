@@ -97,11 +97,13 @@ final class StudioKit {
     static LinearLayout metaRow(Context c, String label, String value) {
         LinearLayout r = Ui.rowTop(c);
         TextView l = Ui.text(c, label, Ui.CAPTION, Ui.P.text3);
-        l.setSingleLine(true);
-        r.addView(l, Ui.lpm(94, -2, 0, 0, 6, 0));
-        TextView v = Ui.text(c, value, Ui.CAPTION, Ui.P.text2);
-        v.setMaxLines(2);
-        v.setEllipsize(TextUtils.TruncateAt.END);
+        // Fixed 94dp was too narrow for «для провайдера» and clipped the label.
+        // Long values (quotas, cloning limitations) must remain fully readable.
+        l.setSingleLine(false);
+        l.setMaxLines(3);
+        r.addView(l, Ui.lpm(124, -2, 0, 0, 8, 0));
+        TextView v = Ui.text(c, value == null ? "—" : value, Ui.CAPTION, Ui.P.text2);
+        v.setSingleLine(false);
         r.addView(v, Ui.lpw(1f));
         return r;
     }

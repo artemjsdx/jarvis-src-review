@@ -47,11 +47,19 @@ public final class GlassHost extends FrameLayout {
     private View backdrop;
     private boolean wallpaperWanted;
     private long lastCaptureMs = -1_000_000L;
+    // UI-thread only. A static content tree needs one snapshot, not another full
+    // software redraw every 40 ms while a glass overlay is visible.
+    private boolean contentDirty = true;
     private final Runnable recapture = new Runnable() { @Override public void run() { invalidate(); } };
 
     public GlassHost(Context c) {
         super(c);
         content = new FrameLayout(c) {
+            @Override public void onDescendantInvalidated(View child, View target) {
+                contentDirty = true;
+                super.onDescendantInvalidated(child, target);
+            }
+
             @Override protected void dispatchDraw(Canvas canvas) {
                 // Draw the static wallpaper first, then its frosted regions in HOST
                 // coordinates, before the screen controls and text. A card's own
@@ -186,11 +194,16 @@ public final class GlassHost extends FrameLayout {
         float margin = Ui.dpf(CAPTURE_MARGIN_DP);
         region.set(0, Math.max(0, region.top - margin), w, Math.min(h, region.bottom + margin));
         long now = SystemClock.uptimeMillis();
-        if (!blur.covers(region) || now - lastCaptureMs >= throttle) {
+        boolean needCapture = !blur.recorded() || !blur.covers(region) || contentDirty;
+        if (needCapture && (now - lastCaptureMs >= throttle || !blur.recorded())) {
             lastCaptureMs = now;
+            contentDirty = false;
             blur.capture(content, region, Ui.dpf(BLUR_DP));
-        } else {
-            postDelayed(recapture, throttle - (now - lastCaptureMs));
+        } else if (needCapture) {
+            // Only schedule if the content actually changed; constant overlay
+            // animations must not force a full software capture each frame.
+            removeCallbacks(recapture);
+            postDelayed(recapture, Math.max(1, throttle - (now - lastCaptureMs)));
         }
         if (!blur.recorded()) return;
         blur.drawInto(c, clip);
@@ -237,6 +250,7 @@ public final class GlassHost extends FrameLayout {
     @Override protected void onSizeChanged(int w, int h, int ow, int oh) {
         super.onSizeChanged(w, h, ow, oh);
         lastCaptureMs = -1_000_000L;
+        contentDirty = true;
         wallpaperWanted = true;
     }
 }

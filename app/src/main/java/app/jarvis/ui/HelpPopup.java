@@ -10,7 +10,7 @@ public final class HelpPopup {
     private HelpPopup() { }
 
     public static View button(final Context c, final Host h, final String title, final String... lines) {
-        return Ui.iconButton(c, R.drawable.ic_help, 34, Ui.P.text3, new Runnable() { @Override public void run() {
+        return Ui.iconButton(c, R.drawable.ic_help, 34, Ui.P.text3, "Справка: " + title, new Runnable() { @Override public void run() {
             show(h, title, lines);
         } });
     }
