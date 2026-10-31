@@ -66,6 +66,8 @@ public class VoiceSettingsPage extends SettingsPage {
         content.addView(keysCard());
         content.addView(Widgets.sectionTitle(ctx, "Скорость речи"));
         content.addView(speedCard());
+        content.addView(Widgets.sectionTitle(ctx, "Приглушение музыки"));
+        content.addView(duckCard());
         content.addView(Ui.space(ctx, 1, 4));
         content.addView(WrapButton.create(ctx, "Открыть Студию голоса", R.drawable.ic_voice, Ui.BTN_GLASS, new Runnable() { @Override public void run() {
             host.navigate("studio");
@@ -248,6 +250,35 @@ public class VoiceSettingsPage extends SettingsPage {
         } }), Ui.lpm(-1, 32, 0, 0, 0, 0));
         card.addView(VoiceUiKit.note(ctx, "Скорость ответов ассистента. Отдельная скорость для тестов — на карточке провайдера в студии."),
             Ui.lpm(-2, -2, 0, 6, 0, 0));
+        return card;
+    }
+
+
+    private View duckCard() {
+        LinearLayout card = Widgets.card(ctx);
+        card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14));
+        LinearLayout header = Ui.row(ctx);
+        header.addView(Ui.text(ctx, "Тише, пока Джарвис говорит", Ui.BODY), Ui.lpw(1f));
+        header.addView(Widgets.toggle(ctx, j.settings.getBool("tts.duck", true), new Widgets.Toggle.Listener() {
+            @Override public void onChanged(boolean on) {
+                j.settings.setBool("tts.duck", on);
+                if (!on) j.duckMusic("speech", false);
+            }
+        }));
+        card.addView(header);
+        final int percent = Math.max(0, Math.min(100, j.settings.getInt("tts.duckPercent", 10)));
+        final TextView label = VoiceUiKit.caption(ctx, "Громкость музыки во время ответа: " + percent + " %");
+        card.addView(label, Ui.lpm(-1, -2, 0, 12, 0, 0));
+        card.addView(Widgets.slider(ctx, 0f, 100f, 1f, percent, new Widgets.SliderListener() {
+            @Override public void onValue(float value, boolean fromUser) {
+                int n = Math.max(0, Math.min(100, Math.round(value)));
+                label.setText("Громкость музыки во время ответа: " + n + " %");
+                if (fromUser) j.settings.set("tts.duckPercent", String.valueOf(n));
+            }
+        }), Ui.lpm(-1, 32, 0, 6, 0, 0));
+        card.addView(VoiceUiKit.note(ctx,
+            "Плавное снижение и возврат за 200 мс. Пауза музыки не затрагивается; 10 % — исходное значение."),
+            Ui.lpm(-1, -2, 0, 8, 0, 0));
         return card;
     }
 

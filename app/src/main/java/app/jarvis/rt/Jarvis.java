@@ -421,22 +421,60 @@ public final class Jarvis {
     // ---- music ducking shared by speech output and microphone capture ---------------------------------------------------
     private final java.util.Set<String> duckOwners = new java.util.HashSet<>();
     private float duckBase = -1f;
+    private volatile int duckEpoch;
+    private android.animation.ValueAnimator duckFade; // accessed on the main looper only
 
-    /** Lowers the music volume while someone (speech, capture) needs the room; restores it when the last owner leaves. */
+    /**
+     * Reference-counted by owner, so parallel speech/capture events cannot unduck prematurely.
+     * Music playback is never paused, and on cancellation the latest target always wins.
+     * Speech: tts.duck / tts.duckPercent (default 10%). Capture retains the legacy 22% reduction.
+     */
     public synchronized void duckMusic(String owner, boolean on) {
-        MusicOut m = music;
-        if (m == null) return;
+        final MusicOut m = music;
+        if (m == null || owner == null) return;
+        if (on && "speech".equals(owner) && !settings.getBool("tts.duck", true)) return;
         try {
             if (on) {
-                MusicOut.Info i = m.info();
-                if (duckOwners.isEmpty()) { if (i.state != MusicOut.State.PLAYING) return; duckBase = i.volume; }
-                if (duckBase < 0) return;
+                if (duckOwners.isEmpty()) {
+                    MusicOut.Info info = m.info();
+                    if (info.state != MusicOut.State.PLAYING) return;
+                    duckBase = info.volume;
+                }
                 duckOwners.add(owner);
-                m.setVolume(Math.min(duckBase, 0.22f));
             } else {
-                duckOwners.remove(owner);
-                if (duckOwners.isEmpty() && duckBase >= 0) { m.setVolume(duckBase); duckBase = -1f; }
+                if (!duckOwners.remove(owner)) return;
             }
+            if (duckBase < 0f) return;
+            final boolean speechActive = duckOwners.contains("speech");
+            final boolean captureActive = !duckOwners.isEmpty() && (!speechActive || duckOwners.size() > 1);
+            final float goal = app.jarvis.core.audio.DuckPolicy.target(duckBase, speechActive, captureActive,
+                settings.getBool("tts.duck", true), settings.getInt("tts.duckPercent", 10));
+            if (duckOwners.isEmpty()) duckBase = -1f;
+            final int generation = ++duckEpoch;
+            main.post(new Runnable() {
+                @Override public void run() {
+                    if (duckEpoch != generation || music != m) return;
+                    if (duckFade != null) { duckFade.cancel(); duckFade = null; }
+                    final float start;
+                    try { start = m.info().volume; } catch (Throwable error) { return; }
+                    if (Math.abs(start - goal) < 0.001f) return;
+                    final android.animation.ValueAnimator fade = android.animation.ValueAnimator.ofFloat(start, goal);
+                    duckFade = fade;
+                    fade.setDuration(200);
+                    fade.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener() {
+                        @Override public void onAnimationUpdate(android.animation.ValueAnimator animation) {
+                            if (duckEpoch == generation && music == m)
+                                m.setVolume((Float) animation.getAnimatedValue());
+                        }
+                    });
+                    fade.addListener(new android.animation.AnimatorListenerAdapter() {
+                        @Override public void onAnimationEnd(android.animation.Animator a) {
+                            if (duckFade == fade) duckFade = null;
+                        }
+                    });
+                    fade.start();
+                }
+            });
         } catch (Throwable ignored) { }
     }
 
