@@ -37,7 +37,11 @@ public final class Widgets {
     public static LinearLayout card(Context c) { return Ui.card(c); }
 
     /** Small label above a group, e.g. "Подключение". */
-    public static TextView sectionTitle(Context c, String t) { return Ui.section(c, t); }
+    public static TextView sectionTitle(Context c, String t) {
+        TextView v = Ui.section(c, t);
+        v.setTag("jarvis.section.help");
+        return v;
+    }
 
     /** Adds a divider between consecutive rows of a card automatically: call card.addView(row) then Widgets.divide(card). */
     public static void divide(LinearLayout card) {

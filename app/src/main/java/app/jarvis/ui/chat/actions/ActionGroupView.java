@@ -1,6 +1,7 @@
 package app.jarvis.ui.chat.actions;
 
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
@@ -56,9 +57,12 @@ public final class ActionGroupView extends LinearLayout {
         this.tools = run;
         key = run.get(0).seq;
         setOrientation(VERTICAL);
+        setBackground(Ui.glass(18));
+        Ui.clipToRounded(this, 18);
+        setPadding(Ui.dp(6), Ui.dp(6), Ui.dp(6), Ui.dp(6));
 
         LinearLayout header = Ui.row(c);
-        header.setBackground(Ui.glassPressable(16));
+        header.setBackground(Ui.rippleOn(new ColorDrawable(0), 14));
         header.setPadding(Ui.dp(10), Ui.dp(7), Ui.dp(10), Ui.dp(7));
         header.setClickable(true);
         header.setFocusable(true);
@@ -79,7 +83,7 @@ public final class ActionGroupView extends LinearLayout {
         collapseAll = Ui.text(c, "свернуть всё", Ui.CAPTION, Ui.P.accent);
         collapseAll.setTypeface(Ui.medium);
         collapseAll.setPadding(Ui.dp(10), Ui.dp(5), Ui.dp(10), Ui.dp(5));
-        collapseAll.setBackground(Ui.rect(Ui.P.accentSoft, 12));
+        collapseAll.setBackground(Ui.rippleOn(Ui.rect(Ui.P.dark ? 0x122F2D3B : 0x12FFFFFF, 12), 12));
         collapseAll.setVisibility(GONE);
         collapseAll.setClickable(true);
         collapseAll.setOnClickListener(new View.OnClickListener() {
@@ -107,7 +111,11 @@ public final class ActionGroupView extends LinearLayout {
                 @Override public void run() { refreshCollapseAll(); }
             });
             blocks.add(sb);
-            subs.addView(sb, Ui.lpm(-1, -2, 0, Ui.dp(4), 0, 0));
+            if (i > 0) {
+                View separator = Ui.divider(c);
+                subs.addView(separator, Ui.lpm(-1, Ui.dp(1), 18, 3, 18, 3));
+            }
+            subs.addView(sb, new LayoutParams(-1, -2));
         }
 
         open = state.isGroupOpen(key);
@@ -137,10 +145,8 @@ public final class ActionGroupView extends LinearLayout {
         }
         f.addView(Ui.icon(c, iconRes(ToolIcons.iconName(t.toolName)), 16, Ui.P.text3),
             new FrameLayout.LayoutParams(Ui.dp(16), Ui.dp(16), Gravity.CENTER));
-        boolean failed = t.toolStatus == ChatItem.ToolStatus.FAILED;
-        int badge = failed ? R.drawable.ic_fail : t.toolStatus == ChatItem.ToolStatus.INTERRUPTED ? R.drawable.ic_warning : R.drawable.ic_ok;
-        int col = failed ? Ui.P.err : t.toolStatus == ChatItem.ToolStatus.INTERRUPTED ? Ui.P.warn : Ui.P.ok;
-        f.addView(Ui.icon(c, badge, 9, col), new FrameLayout.LayoutParams(Ui.dp(9), Ui.dp(9), Gravity.BOTTOM | Gravity.END));
+        // The per-action status is shown on the vertical rail below; duplicating a
+        // second check mark on the tool icon made the header look cluttered.
         return f;
     }
 

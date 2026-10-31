@@ -53,6 +53,18 @@ public final class Motion {
         return mode == REDUCED ? Math.min(base, REDUCED_FADE_MAX) : base;
     }
 
+    /**
+     * Screen transitions should remain visible when Android animation scale is 0.5.
+     * The system multiplies our ViewPropertyAnimator duration by this scale.
+     * OFF/reduced motion modes still take precedence.
+     */
+    public static long screenTime(long requestedMs) {
+        if (mode != FULL) return fade(requestedMs);
+        float systemScale = ValueAnimator.getDurationScale();
+        if (systemScale <= 0f) return 0;
+        return Math.max(requestedMs, (long) Math.ceil(240f / systemScale));
+    }
+
     private static TimeInterpolator curve(final Bezier b) {
         return new TimeInterpolator() { @Override public float getInterpolation(float t) { return (float) b.at(t); } };
     }
@@ -130,18 +142,18 @@ public final class Motion {
         if (dir == 0) {
             v.setAlpha(0f);
             v.setTranslationY(dp(v, RISE_DP) * (mode == FULL ? 1 : 0));
-            v.animate().alpha(1f).translationY(0).setDuration(fade(D_BASE)).setInterpolator(DECELERATE).start();
+            v.animate().alpha(1f).translationY(0).setDuration(screenTime(D_BASE)).setInterpolator(DECELERATE).start();
             return;
         }
         v.setAlpha(0f);
         v.setTranslationX(dp(v, SLIDE_DP) * dir * (mode == FULL ? 1 : 0));
-        v.animate().alpha(1f).translationX(0).setDuration(fade(D_SLOW)).setInterpolator(DECELERATE).start();
+        v.animate().alpha(1f).translationX(0).setDuration(screenTime(D_SLOW)).setInterpolator(DECELERATE).start();
     }
 
     public static void screenExit(final View v, int dir, final Runnable end) {
         if (mode == OFF) { if (end != null) end.run(); return; }
         float dx = dir == 0 ? 0 : -dp(v, SLIDE_DP) * dir * (mode == FULL ? 1 : 0);
-        v.animate().alpha(0f).translationX(dx).setDuration(fade(D_BASE)).setInterpolator(ACCELERATE).withEndAction(runOnce(end)).start();
+        v.animate().alpha(0f).translationX(dx).setDuration(screenTime(D_BASE)).setInterpolator(ACCELERATE).withEndAction(runOnce(end)).start();
     }
 
     // ----------------------------------------------------------------------------------------------- controls

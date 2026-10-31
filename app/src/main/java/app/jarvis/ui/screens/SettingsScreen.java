@@ -210,7 +210,7 @@ public class SettingsScreen extends Screen {
         if (!Ui.reduceMotion) {
             pageColumn.setTranslationX(Ui.dp(48));
             pageColumn.setAlpha(0f);
-            pageColumn.animate().translationX(0f).alpha(1f).setDuration(Ui.ms(220))
+            pageColumn.animate().translationX(0f).alpha(1f).setDuration(app.jarvis.ui.motion.Motion.screenTime(220))
                 .withEndAction(new Runnable() { @Override public void run() { if (current != null) listScroll.setVisibility(View.INVISIBLE); } }).start();
             listScroll.animate().translationX(-Ui.dp(48)).alpha(0.35f).setDuration(Ui.ms(220)).start();
         } else {
@@ -236,7 +236,7 @@ public class SettingsScreen extends Screen {
             }
         } };
         if (animate && !Ui.reduceMotion) {
-            pc.animate().translationX(Ui.dp(64)).alpha(0f).setDuration(Ui.ms(180)).withEndAction(new Runnable() { @Override public void run() {
+            pc.animate().translationX(Ui.dp(64)).alpha(0f).setDuration(app.jarvis.ui.motion.Motion.screenTime(180)).withEndAction(new Runnable() { @Override public void run() {
                 pc.setTranslationX(0); pc.setAlpha(1f); finish.run();
             } }).start();
             listScroll.animate().translationX(0).alpha(1f).setDuration(Ui.ms(180)).start();

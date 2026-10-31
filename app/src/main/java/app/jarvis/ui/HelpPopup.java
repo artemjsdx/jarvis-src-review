@@ -24,7 +24,7 @@ public final class HelpPopup {
         }
         final OverlayHost.Layer[] ly = new OverlayHost.Layer[1];
         View ok = Ui.button(c, "Понятно", 0, Ui.BTN_PRIMARY, new Runnable() { @Override public void run() { h.overlays().dismiss(ly[0]); } });
-        body.addView(ok, Ui.lpm(-1, -2, 0, 16, 0, 0));
+        body.addView(ok, Ui.lpm(-1, -2, 8, 16, 8, 0));
         ly[0] = Dialogs.sheet(h, title, body, true);
     }
 }

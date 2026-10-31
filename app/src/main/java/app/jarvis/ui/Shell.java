@@ -245,11 +245,15 @@ public final class Shell extends FrameLayout {
         if (old != null) {
             old.onHide();
             final View ov = old.view();
+            // Cache the outgoing screen during the transition to avoid repeatedly
+            // recording a complex scroll hierarchy on every animation frame.
+            if (!Ui.reduceMotion) ov.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             Motion.screenExit(ov, dir, new Runnable() {
                 @Override public void run() {
                     // the old screen may have been navigated back to while it was leaving: keep it then
                     if (ov.getParent() == screenHost && (current == null || current.view() != ov)) screenHost.removeView(ov);
                     ov.setAlpha(1f); ov.setTranslationX(0); ov.setTranslationY(0);
+                    ov.setLayerType(View.LAYER_TYPE_NONE, null);
                 }
             });
         }

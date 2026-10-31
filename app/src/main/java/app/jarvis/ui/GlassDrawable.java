@@ -15,6 +15,9 @@ import android.graphics.drawable.Drawable;
  * cached shaders; no allocation in draw().
  */
 public final class GlassDrawable extends Drawable {
+    // Neutral frosting is above the wallpaper glow but below the glass highlight,
+    // text and controls. Without it the purple wallpaper shows through at full strength.
+    private final Paint underlay = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG), border = new Paint(Paint.ANTI_ALIAS_FLAG), hi = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF r = new RectF(), inner = new RectF();
     private final float radius, stroke;
@@ -40,6 +43,9 @@ public final class GlassDrawable extends Drawable {
         inner.set(r);
         inner.inset(Ui.dpf(1.2f), Ui.dpf(1.2f));
         Ui.Pal p = Ui.P;
+        // Keep a little translucency for backdrop blur, but screen-space accent
+        // blobs may never read as an overlay ON TOP of a neutral card.
+        underlay.setColor(p.dark ? (strong ? 0xE124232C : 0xDB24232B) : 0xEAF6F5FA);
         int top = strong ? Ui.alpha(p.glassTop, Math.min(1f, android.graphics.Color.alpha(p.glassTop) / 255f * 1.6f)) : p.glassTop;
         int bot = strong ? Ui.alpha(p.glassBottom, Math.min(1f, android.graphics.Color.alpha(p.glassBottom) / 255f * 1.6f)) : p.glassBottom;
         fill.setShader(new LinearGradient(0, b.top, 0, b.bottom, top, bot, Shader.TileMode.CLAMP));
@@ -50,13 +56,14 @@ public final class GlassDrawable extends Drawable {
 
     @Override public void draw(Canvas c) {
         if (r.isEmpty()) return;
+        c.drawRoundRect(r, radius, radius, underlay);
         c.drawRoundRect(r, radius, radius, fill);
         c.drawRoundRect(r, radius, radius, border);
         // inner top highlight (specular edge of the glass)
         if (radius > Ui.dpf(6)) c.drawLine(inner.left + radius * 0.6f, inner.top, inner.right - radius * 0.6f, inner.top, hi);
     }
 
-    @Override public void setAlpha(int a) { fill.setAlpha(a); border.setAlpha(a); hi.setAlpha(a); }
-    @Override public void setColorFilter(ColorFilter cf) { fill.setColorFilter(cf); border.setColorFilter(cf); }
+    @Override public void setAlpha(int a) { underlay.setAlpha(a); fill.setAlpha(a); border.setAlpha(a); hi.setAlpha(a); }
+    @Override public void setColorFilter(ColorFilter cf) { underlay.setColorFilter(cf); fill.setColorFilter(cf); border.setColorFilter(cf); }
     @Override public int getOpacity() { return PixelFormat.TRANSLUCENT; }
 }
