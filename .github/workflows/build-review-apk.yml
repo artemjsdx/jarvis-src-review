@@ -1,0 +1,85 @@
+name: build-review-apk
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "fix/**"
+      - "review/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-review-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Platform 36 and build-tools
+        run: |
+          sdkmanager --install "platforms;android-36" "build-tools;36.0.0" >/dev/null \
+            || sdkmanager --install "platforms;android-36" "build-tools;35.0.0" >/dev/null
+          BT=$(ls -d "$ANDROID_HOME/build-tools/36.0.0" 2>/dev/null || ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          echo "build-tools: $BT"
+          echo "$BT" >> "$GITHUB_PATH"
+          echo "ANDROID_JAR_DIR=$ANDROID_HOME/platforms/android-36" >> "$GITHUB_ENV"
+
+      - name: Project build inputs (android.jar, lambda stubs)
+        run: bash tools/setup.sh
+
+      - name: Test signing key from secrets
+        env:
+          KS_B64: ${{ secrets.JV_TEST_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.JV_TEST_KEYPASS }}
+        run: |
+          if [ -z "$KS_B64" ] || [ -z "$KS_PASS" ]; then
+            echo "::error::Secrets JV_TEST_KEYSTORE_B64 / JV_TEST_KEYPASS are not set"; exit 1
+          fi
+          mkdir -p .ci
+          printf '%s' "$KS_B64" | base64 -d > .ci/uifix.p12
+          printf '%s' "$KS_PASS" > .ci/uifix.pass
+          chmod 600 .ci/uifix.p12 .ci/uifix.pass
+
+      - name: Build test APK (side-by-side, debug)
+        env:
+          JV_APP_ID: app.jarvis.uifix
+          JV_APK_OUT: build/outputs/Jarvis-uifix.apk
+          JARVIS_KEYSTORE: .ci/uifix.p12
+          JARVIS_KEYPASS_FILE: .ci/uifix.pass
+        run: bash build.sh debug
+
+      - name: Verify signature, package id, secrets
+        run: |
+          set -euo pipefail
+          APK=build/outputs/Jarvis-uifix.apk
+          test -f "$APK"
+          apksigner verify --min-sdk-version 26 --print-certs "$APK" | head -5
+          PKG=$(aapt2 dump packagename "$APK" | tr -d '\r')
+          echo "package: $PKG"
+          test "$PKG" = "app.jarvis.uifix"
+          python3 tools/ci/check-apk.py "$APK"
+          if unzip -l "$APK" | grep -q 'provisioned.json'; then echo "::error::provisioned.json in APK"; exit 1; fi
+          unzip -p "$APK" classes.dex | grep -aE 'sk-or-v1-[A-Za-z0-9-]{20,}|ghp_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{30,}' && exit 1 || true
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-uifix-apk
+          path: build/outputs/Jarvis-uifix.apk
+          if-no-files-found: error
+          retention-days: 30
