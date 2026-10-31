@@ -238,7 +238,7 @@ if group=="a":
 # The model chip at the top of HomeScreen navigates to settings/llm.
 tap(int(W*.48),int(H*.073));wait(1)
 t,b=dump()
-if not seek(t,"Языковая модель (LLM)"):
+if seek(t,"Языковая модель (LLM)") is None:
     results["warnings"].append("Cannot identify model settings after tapping chip; keys="+repr(texts(t)[:12]))
     # Try opening the settings gear if HomeScreen changed.
     tap(int(W*.92),int(H*.075));wait(.8)
@@ -247,7 +247,7 @@ back()
 t,b=dump()
 results["settingsIndex"]=capture("settings","index-top",t,b)
 log("settings-directory",sample=texts(t)[:12])
-if not seek(t,"Языковая модель (LLM)"):
+if seek(t,"Языковая модель (LLM)") is None:
     results["warnings"].append("Settings directory not detected; all pages will be marked unreachable")
 
 def visit_settings_page(pid):
@@ -262,8 +262,8 @@ def visit_settings_page(pid):
                 scroll(t,direction)
                 t,b=dump()
                 node=seek(t,title)
-                if node:break
-            if node:break
+                if node is not None:break
+            if node is not None:break
     if node is None:
         rec["warnings"].append("row-not-found")
         log("page-unreachable",id=pid,title=title)
@@ -273,13 +273,13 @@ def visit_settings_page(pid):
     process=screenrecord(root/"transition.mp4",7) if pid==GROUPS[group][0] else None
     tap(x,y);wait(.7)
     t,b=dump()
-    rec["opened"]=bool(seek(t,title))
+    rec["opened"]=seek(t,title) is not None
     rec["snapshots"].append(capture("settings/"+pid,"top",t,b))
     log("page-start",id=pid,ok=rec["opened"],texts=texts(t)[:8])
     if not rec["opened"]:
         rec["warnings"].append("header-not-found")
     last=signature(t);stable=0
-    for step in range(1,11):
+    for step in range(1,19):
         if not scroll(t):break
         t,b=dump()
         sn=capture("settings/"+pid,f"scroll-{step:02d}",t,b)
@@ -292,7 +292,7 @@ def visit_settings_page(pid):
         if stable>=2:
             rec["bottomReached"]=True
             break
-    if len(rec["snapshots"])==11 and not rec["bottomReached"]:
+    if len(rec["snapshots"])==19 and not rec["bottomReached"]:
         rec["warnings"].append("scroll-limit-reached")
     # Help overlay can be safely examined on the first page: click a visible '?' button
     # only if the uiautomator tree exposes a precise label (avoid random tap on controls).
