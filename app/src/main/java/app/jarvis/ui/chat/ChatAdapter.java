@@ -165,17 +165,9 @@ public final class ChatAdapter implements ActionGroupView.State {
         LinearLayout row = Ui.column(host.context());
         row.setPadding(Ui.dp(12), Ui.dp(3), Ui.dp(12), Ui.dp(3));
         BubbleView b = new BubbleView(host.context());
-        GradientDrawable bg;
-        if (user) {
-            bg = Ui.rect(Ui.P.bubbleUser, 18);
-            bg.setStroke(Math.max(1, Ui.dp(1)), Ui.mix(Ui.P.accent, 0x00000000, 0.35f));
-        } else {
-            bg = Ui.rect(0, 18);
-            bg.setColors(new int[]{Ui.P.glassTop, Ui.P.glassBottom});
-            bg.setOrientation(GradientDrawable.Orientation.TL_BR);
-            bg.setStroke(Math.max(1, Ui.dp(1)), Ui.P.strokeLo);
-        }
-        b.setBackground(bg);
+        // Message bubbles are frosted surfaces, not independent translucent
+        // gradients. GlassHost samples the wallpaper behind these rounded views.
+        b.setBackground(user ? Ui.glassTinted(18, Ui.P.bubbleUser) : Ui.glass(18));
         b.setPadding(Ui.dp(12), Ui.dp(9), Ui.dp(12), Ui.dp(7));
         b.text.setText(it.text);
         boolean voice = "voice".equals(it.source);

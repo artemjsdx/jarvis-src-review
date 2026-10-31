@@ -230,6 +230,13 @@ public final class Ui {
     /** Glass card/background with a distinct 1dp gradient border. */
     public static Drawable glass(float rDp) { return Glass.surface(rDp, new GlassDrawable(rDp, false), 0); }
 
+    /** A lightly accented glass surface that still participates in the host-space wallpaper blur. */
+    public static Drawable glassTinted(float rDp, int tint) {
+        return Glass.surface(rDp, new android.graphics.drawable.LayerDrawable(new Drawable[]{
+            new GlassDrawable(rDp, false), rect(tint, rDp)
+        }), 0);
+    }
+
     public static Drawable glassPressable(float rDp) { return Glass.surface(rDp, rippleOn(new GlassDrawable(rDp, false), rDp), 0); }
 
     /** Accent-filled button surface (lavender gradient) with a hairline edge. */
