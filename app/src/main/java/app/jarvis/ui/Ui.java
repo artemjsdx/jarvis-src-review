@@ -259,7 +259,13 @@ public final class Ui {
      * violet stripe over the cards at the right edge. The app draws no scrollbar anywhere else either.
      */
     public static ScrollView scroll(Context c) {
-        ScrollView sv = new ScrollView(c);
+        ScrollView sv = new ScrollView(c) {
+            @Override protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+                super.onScrollChanged(l, t, oldl, oldt);
+                app.jarvis.ui.glass.GlassHost host = Glass.hostOf(this);
+                if (host != null) host.invalidateContentGlass();
+            }
+        };
         sv.setFillViewport(true);
         sv.setVerticalScrollBarEnabled(false);
         sv.setHorizontalScrollBarEnabled(false);

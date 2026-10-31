@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Path;
-import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.SystemClock;
@@ -37,9 +36,9 @@ public final class GlassHost extends FrameLayout {
     private final BlurLayer blur;
     private final BlurLayer wallpaper;
     private final FrameGovernor governor = new FrameGovernor();
-    private final Path clip = new Path(), surfacePath = new Path();
-    private final RectF rect = new RectF(), region = new RectF();
-    private final PointF origin = new PointF();
+    private final Path clip = new Path(), contentClip = new Path();
+    private final Path surfacePath = new Path(), viewportPath = new Path();
+    private final RectF rect = new RectF(), region = new RectF(), surfaceBounds = new RectF();
     private final ArrayList<View> glass = new ArrayList<>();
     private final ArrayList<Lens> lenses = new ArrayList<>();
     private View backdrop;
@@ -49,7 +48,25 @@ public final class GlassHost extends FrameLayout {
 
     public GlassHost(Context c) {
         super(c);
-        content = new FrameLayout(c);
+        content = new FrameLayout(c) {
+            @Override protected void dispatchDraw(Canvas canvas) {
+                // Draw the static wallpaper first, then its frosted regions in HOST
+                // coordinates, before the screen controls and text. A card's own
+                // RenderNode is cached while scrolling: recording host-space
+                // coordinates inside that node caused a dragged rectangular ghost.
+                // Software captures for floating overlays use the normal path.
+                if (!canvas.isHardwareAccelerated() || wallpaper == null
+                        || !wallpaper.recorded() || !GlassLevel.blur() || getChildCount() == 0) {
+                    super.dispatchDraw(canvas);
+                    return;
+                }
+                long drawingTime = getDrawingTime();
+                drawChild(canvas, getChildAt(0), drawingTime);
+                drawContentGlass(canvas);
+                for (int i = 1; i < getChildCount(); i++)
+                    drawChild(canvas, getChildAt(i), drawingTime);
+            }
+        };
         overlay = new FrameLayout(c);
         overlay.setClipChildren(false);
         addView(content, new FrameLayout.LayoutParams(-1, -1));
@@ -61,6 +78,9 @@ public final class GlassHost extends FrameLayout {
 
     /** Screens and the backdrop go here. */
     public FrameLayout content() { return content; }
+
+    /** Re-record the host-space glass mask whenever the viewport scrolls. */
+    public void invalidateContentGlass() { content.invalidate(); }
 
     /** Dock, dialogs, toasts and floating buttons go here. */
     public FrameLayout overlay() { return overlay; }
@@ -99,35 +119,55 @@ public final class GlassHost extends FrameLayout {
         if (backdrop == null || w <= 0 || h <= 0) return;
         wallpaper.resize(w, h, GlassLevel.effective() == GlassLevel.FULL ? SCALE_FULL : SCALE_REDUCED);
         rect.set(0, 0, w, h);
-        if (!wallpaper.covers(rect)) wallpaper.capture(backdrop, rect, Ui.dpf(BLUR_DP));
+        // A theme/quality change can keep the same dimensions, yet needs a new
+        // capture. wallpaperWanted means the old snapshot is not authoritative.
+        wallpaper.capture(backdrop, rect, Ui.dpf(BLUR_DP));
     }
 
     /**
-     * Blurs the wallpaper under a content-layer glass surface; called from {@link GlassSurface#draw} with the surface's rectangle in
-     * its own coordinates. Overlay surfaces are skipped: the overlay pass blurs them.
+     * Finds content-layer surfaces in current host coordinates, including ancestor
+     * ScrollView clips. These shapes are computed at draw time instead of cached
+     * inside a child Drawable's display list. No screen-space bitmap sampling is
+     * recorded in a card, so a fling cannot drag a stale piece of wallpaper.
      */
-    void drawBackdrop(Canvas c, View v, float left, float top, float right, float bottom, float radiusPx) {
-        if (wallpaper == null || !c.isHardwareAccelerated() || !GlassLevel.blur() || isInOverlay(v)) return;
-        if (!wallpaper.recorded()) {
-            wallpaperWanted = true;
-            invalidate();
-            return;
-        }
-        Glass.originInHost(v, this, origin);
-        c.save();
-        surfacePath.rewind();
-        surfacePath.addRoundRect(left, top, right, bottom, radiusPx, radiusPx, Path.Direction.CW);
-        c.clipPath(surfacePath);
-        c.translate(-origin.x, -origin.y);
-        wallpaper.drawNode(c);
-        c.restore();
+    private void drawContentGlass(Canvas c) {
+        if (wallpaper == null || !wallpaper.recorded()) return;
+        contentClip.rewind();
+        collectContentGlass(content, 0, 0, getWidth(), getHeight());
+        if (!contentClip.isEmpty()) wallpaper.drawInto(c, contentClip);
     }
 
-    private boolean isInOverlay(View v) {
-        for (View cur = v; cur != null && cur != this; cur = cur.getParent() instanceof View ? (View) cur.getParent() : null) {
-            if (cur == overlay) return true;
+    private void collectContentGlass(View v, float clipL, float clipT, float clipR, float clipB) {
+        if (v.getVisibility() != VISIBLE || v.getAlpha() <= 0f || clipR <= clipL || clipB <= clipT) return;
+        float left = clipL, top = clipT, right = clipR, bottom = clipB;
+        if (v != content) {
+            Glass.rectInHost(v, this, surfaceBounds);
+            final float vl = surfaceBounds.left, vt = surfaceBounds.top;
+            final float vr = surfaceBounds.right, vb = surfaceBounds.bottom;
+            if (v.getBackground() instanceof GlassSurface
+                    && vr > clipL && vb > clipT && vl < clipR && vt < clipB) {
+                GlassSurface surface = (GlassSurface) v.getBackground();
+                float inset = surface.insetYPx();
+                float r = Math.min(Ui.dpf(surface.radiusDp()), Math.min(vr - vl, vb - vt) / 2f);
+                surfacePath.rewind();
+                surfacePath.addRoundRect(vl, vt + inset, vr, vb - inset, r, r, Path.Direction.CW);
+                viewportPath.rewind();
+                viewportPath.addRect(clipL, clipT, clipR, clipB, Path.Direction.CW);
+                if (surfacePath.op(viewportPath, Path.Op.INTERSECT))
+                    contentClip.addPath(surfacePath);
+            }
+            if (v instanceof ViewGroup && ((ViewGroup) v).getClipChildren()) {
+                left = Math.max(clipL, vl);
+                top = Math.max(clipT, vt);
+                right = Math.min(clipR, vr);
+                bottom = Math.min(clipB, vb);
+            }
         }
-        return false;
+        if (v instanceof ViewGroup && right > left && bottom > top) {
+            ViewGroup group = (ViewGroup) v;
+            for (int i = 0; i < group.getChildCount(); i++)
+                collectContentGlass(group.getChildAt(i), left, top, right, bottom);
+        }
     }
 
     private void drawGlass(Canvas c) {
