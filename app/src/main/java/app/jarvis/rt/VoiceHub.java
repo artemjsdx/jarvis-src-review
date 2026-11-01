@@ -15,6 +15,9 @@ import app.jarvis.core.voice.SlowProvider;
 import app.jarvis.core.voice.SttProvider;
 import app.jarvis.core.voice.TtsProvider;
 import app.jarvis.data.Settings;
+import app.jarvis.wake.LocalStt;
+import app.jarvis.wake.WakePack;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +44,7 @@ public final class VoiceHub implements SttHub {
         stt.add(new GroqStt());
         stt.add(new ElevenLabsStt());
         stt.add(new OpenRouterStt());
+        stt.add(new LocalStt());
         reconfigure();
     }
 
@@ -88,6 +92,10 @@ public final class VoiceHub implements SttHub {
             case "google-stt":
                 if (j.secrets.has("key.google-stt")) c.put("key", j.secrets.get("key.google-stt"));
                 break;
+            case "vosk-local":
+                c.put("modelDir", new File(j.ctx.getFilesDir(),
+                    "models/" + WakePack.MODEL_NAME).getAbsolutePath());
+                break;
             default: break;
         }
         return c;
@@ -126,7 +134,13 @@ public final class VoiceHub implements SttHub {
         List<String> ids = new ArrayList<>();
         if (forWake && j.settings.has(Settings.WAKE_STT)) ids.addAll(j.settings.getList(Settings.WAKE_STT));
         ids.addAll(j.settings.getList(Settings.STT_CHAIN));
-        if (ids.isEmpty()) { ids.add("google-stt"); ids.add("groq-stt"); ids.add("elevenlabs"); ids.add("openrouter-stt"); }
+        if (ids.isEmpty()) {
+            ids.add("google-stt");
+            ids.add("groq-stt");
+            ids.add("elevenlabs");
+            ids.add("openrouter-stt");
+            ids.add("vosk-local");
+        }
         List<SttProvider> out = new ArrayList<>();
         for (String id : ids) {
             if (id.equals("elevenlabs-stt")) id = "elevenlabs";

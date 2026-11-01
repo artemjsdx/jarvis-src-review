@@ -460,20 +460,24 @@ public final class VoiceController implements ListenApi {
                 if (!WakeEngine.cloudFallbackAllowed(engine)) return;
             }
         }
-        if (!wakeAllowed()) {
-            j.journal.log(Journal.Cat.WAKE, Journal.Level.WARN, "Слишком много фраз в минуту: распознавание обращения пропущено (экономия квоты)", null, null, -1);
+        boolean cloudConfirm = j.settings.getBool("wake.cloudConfirm", false);
+        boolean useCloud = !localHit || WakeEngine.verifyLocalHits(engine, cloudConfirm);
+        if (useCloud && !wakeAllowed()) {
+            j.journal.log(Journal.Cat.WAKE, Journal.Level.WARN, "Слишком много облачных проверок обращения в минуту", null, null, -1);
             return;
         }
         String text = "";
-        try { text = transcribe(audio, true, "wake", tr); } catch (VoiceException e) {
-            if (!localHit) {
-                j.journal.w(Journal.Cat.WAKE, "Распознавание обращения не удалось: " + e.userMessage, e, null);
-                return;
+        if (useCloud) {
+            try { text = transcribe(audio, true, "wake", tr); } catch (VoiceException e) {
+                if (!localHit || cloudConfirm) {
+                    j.journal.w(Journal.Cat.WAKE, "Распознавание обращения не удалось: " + e.userMessage, e, null);
+                    return;
+                }
             }
         }
         WakeMatcher.Match m = matcher.match(text);
         boolean commandHeard = m.found && m.positionOk;
-        if (!commandHeard && !(localHit && !WakeEngine.verifyLocalHits(engine))) {
+        if (!commandHeard && !localHit) {
             j.journal.log(Journal.Cat.WAKE, Journal.Level.DEBUG, localHit ? "Локальное срабатывание не подтверждено облаком" : "Речь без обращения (" + text.split("\\s+").length + " сл.)", null, null, -1);
             return;
         }
@@ -665,7 +669,15 @@ public final class VoiceController implements ListenApi {
         if (enabled == wake) return;
         if (enabled) {
             if (!hasMicPermission()) { problem = "Нет разрешения на микрофон"; j.needPermission(Manifest.permission.RECORD_AUDIO); return; }
-            if (hub.chain(true).isEmpty()) { problem = "Не настроено распознавание речи (Настройки → Обращение и распознавание)"; j.toast(problem, 2); j.settings.setBool(Settings.WAKE_ENABLED, false); return; }
+            boolean localCanWake = WakeEngine.pick(
+                j.settings.get(Settings.WAKE_ENGINE, WakeEngine.AUTO), localWakeReady()) == WakeEngine.Kind.LOCAL
+                && localWakeReady();
+            if (hub.chain(true).isEmpty() && !localCanWake) {
+                problem = "Нет доступного распознавания. Откройте Студия голоса → Обращение и установите офлайн-модель.";
+                j.toast(problem, 2);
+                j.settings.setBool(Settings.WAKE_ENABLED, false);
+                return;
+            }
             wake = true;
             if (arbiterMachine.blocked()) {
                 synchronized (lock) { mode = Mode.WAKE; segmenter.reset(); segmenter.setEnabled(true); }

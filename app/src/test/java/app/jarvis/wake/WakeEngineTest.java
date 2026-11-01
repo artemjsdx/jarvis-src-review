@@ -29,11 +29,13 @@ public class WakeEngineTest {
         assertEquals(WakeEngine.Kind.CLOUD, WakeEngine.pick("cloud", true));
     }
 
-    @Test public void localHits_verifiedByCloud_onlyForAuto() {
-        assertTrue(WakeEngine.verifyLocalHits("auto"));
-        assertTrue(WakeEngine.verifyLocalHits(null));
-        assertFalse(WakeEngine.verifyLocalHits("local"));
-        assertFalse(WakeEngine.verifyLocalHits("cloud"));
+    @Test public void localHits_doNotRequireCloudUnlessOptedIn() {
+        assertFalse(WakeEngine.verifyLocalHits("auto"));
+        assertFalse(WakeEngine.verifyLocalHits(null));
+        assertTrue(WakeEngine.verifyLocalHits("auto", true));
+        assertFalse(WakeEngine.verifyLocalHits("auto", false));
+        assertFalse(WakeEngine.verifyLocalHits("local", true));
+        assertFalse(WakeEngine.verifyLocalHits("cloud", true));
     }
 
     @Test public void cloudFallback_onlyForAuto() {

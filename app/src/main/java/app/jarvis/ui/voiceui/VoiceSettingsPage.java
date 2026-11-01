@@ -58,11 +58,8 @@ public class VoiceSettingsPage extends SettingsPage {
         content.removeAllViews();
         content.addView(Widgets.sectionTitle(ctx, "Озвучка ответов"));
         content.addView(autoCard());
-        content.addView(Widgets.sectionTitle(ctx, "Провайдеры озвучки"));
-        chainHost = Ui.column(ctx);
-        content.addView(chainHost);
-        renderChain();
-        content.addView(Widgets.sectionTitle(ctx, "Ключи API"));
+        // The provider chain is managed in the Studio's «Озвучка» tab, not duplicated here.
+        content.addView(Widgets.sectionTitle(ctx, "Ключи сервисов речи"));
         content.addView(keysCard());
         content.addView(Widgets.sectionTitle(ctx, "Скорость речи"));
         content.addView(speedCard());
@@ -72,10 +69,7 @@ public class VoiceSettingsPage extends SettingsPage {
         content.addView(commentsCard());
         content.addView(Widgets.sectionTitle(ctx, "Перед действием"));
         content.addView(preActionCard());
-        content.addView(Ui.space(ctx, 1, 4));
-        content.addView(WrapButton.create(ctx, "Открыть Студию голоса", R.drawable.ic_voice, Ui.BTN_GLASS, new Runnable() { @Override public void run() {
-            host.navigate("studio");
-        } }));
+        content.addView(VoiceUiKit.note(ctx, "Провайдеры речи выбираются на вкладках «Озвучка» и «Распознавание». Здесь настраивается поведение ассистента."));
     }
 
     // -------------------------------------------------------------------------------------------- auto mode
