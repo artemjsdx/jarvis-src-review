@@ -149,6 +149,7 @@ public class WakeSettingsPage extends SettingsPage {
             chain.add("vosk-local");
             chain.add("groq-stt");
             chain.add("cloudflare-stt");
+            chain.add("gemini-transcribe-stt");
             chain.add("gemini-audio-stt");
             chain.add("elevenlabs-stt");
         }
@@ -252,7 +253,7 @@ public class WakeSettingsPage extends SettingsPage {
         switch (id) {
             case "groq-stt": return "key.groq";
             case "cloudflare-stt": return "key.cloudflare-ai";
-            case "gemini-audio-stt": return "key.gemini";
+            case "gemini-transcribe-stt": case "gemini-audio-stt": return "key.gemini";
             case "elevenlabs-stt": return "key.elevenlabs";
             case "openrouter-stt": return "key.openrouter";
             case "google-stt": return "key.google-stt";
@@ -294,6 +295,7 @@ public class WakeSettingsPage extends SettingsPage {
             order.add("vosk-local");
             order.add("groq-stt");
             order.add("cloudflare-stt");
+            order.add("gemini-transcribe-stt");
             order.add("gemini-audio-stt");
             order.add("elevenlabs-stt");
         }
@@ -314,6 +316,7 @@ public class WakeSettingsPage extends SettingsPage {
             order.add("vosk-local");
             order.add("groq-stt");
             order.add("cloudflare-stt");
+            order.add("gemini-transcribe-stt");
             order.add("gemini-audio-stt");
             order.add("elevenlabs-stt");
         }
