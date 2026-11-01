@@ -143,6 +143,21 @@ public class WakeSettingsPage extends SettingsPage {
             "Распознавание (STT) превращает вашу речь в текст перед отправкой в DeepSeek. " +
             "Оно отдельно от модели LLM и от голоса озвучки. Включайте только нужные сервисы."));
 
+        sttHost.addView(WrapButton.create(ctx, "Сбросить на бесплатную цепочку",
+            0, Ui.BTN_GLASS, () -> {
+                java.util.List<String> free = new java.util.ArrayList<>();
+                free.add("vosk-local");
+                free.add("groq-stt");
+                free.add("cloudflare-stt");
+                free.add("gemini-transcribe-stt");
+                free.add("gemini-audio-stt");
+                j.settings.setList(Settings.STT_CHAIN, free);
+                // Historic OpenRouter/Google wake selection could otherwise override the free-first order.
+                j.settings.remove(Settings.WAKE_STT);
+                renderStt();
+                host.overlays().toast("Цепочка сброшена; подключите нужные API-ключи", 1);
+            }), Ui.lpm(-1, -2, 0, Ui.dp(12), 0, Ui.dp(8)));
+
         List<SttProvider> providers = j.listen == null ? new ArrayList<SttProvider>() : sttList();
         List<String> chain = new ArrayList<>(j.settings.getList(Settings.STT_CHAIN));
         if (chain.isEmpty()) {
