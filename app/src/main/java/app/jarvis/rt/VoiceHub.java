@@ -1,6 +1,8 @@
 package app.jarvis.rt;
 
 import app.jarvis.core.voice.EdgeTts;
+import app.jarvis.core.voice.CloudflareStt;
+import app.jarvis.core.voice.GeminiAudioStt;
 import app.jarvis.core.voice.ElevenLabsApi;
 import app.jarvis.core.voice.ElevenLabsStt;
 import app.jarvis.core.voice.ElevenLabsTts;
@@ -42,6 +44,8 @@ public final class VoiceHub implements SttHub {
         addOptional("app.jarvis.core.voice.F5SpaceTts");
         stt.add(new GoogleSpeechStt());
         stt.add(new GroqStt());
+        stt.add(new CloudflareStt());
+        stt.add(new GeminiAudioStt());
         stt.add(new ElevenLabsStt());
         stt.add(new OpenRouterStt());
         stt.add(new LocalStt());
@@ -84,6 +88,14 @@ public final class VoiceHub implements SttHub {
             case "openrouter-stt":
                 c.put("apiKey", j.secrets.get("key.openrouter"));
                 if (j.settings.has("stt.openrouter.model")) c.put("model", j.settings.get("stt.openrouter.model"));
+                break;
+            case "cloudflare-stt":
+                c.put("apiKey", j.secrets.get("key.cloudflare-ai"));
+                c.put("accountId", j.settings.get("stt.cloudflare.accountId"));
+                break;
+            case "gemini-audio-stt":
+                c.put("apiKey", j.secrets.get("key.gemini"));
+                c.put("model", opt("stt.gemini.model", "gemini-3.8-flash"));
                 break;
             case "groq-stt":
                 c.put("apiKey", j.secrets.get("key.groq"));
