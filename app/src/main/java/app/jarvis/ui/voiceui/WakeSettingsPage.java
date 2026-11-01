@@ -17,6 +17,8 @@ import app.jarvis.wake.WakePack;
 import java.io.File;
 import app.jarvis.rt.ListenApi;
 import app.jarvis.ui.Host;
+import app.jarvis.ui.Dialogs;
+import app.jarvis.data.Secrets;
 import app.jarvis.ui.Ui;
 import app.jarvis.ui.WrapButton;
 import app.jarvis.ui.Widgets;
@@ -146,7 +148,9 @@ public class WakeSettingsPage extends SettingsPage {
         if (chain.isEmpty()) {
             chain.add("vosk-local");
             chain.add("groq-stt");
-            chain.add("elevenlabs");
+            chain.add("cloudflare-stt");
+            chain.add("gemini-audio-stt");
+            chain.add("elevenlabs-stt");
         }
         final String wakeStt = j.settings.get(Settings.WAKE_STT, chain.get(0));
 
@@ -188,6 +192,18 @@ public class WakeSettingsPage extends SettingsPage {
             card.addView(VoiceUiKit.note(ctx, state +
                 (destination == null || destination.isEmpty() ? "" : " · " + destination)),
                 Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+
+            if (p.info().needsKey) {
+                String keyName = secretName(pid);
+                String hint = keyName.isEmpty() ? "ключ провайдера" : Secrets.mask(j.secrets.get(keyName));
+                card.addView(WrapButton.create(ctx, "API: " + hint, 0, Ui.BTN_GLASS,
+                    () -> editProviderCredentials(pid)), Ui.lpm(-1, -2, 0, Ui.dp(12), 0, 0));
+                if ("cloudflare-stt".equals(pid)) {
+                    String account = j.settings.get("stt.cloudflare.accountId", "");
+                    card.addView(WrapButton.create(ctx, "Account ID: " + (account.isEmpty() ? "не задан" : "задан"),
+                        0, Ui.BTN_GLASS, () -> editAccountId()), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+                }
+            }
 
             LinearLayout enabled = Ui.row(ctx);
             enabled.addView(Ui.text(ctx, selected
@@ -232,12 +248,54 @@ public class WakeSettingsPage extends SettingsPage {
             Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
     }
 
+    private static String secretName(String id) {
+        switch (id) {
+            case "groq-stt": return "key.groq";
+            case "cloudflare-stt": return "key.cloudflare-ai";
+            case "gemini-audio-stt": return "key.gemini";
+            case "elevenlabs-stt": return "key.elevenlabs";
+            case "openrouter-stt": return "key.openrouter";
+            case "google-stt": return "key.google-stt";
+            default: return "";
+        }
+    }
+
+    private void editProviderCredentials(String id) {
+        String key = secretName(id);
+        if (key.isEmpty()) return;
+        Dialogs.prompt(host, "Ключ: " + id, "Вставьте ключ API", "", false, true,
+            "Сохранить", raw -> {
+                String v = raw.trim();
+                if (v.isEmpty()) return;
+                j.secrets.set(key, v);
+                if (j.speech != null) j.speech.reconfigure();
+                host.overlays().toast("Ключ сохранён в хранилище Jarvis", 1);
+                renderStt();
+            });
+    }
+
+    private void editAccountId() {
+        Dialogs.prompt(host, "Cloudflare Account ID", "Account ID из Workers AI",
+            j.settings.get("stt.cloudflare.accountId", ""), false, false, "Сохранить", raw -> {
+                String value = raw.trim();
+                if (!value.matches("[A-Za-z0-9_-]{8,128}")) {
+                    host.overlays().toast("Укажите корректный Account ID", 2);
+                    return;
+                }
+                j.settings.set("stt.cloudflare.accountId", value);
+                if (j.speech != null) j.speech.reconfigure();
+                renderStt();
+            });
+    }
+
     private void toggleStt(String id, boolean enabled) {
         List<String> order = new ArrayList<>(j.settings.getList(Settings.STT_CHAIN));
         if (order.isEmpty()) {
             order.add("vosk-local");
             order.add("groq-stt");
-            order.add("elevenlabs");
+            order.add("cloudflare-stt");
+            order.add("gemini-audio-stt");
+            order.add("elevenlabs-stt");
         }
         order.remove(id);
         if (enabled) order.add(id);
@@ -255,7 +313,9 @@ public class WakeSettingsPage extends SettingsPage {
         if (order.isEmpty()) {
             order.add("vosk-local");
             order.add("groq-stt");
-            order.add("elevenlabs");
+            order.add("cloudflare-stt");
+            order.add("gemini-audio-stt");
+            order.add("elevenlabs-stt");
         }
         int from = order.indexOf(id), to = from + direction;
         if (from < 0 || to < 0 || to >= order.size()) return;
