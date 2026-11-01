@@ -144,14 +144,21 @@ public final class VoiceHub implements SttHub {
 
     @Override public List<SttProvider> chain(boolean forWake) {
         List<String> ids = new ArrayList<>();
-        if (forWake && j.settings.has(Settings.WAKE_STT)) ids.addAll(j.settings.getList(Settings.WAKE_STT));
-        ids.addAll(j.settings.getList(Settings.STT_CHAIN));
+        List<String> userOrder = j.settings.getList(Settings.STT_CHAIN);
+        if (forWake && j.settings.has(Settings.WAKE_STT)) {
+            String preferred = j.settings.get(Settings.WAKE_STT);
+            // A disabled STT may not be smuggled into wake recognition through the old preference.
+            if (userOrder.contains(preferred) || userOrder.isEmpty()) ids.add(preferred);
+        }
+        ids.addAll(userOrder);
         if (ids.isEmpty()) {
             // Free-first explicit fallback: never silently route recognition to
             // OpenRouter or the unofficial Google endpoint.
             ids.add("vosk-local");
             ids.add("groq-stt");
-            ids.add("elevenlabs");
+            ids.add("cloudflare-stt");
+            ids.add("gemini-audio-stt");
+            ids.add("elevenlabs-stt");
         }
         List<SttProvider> out = new ArrayList<>();
         for (String id : ids) {
