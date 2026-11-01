@@ -16,19 +16,21 @@ import app.jarvis.ui.studio.DubTab;
 import app.jarvis.ui.studio.PronTab;
 import app.jarvis.ui.voiceui.VoiceSettingsPage;
 import app.jarvis.ui.voiceui.WakeSettingsPage;
+import app.jarvis.ui.settings.SoundsPage;
 
 /**
- * Студия голоса: рабочее место озвучки. Три вкладки: «Озвучка» (провайдеры, тесты, дубли),
+ * Студия голоса: рабочее место озвучки. Единый голосовой центр: «Озвучка» (провайдеры, тесты, дубли),
  * «Клонирование» (образец → согласие → клон → профили голосов), «Произношение» (словарь замен, предпросмотр, кэш).
  * Если голосовой модуль не подключён (j.speech == null) — честное состояние без кнопок.
  */
 public class StudioScreen extends app.jarvis.ui.Screen {
-    private static final String[] TABS = {"Озвучка", "Распознавание", "Обращение", "Поведение", "Клонирование", "Произношение"};
+    private static final String[] TABS = {"Озвучка", "Распознавание", "Обращение", "Поведение", "Клонирование", "Произношение", "Микрофон и звуки"};
 
     private LinearLayout tabsBar;
     private HorizontalScrollView tabsScroll;
     private WakeSettingsPage sttPage, wakePage;
     private VoiceSettingsPage behaviorPage;
+    private SoundsPage soundsPage;
     private FrameLayout content;
     private int current = 0;
     private DubTab dub;
@@ -82,6 +84,7 @@ public class StudioScreen extends app.jarvis.ui.Screen {
         else if ("behavior".equals(arg) || "settings".equals(arg)) current = 3;
         else if ("clone".equals(arg)) current = 4;
         else if ("pron".equals(arg)) current = 5;
+        else if ("sounds".equals(arg) || "mic".equals(arg)) current = 6;
         else if ("tts".equals(arg)) current = 0;
         styleTabs();
         showTab();
@@ -92,9 +95,15 @@ public class StudioScreen extends app.jarvis.ui.Screen {
         if (current == 1 && sttPage != null) sttPage.onHide();
         if (current == 2 && wakePage != null) wakePage.onHide();
         if (current == 4 && clone != null) clone.onHide();
+        if (current == 6 && soundsPage != null) soundsPage.onHide();
     }
 
     @Override public void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
+        // User-selected cue audio belongs to SoundsPage even though it is hosted inside StudioScreen.
+        if (soundsPage != null && (requestCode == 61 || requestCode == 62)) {
+            soundsPage.onActivityResult(requestCode, resultCode, data);
+            return;
+        }
         if (requestCode == CloneTab.REQ_IMPORT_SAMPLE && resultCode == android.app.Activity.RESULT_OK
             && data != null && data.getData() != null && clone != null) {
             clone.onSamplePicked(data.getData());
@@ -150,6 +159,11 @@ public class StudioScreen extends app.jarvis.ui.Screen {
             case 5:
                 if (pron == null) pron = new PronTab(host);
                 v = pron.view();
+                break;
+            case 6:
+                if (soundsPage == null) soundsPage = new SoundsPage(host);
+                v = soundsPage.view();
+                soundsPage.onShow();
                 break;
             default:
                 if (dub == null) dub = new DubTab(host);

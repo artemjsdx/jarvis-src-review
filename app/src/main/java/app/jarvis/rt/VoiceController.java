@@ -133,7 +133,7 @@ public final class VoiceController implements ListenApi {
         });
         rebuildSegmenter();
         reloadMatcher();
-        main.postDelayed(new Runnable() { @Override public void run() { cues.warmUp(); } }, 3000);
+        main.postDelayed(new Runnable() { @Override public void run() { cues.warmUp(); } }, 250);
         arbiter.start();
         j.settings.addListener(new Settings.Listener() {
             @Override public void onSettingChanged(String key) {
@@ -312,7 +312,9 @@ public final class VoiceController implements ListenApi {
         if (speakerBusy || System.currentTimeMillis() < speakerFreeAt) return;      // never listen to ourselves
         if (System.currentTimeMillis() < cueMuteUntil) return;                      // a cue is sounding and its tail
         if (mode == Mode.OFF && sttTest == null) return;
-        restarts = 0;
+        // A completely zero-filled frame is not proof that the microphone works.
+        // Reset restart protection only after Android delivers actual samples.
+        if (lvl > 0f) restarts = 0;
         synchronized (frameLock) { segmenter.feed(pcm, n); }
     }
 

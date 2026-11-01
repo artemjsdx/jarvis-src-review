@@ -1,12 +1,16 @@
 package app.jarvis.rt;
 
 import app.jarvis.core.voice.EdgeTts;
+import app.jarvis.core.voice.CloudflareStt;
+import app.jarvis.core.voice.GeminiAudioStt;
+import app.jarvis.core.voice.GeminiTranscribeStt;
 import app.jarvis.core.voice.ElevenLabsApi;
 import app.jarvis.core.voice.ElevenLabsStt;
 import app.jarvis.core.voice.ElevenLabsTts;
 import app.jarvis.core.voice.GoogleSpeechStt;
 import app.jarvis.core.voice.GoogleTranslateTts;
 import app.jarvis.core.voice.GroqStt;
+import app.jarvis.core.voice.GeminiTts;
 import app.jarvis.core.voice.OpenRouterStt;
 import app.jarvis.core.voice.OpenRouterTts;
 import app.jarvis.core.voice.ProviderConfig;
@@ -34,6 +38,9 @@ public final class VoiceHub implements SttHub {
 
     public VoiceHub(Jarvis j) {
         this.j = j;
+        tts.add(new AndroidSystemTts(j.ctx));
+        tts.add(new GeminiTts("gemini-tts", "Gemini 3.8 Flash TTS", "gemini-3.8-flash-tts"));
+        tts.add(new GeminiTts("gemini-lite-tts", "Gemini 3.8 Flash-Lite TTS", "gemini-3.8-flash-lite-tts"));
         tts.add(new EdgeTts());
         tts.add(new GoogleTranslateTts());
         tts.add(new ElevenLabsTts());
@@ -42,6 +49,9 @@ public final class VoiceHub implements SttHub {
         addOptional("app.jarvis.core.voice.F5SpaceTts");
         stt.add(new GoogleSpeechStt());
         stt.add(new GroqStt());
+        stt.add(new CloudflareStt());
+        stt.add(new GeminiAudioStt());
+        stt.add(new GeminiTranscribeStt());
         stt.add(new ElevenLabsStt());
         stt.add(new OpenRouterStt());
         stt.add(new LocalStt());
@@ -77,6 +87,9 @@ public final class VoiceHub implements SttHub {
                 c.put("similarity", opt("tts.elevenlabs.similarity", "0.75"));
                 c.put("style", opt("tts.elevenlabs.style", "0"));
                 break;
+            case "gemini-tts": case "gemini-lite-tts":
+                c.put("apiKey", j.secrets.get("key.gemini"));
+                break;
             case "openrouter-tts":
                 c.put("apiKey", j.secrets.get("key.openrouter"));
                 if (j.settings.has("tts.openrouter.model")) c.put("model", j.settings.get("tts.openrouter.model"));
@@ -84,6 +97,17 @@ public final class VoiceHub implements SttHub {
             case "openrouter-stt":
                 c.put("apiKey", j.secrets.get("key.openrouter"));
                 if (j.settings.has("stt.openrouter.model")) c.put("model", j.settings.get("stt.openrouter.model"));
+                break;
+            case "cloudflare-stt":
+                c.put("apiKey", j.secrets.get("key.cloudflare-ai"));
+                c.put("accountId", j.settings.get("stt.cloudflare.accountId"));
+                break;
+            case "gemini-transcribe-stt":
+                c.put("apiKey", j.secrets.get("key.gemini"));
+                break;
+            case "gemini-audio-stt":
+                c.put("apiKey", j.secrets.get("key.gemini"));
+                c.put("model", opt("stt.gemini.model", "gemini-3.8-flash"));
                 break;
             case "groq-stt":
                 c.put("apiKey", j.secrets.get("key.groq"));
@@ -132,14 +156,22 @@ public final class VoiceHub implements SttHub {
 
     @Override public List<SttProvider> chain(boolean forWake) {
         List<String> ids = new ArrayList<>();
-        if (forWake && j.settings.has(Settings.WAKE_STT)) ids.addAll(j.settings.getList(Settings.WAKE_STT));
-        ids.addAll(j.settings.getList(Settings.STT_CHAIN));
+        List<String> userOrder = j.settings.getList(Settings.STT_CHAIN);
+        if (forWake && j.settings.has(Settings.WAKE_STT)) {
+            String preferred = j.settings.get(Settings.WAKE_STT);
+            // A disabled STT may not be smuggled into wake recognition through the old preference.
+            if (userOrder.contains(preferred) || userOrder.isEmpty()) ids.add(preferred);
+        }
+        ids.addAll(userOrder);
         if (ids.isEmpty()) {
-            ids.add("google-stt");
-            ids.add("groq-stt");
-            ids.add("elevenlabs");
-            ids.add("openrouter-stt");
+            // Free-first explicit fallback: never silently route recognition to
+            // OpenRouter or the unofficial Google endpoint.
             ids.add("vosk-local");
+            ids.add("groq-stt");
+            ids.add("cloudflare-stt");
+            ids.add("gemini-transcribe-stt");
+            ids.add("gemini-audio-stt");
+            ids.add("elevenlabs-stt");
         }
         List<SttProvider> out = new ArrayList<>();
         for (String id : ids) {

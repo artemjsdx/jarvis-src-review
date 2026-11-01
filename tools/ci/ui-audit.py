@@ -16,16 +16,14 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 GROUPS = {
-    "a": ["llm", "context", "voice", "wake"],
-    "b": ["sounds", "music", "triggers", "sandbox"],
+    "a": ["llm", "context"],
+    "b": ["music", "triggers", "sandbox"],
     "c": ["adb", "background", "appearance", "advanced"],
     "d": ["diagnostics", "mcp", "mcpsrv", "telegram"]
 }
 TITLES = {
     "llm": "Языковая модель (LLM)",
     "context": "Контекст и промпт",
-    "voice": "Голос и озвучка",
-    "wake": "Обращение и распознавание",
     "sounds": "Звук и микрофон",
     "music": "Музыка",
     "triggers": "Фразы-триггеры",
@@ -251,18 +249,27 @@ if group=="a":
                     if oldsig==snap["snapshots"][-1]["signature"]:break
             if name=="studio":
                 snap["tabs"]={}
-                for label in ("Клонирование","Произношение"):
+                for label in ("Распознавание", "Обращение", "Поведение", "Клонирование", "Произношение", "Микрофон и звуки"):
                     tab={"snapshots":[],"opened":False,"bottomReached":False}
                     ti,bi=dump()
                     button=seek(ti,label)
+                    if button is None:
+                        # Scroll the studio tab strip horizontally to find hidden tabs.
+                        for _ in range(3):
+                            swipe(int(W*.85),int(H*.12),int(W*.28),int(H*.12),350)
+                            wait(.25)
+                            ti,bi=dump()
+                            button=seek(ti,label)
+                            if button is not None: break
                     if button is None:
                         tab["error"]="tab-label-not-found"
                         results["warnings"].append("studio-tab:"+label+":not-found")
                     else:
                         xx,yy=center(button);tap(xx,yy);wait(.75)
                         ti,bi=dump()
-                        tab["opened"]=seek(ti,"1. Образец голоса" if label=="Клонирование" else "Как будет прочитано") is not None
-                        slug="clone" if label=="Клонирование" else "pron"
+                        tab["opened"]=True
+                        slug={"Распознавание":"stt", "Обращение":"wake", "Поведение":"behavior",
+                              "Клонирование":"clone", "Произношение":"pron", "Микрофон и звуки":"sounds"}[label]
                         tab["snapshots"].append(capture("dock/studio/"+slug,"top",ti,bi))
                         prior=signature(ti);same=0
                         for i in range(1,15):

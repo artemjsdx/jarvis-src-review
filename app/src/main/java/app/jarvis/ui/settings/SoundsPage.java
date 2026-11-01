@@ -189,7 +189,7 @@ public class SoundsPage extends SettingsPage {
 
     private void addVolume(CueSettings s) {
         column.addView(header("Громкость и вибрация",
-            "Громкость — множитель к громкости уведомлений телефона. Вибрация: короткий тик при начале и двойной при конце.",
+            "Громкость — множитель к громкости мультимедиа телефона. Вибрация: короткий тик при начале и двойной при конце.",
             "Вибрация не работает во время звонка."));
         LinearLayout card = Widgets.card(ctx);
         LinearLayout box = Ui.column(ctx);
@@ -206,7 +206,7 @@ public class SoundsPage extends SettingsPage {
         Widgets.divide(card);
         card.addView(toggleRow(R.drawable.ic_bolt, "Вибрация", "Тик при начале и двойной при конце", CueSettings.HAPTIC, s.haptic));
         column.addView(card);
-        column.addView(PageUi.note(ctx, "Тихий режим и «Не беспокоить» выключают звук сигналов, но не вибрацию. Во время звонка сигналы молчат."),
+        column.addView(PageUi.note(ctx, "Сигналы в работе учитывают тихий режим и «Не беспокоить». Предпрослушивание зависит от громкости мультимедиа. Во время звонка сигналы молчат."),
             Ui.lpm(-1, -2, Ui.dp(4), Ui.dp(8), Ui.dp(4), 0));
     }
 
