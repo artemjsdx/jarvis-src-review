@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * Listening cues: start (the microphone is open for a command), stop (the command was taken), error (nothing usable was
  * heard). Built-in sets live in assets/sounds; the user's own start/stop files live in {@link CueImport#dir}. Playback
- * goes through a SoundPool with sonification attributes, so the system notification volume applies. play* returns the
+ * goes through a SoundPool with sonification attributes, so the device media volume applies. play* returns the
  * clip length in milliseconds (0 when silent) so the caller can keep the microphone deaf for exactly that long.
  */
 public final class Cues {
@@ -170,7 +170,7 @@ public final class Cues {
     private void ensurePool() {
         if (pool != null) return;
         AudioAttributes attrs = new AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+            .setUsage(AudioAttributes.USAGE_MEDIA)
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .build();
         pool = new SoundPool.Builder().setMaxStreams(2).setAudioAttributes(attrs).build();
