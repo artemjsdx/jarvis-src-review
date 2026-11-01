@@ -48,6 +48,7 @@ public class DubTab {
     private final app.jarvis.rt.Jarvis j;
     private LinearLayout col;
     private final Map<String, ProviderCard> cards = new LinkedHashMap<>();
+    private final Map<String, Boolean> detailsExpanded = new LinkedHashMap<>();
     private TextView testProviderValue;
     private EditText testText;
     private TextView testCounter;
@@ -93,11 +94,11 @@ public class DubTab {
                 "Провайдеры озвучки появятся после подключения речевого движка."));
             return;
         }
-        col.addView(chainCard(sp));
+        col.addView(chainCard(sp), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(12)));
         for (TtsProvider p : sp.ttsProviders()) {
             ProviderCard card = new ProviderCard(p);
             cards.put(p.info().id, card);
-            col.addView(card.build());
+            col.addView(card.build(), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(12)));
         }
         col.addView(Widgets.sectionTitle(ctx, "Проверка озвучки"));
         col.addView(testBox());
@@ -136,8 +137,9 @@ public class DubTab {
             line.setMaxLines(2);
         }
         card.addView(line, Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
-        card.addView(StudioKit.noteLine(ctx, app.jarvis.R.drawable.ic_info,
-            "Порядок и включение — в «Настройки → Голос и озвучка». Кнопка «Сделать основным» ставит провайдера первым в цепочке."));
+        card.addView(Ui.text(ctx,
+            "Основной провайдер выбирается кнопкой в его карточке. Ключи и поведение — на вкладке «Поведение».",
+            Ui.CAPTION, Ui.P.text2), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
         return card;
     }
 
@@ -173,39 +175,62 @@ public class DubTab {
             TextView name = Ui.text(ctx, info.name, Ui.BODY);
             name.setTypeface(Ui.medium);
             head.addView(name, Ui.lpw(1f));
-            head.addView(Widgets.pill(ctx, StudioKit.officialLabel(info), info.official ? Widgets.MUTED : Widgets.WARN));
             head.addView(HelpPopup.button(ctx, host, info.name,
                 "Статус, кнопки и цифры ниже относятся только к этому провайдеру.",
                 "«Проверить» делает реальный короткий синтез и показывает задержку.",
                 "«Голоса» выбирает голос, «Квота» запрашивает остаток у сервиса, если он его публикует."), Ui.lpm(-2, -2, Ui.dp(6), 0, 0, 0));
             card.addView(head);
+            LinearLayout badges = Ui.row(ctx);
+            badges.addView(Widgets.pill(ctx, StudioKit.officialLabel(info),
+                info.official ? Widgets.MUTED : Widgets.WARN));
+            card.addView(badges, Ui.lpm(-1, -2, 0, Ui.dp(4), 0, 0));
 
             String inChain = chainPosition();
             if (!inChain.isEmpty()) {
                 TextView pos = Ui.text(ctx, inChain, Ui.CAPTION, Ui.P.accent);
                 card.addView(pos, Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
             }
-            card.addView(StudioKit.metaRow(ctx, "голоса:", info.voices),
+            // Full provider details are kept on demand: the default list shows
+            // essentials rather than five large metadata rows on every card.
+            final LinearLayout detailHost = Ui.column(ctx);
+            detailHost.addView(StudioKit.metaRow(ctx, "голоса:", info.voices),
                 Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
-            card.addView(StudioKit.metaRow(ctx, "доступ:",
+            detailHost.addView(StudioKit.metaRow(ctx, "доступ:",
                 info.needsKey ? "нужен ключ API" : info.needsAccount ? "нужен аккаунт" : "без аккаунта и ключа"),
                 Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
-            card.addView(StudioKit.metaRow(ctx, "квота:", info.freeQuota),
+            detailHost.addView(StudioKit.metaRow(ctx, "квота:", info.freeQuota),
                 Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
-            card.addView(StudioKit.metaRow(ctx, "клонирование:", info.cloning ? info.cloningNote : "нет"),
+            detailHost.addView(StudioKit.metaRow(ctx, "клонирование:", info.cloning ? info.cloningNote : "нет"),
                 Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
-            card.addView(StudioKit.metaRow(ctx, "получатель данных:", info.sendsDataTo),
+            detailHost.addView(StudioKit.metaRow(ctx, "получатель данных:", info.sendsDataTo),
                 Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
             TextView lim = Ui.text(ctx, info.limitations, Ui.CAPTION, Ui.P.text2);
             lim.setSingleLine(false);
-            card.addView(lim, Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+            detailHost.addView(lim, Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+            final boolean initiallyExpanded = Boolean.TRUE.equals(detailsExpanded.get(info.id));
+            detailHost.setVisibility(initiallyExpanded ? View.VISIBLE : View.GONE);
+            TextView detailToggle = Ui.text(ctx,
+                initiallyExpanded ? "Скрыть характеристики" : "Характеристики и ограничения",
+                Ui.CAPTION, Ui.P.accent);
+            detailToggle.setPadding(0, Ui.dp(10), 0, Ui.dp(8));
+            detailToggle.setClickable(true);
+            detailToggle.setFocusable(true);
+            detailToggle.setOnClickListener(v -> {
+                boolean show = detailHost.getVisibility() != View.VISIBLE;
+                detailsExpanded.put(info.id, show);
+                detailHost.setVisibility(show ? View.VISIBLE : View.GONE);
+                detailToggle.setText(show ? "Скрыть характеристики" : "Характеристики и ограничения");
+            });
+            card.addView(detailToggle);
+            card.addView(detailHost);
+
 
             statusHost = Ui.column(ctx);
             renderStatus();
             card.addView(statusHost, Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
 
             checkBtn = WrapButton.create(ctx, "Проверить", R.drawable.ic_activity, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runCheck(); } });
-            View voicesBtn = WrapButton.create(ctx, "Голоса" + (currentVoice(info.id).isEmpty() ? "" : ": " + shortVoice()), 0, Ui.BTN_GLASS, new Runnable() { @Override public void run() { openVoices(); } });
+            View voicesBtn = WrapButton.create(ctx, "Выбрать голос", 0, Ui.BTN_GLASS, new Runnable() { @Override public void run() { openVoices(); } });
             View quotaBtn = WrapButton.create(ctx, "Квота", 0, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runQuota(); } });
             View optBtn = WrapButton.create(ctx, "Настройки", R.drawable.ic_sliders, Ui.BTN_GLASS, new Runnable() { @Override public void run() { toggleOptions(); } });
             card.addView(grid(checkBtn, voicesBtn, quotaBtn, optBtn), Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
