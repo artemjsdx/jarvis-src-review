@@ -17,7 +17,7 @@ from pathlib import Path
 
 GROUPS = {
     "a": ["llm", "context"],
-    "b": ["sounds", "music", "triggers", "sandbox"],
+    "b": ["music", "triggers", "sandbox"],
     "c": ["adb", "background", "appearance", "advanced"],
     "d": ["diagnostics", "mcp", "mcpsrv", "telegram"]
 }
