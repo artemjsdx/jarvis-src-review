@@ -48,9 +48,9 @@ public class SettingsScreen extends Screen {
         R.drawable.ic_plug, R.drawable.ic_plug, R.drawable.ic_layers, R.drawable.ic_bolt};
 
     /** Groups of page ids, each rendered as one card with a section title. */
-    private static final String[][] GROUPS = {{"llm", "context"}, {"sounds"}, {"music", "triggers", "sandbox"}, {"adb", "background"}, {"appearance"}, {"advanced", "diagnostics", "mcp", "mcpsrv", "telegram"}};
+    private static final String[][] GROUPS = {{"llm", "context"}, {"music", "triggers", "sandbox"}, {"adb", "background"}, {"appearance"}, {"advanced", "diagnostics", "mcp", "mcpsrv", "telegram"}};
 
-    private static final String[] GROUP_TITLES = {"Подключение", "Голос", "Музыка и данные", "Система", "Интерфейс", "Обслуживание"};
+    private static final String[] GROUP_TITLES = {"Подключение", "Музыка и данные", "Система", "Интерфейс", "Обслуживание"};
 
     /** Short "?" text per page id, same order as {@link #PAGES}. */
     private static final String[][] HELP = {
@@ -100,11 +100,6 @@ public class SettingsScreen extends Screen {
         col.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(24));
         for (int g = 0; g < GROUPS.length; g++) {
             col.addView(Widgets.sectionTitle(ctx, GROUP_TITLES[g]));
-            if (g == 1) {
-                col.addView(Widgets.row(ctx, R.drawable.ic_voice, "Студия голоса",
-                    "Озвучка · распознавание · обращение · голосовые профили", null,
-                    new Runnable() { @Override public void run() { host.navigate("studio"); } }));
-            }
             LinearLayout card = Widgets.card(ctx);
             for (int i = 0; i < GROUPS[g].length; i++) {
                 final String id = GROUPS[g][i];
@@ -195,6 +190,7 @@ public class SettingsScreen extends Screen {
         // Preserve legacy deep links while keeping voice controls in one location.
         if ("voice".equals(id)) { host.navigate("studio/behavior"); return; }
         if ("wake".equals(id)) { host.navigate("studio/wake"); return; }
+        if ("sounds".equals(id)) { host.navigate("studio/sounds"); return; }
         if (PAGES.length == 0) return;
         SettingsPage page = createPage(id);
         if (page == null) return;
