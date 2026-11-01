@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * Listening cues: start (the microphone is open for a command), stop (the command was taken), error (nothing usable was
  * heard). Built-in sets live in assets/sounds; the user's own start/stop files live in {@link CueImport#dir}. Playback
- * goes through a SoundPool with sonification attributes, so the device media volume applies. play* returns the
+ * goes through a SoundPool on the media volume stream, so the user can hear preview and runtime cues. play* returns the
  * clip length in milliseconds (0 when silent) so the caller can keep the microphone deaf for exactly that long.
  */
 public final class Cues {
@@ -65,10 +65,18 @@ public final class Cues {
 
     /** Loads the selected set in advance so the first cue after start is not skipped as "still loading". */
     public void warmUp() {
-        CueSettings s = snapshot();
+        // Small built-in OGG clips are inexpensive. Load all of them so choosing a different
+        // start/stop sound does not silently drop the first real microphone cue.
+        for (CueManifest.Set set : manifest()) {
+            for (Kind k : Kind.values()) {
+                Clip clip = setClip(set.id, k, snapshot().volume);
+                if (clip != null) sampleFor(clip);
+            }
+        }
+        CueSettings selected = snapshot();
         for (Kind k : Kind.values()) {
-            Clip c = clipFor(s, k);
-            if (c != null) sampleFor(c);
+            Clip clip = clipFor(selected, k);
+            if (clip != null) sampleFor(clip);
         }
     }
 
@@ -178,6 +186,7 @@ public final class Cues {
             @Override public void onLoadComplete(SoundPool sp, int sampleId, int status) {
                 synchronized (lock) {
                     if (status == 0) ready.add(sampleId);
+                    else journal.w(JOURNAL_CAT, "SoundPool не смог декодировать сигнал: status=" + status, null, null);
                     Float volume = playWhenReady.remove(sampleId);
                     if (volume != null && status == 0) sp.play(sampleId, volume, volume, 1, 0, 1f);
                     AssetFileDescriptor afd = pendingAssets.remove(sampleId);
