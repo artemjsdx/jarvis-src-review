@@ -340,7 +340,8 @@ public class WakeSettingsPage extends SettingsPage {
             Ui.lpm(-1, -2, 0, Ui.dp(8), 0, Ui.dp(12)));
 
         File modelDir = new File(ctx.getFilesDir(), "models/" + WakePack.MODEL_NAME);
-        modelStatus = Ui.text(ctx, WakePack.looksInstalled(modelDir)
+        modelStatus = Ui.text(ctx, new WakePack(modelDir,
+            new File(ctx.getCacheDir(), "wake-model"), j.journal).isInstalled()
             ? "Офлайн-модель установлена · 46 МБ исходный архив"
             : "Офлайн-модель не установлена. Без неё «Авто» обращается к платным/ограниченным STT.",
             Ui.CAPTION, Ui.P.text2);
