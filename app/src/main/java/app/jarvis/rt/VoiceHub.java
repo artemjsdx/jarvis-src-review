@@ -135,11 +135,11 @@ public final class VoiceHub implements SttHub {
         if (forWake && j.settings.has(Settings.WAKE_STT)) ids.addAll(j.settings.getList(Settings.WAKE_STT));
         ids.addAll(j.settings.getList(Settings.STT_CHAIN));
         if (ids.isEmpty()) {
-            ids.add("google-stt");
+            // Free-first explicit fallback: never silently route recognition to
+            // OpenRouter or the unofficial Google endpoint.
+            ids.add("vosk-local");
             ids.add("groq-stt");
             ids.add("elevenlabs");
-            ids.add("openrouter-stt");
-            ids.add("vosk-local");
         }
         List<SttProvider> out = new ArrayList<>();
         for (String id : ids) {
