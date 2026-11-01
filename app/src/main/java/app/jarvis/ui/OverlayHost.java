@@ -71,11 +71,15 @@ public final class OverlayHost extends FrameLayout {
         l.scrim = new View(getContext());
         l.scrim.setBackgroundColor(Ui.P.scrim);
         l.scrim.setAlpha(0f);
+        l.scrim.setContentDescription(cancelable ? "Закрыть всплывающее окно" : "Фон всплывающего окна");
         l.scrim.setOnClickListener(new OnClickListener() { @Override public void onClick(View v) { if (l.cancelable) dismiss(l); } });
         addView(l.scrim, new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         FrameLayout panel = new FrameLayout(getContext());
         panel.setClickable(true);
+        // The panel blocks touch-through but is not itself an action.
+        // Its child controls remain individually accessible to TalkBack.
+        panel.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         panel.setBackground(panelBg(sheet ? 26 : 22));
         Glass.mark(panel, sheet ? 26 : 22);
         panel.addView(content, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));

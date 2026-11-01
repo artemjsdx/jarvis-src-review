@@ -213,8 +213,13 @@ public class SandboxPage extends SettingsPage {
             tx.addView(schema, Ui.lpm(-2, -2, 0, 6, 0, 0));
             row.setBackground(Ui.rippleOn(new android.graphics.drawable.ColorDrawable(0), 14));
             row.setClickable(true);
+            row.setFocusable(true);
+            row.setContentDescription("Инструмент " + s.name + ". Показать параметры");
             row.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
-                schema.setVisibility(schema.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+                boolean expanding = schema.getVisibility() != View.VISIBLE;
+                schema.setVisibility(expanding ? View.VISIBLE : View.GONE);
+                v.setContentDescription("Инструмент " + s.name
+                    + (expanding ? ". Скрыть параметры" : ". Показать параметры"));
             } });
             card.addView(row);
             Widgets.divide(card);

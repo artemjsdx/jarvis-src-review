@@ -255,10 +255,33 @@ public final class Widgets {
             super(c);
             this.min = min; this.max = max; this.step = step; this.value = snap(value); this.l = l;
             setClickable(true);
+            setFocusable(true);
+            setContentDescription("Регулировка параметра");
+            updateStateDescription();
+        }
+
+        @Override protected void onAttachedToWindow() {
+            super.onAttachedToWindow();
+            if (getParent() instanceof ViewGroup) {
+                String name = Toggle.findA11yLabel((ViewGroup) getParent());
+                if (!name.isEmpty()) setContentDescription(name);
+            }
+        }
+
+        private void updateStateDescription() {
+            if (android.os.Build.VERSION.SDK_INT >= 30)
+                setStateDescription(String.valueOf(value));
+        }
+
+        @Override public void onInitializeAccessibilityNodeInfo(android.view.accessibility.AccessibilityNodeInfo info) {
+            super.onInitializeAccessibilityNodeInfo(info);
+            info.setClassName("android.widget.SeekBar");
+            info.setRangeInfo(android.view.accessibility.AccessibilityNodeInfo.RangeInfo.obtain(
+                android.view.accessibility.AccessibilityNodeInfo.RangeInfo.RANGE_TYPE_FLOAT, min, max, value));
         }
 
         public float getValue() { return value; }
-        public void setValue(float v) { value = snap(v); invalidate(); }
+        public void setValue(float v) { value = snap(v); updateStateDescription(); invalidate(); }
 
         private float snap(float v) {
             v = Math.max(min, Math.min(max, v));
@@ -290,7 +313,7 @@ public final class Widgets {
             float pad = Ui.dpf(12), w = getWidth() - 2 * pad;
             float f = Math.max(0f, Math.min(1f, (e.getX() - pad) / w));
             float nv = snap(min + f * (max - min));
-            if (nv != value) { value = nv; invalidate(); if (l != null) l.onValue(value, true); }
+            if (nv != value) { value = nv; updateStateDescription(); invalidate(); if (l != null) l.onValue(value, true); }
             if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) { getParent().requestDisallowInterceptTouchEvent(false); if (l != null) l.onValue(value, true); }
             return true;
         }
