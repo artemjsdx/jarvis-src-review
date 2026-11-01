@@ -51,9 +51,18 @@ public final class GoogleSpeechStt implements SttProvider {
         Redactor.addSecret(key);
     }
 
-    @Override public boolean isConfigured() { return !key.isEmpty(); }
+    @Override public boolean isConfigured() {
+        // Public review builds replace the unofficial Chromium credential with
+        // REDACTED. That marker must not be interpreted as a real API key:
+        // otherwise every wake attempt results in HTTP 403.
+        return !key.isEmpty() && !"REDACTED".equalsIgnoreCase(key.trim());
+    }
 
     @Override public SttResult transcribe(PcmAudio audio, SttOptions opts, CancelToken cancel) throws VoiceException {
+        if (!isConfigured())
+            throw new VoiceException(VoiceException.Kind.CONFIG,
+                "Ключ Google Speech не настроен. Используйте офлайн Vosk или другой STT.",
+                "google-stt: missing or redacted credential", null);
         String lang = bcp47(opts == null || opts.language == null || opts.language.isEmpty() ? "ru" : opts.language);
         String url = baseUrl + "/recognize?output=json&lang=" + URLEncoder.encode(lang) + "&key=" + URLEncoder.encode(key)
             + "&maxresults=" + maxResults;

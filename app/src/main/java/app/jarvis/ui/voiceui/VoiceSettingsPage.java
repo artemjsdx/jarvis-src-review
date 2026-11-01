@@ -34,7 +34,8 @@ public class VoiceSettingsPage extends SettingsPage {
     private static final String[][] KEYS = {
         {"elevenlabs", "Ключ ElevenLabs", "квота 10 000 символов в месяц на free; один ключ на озвучку и распознавание Scribe"},
         {"openrouter", "Ключ OpenRouter", "тот же ключ, что и для языковой модели; есть бесплатные TTS/STT и бесплатное клонирование"},
-        {"groq", "Ключ Groq", "тот же ключ, что и для LLM; используется Whisper-распознаванием"},
+        {"groq", "Ключ Groq", "используется Groq Whisper для распознавания речи"},
+        {"google-stt", "Ключ Google Speech STT", "неофициальный сервис Google: в тестовом APK нет встроенного ключа; без собственного ключа выберите Vosk или Groq"},
     };
 
     private LinearLayout content;
