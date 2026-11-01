@@ -45,7 +45,7 @@ jobs:
         run: bash tools/setup.sh
 
       - name: JVM policy tests (ducking and agent comments)
-        run: bash tools/run-tests.sh app.jarvis.core.audio.DuckPolicyTest app.jarvis.core.agent.AgentCommentPolicyTest app.jarvis.core.design.PaletteContrastTest
+        run: bash tools/run-tests.sh app.jarvis.core.audio.DuckPolicyTest app.jarvis.core.agent.AgentCommentPolicyTest app.jarvis.core.design.PaletteContrastTest app.jarvis.wake.WakeEngineTest app.jarvis.core.voice.GroqGoogleSttTest app.jarvis.core.voice.SttHedgeTest
 
       - name: Test signing key from secrets
         env:

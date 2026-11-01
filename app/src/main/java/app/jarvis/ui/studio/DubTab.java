@@ -235,9 +235,45 @@ public class DubTab {
             View optBtn = WrapButton.create(ctx, "Настройки", R.drawable.ic_sliders, Ui.BTN_GLASS, new Runnable() { @Override public void run() { toggleOptions(); } });
             card.addView(grid(checkBtn, voicesBtn, quotaBtn, optBtn), Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
 
-            String chainLabel = isFirst() ? "основной в ответах" : "Использовать в ответах";
-            View chainBtn = WrapButton.create(ctx, chainLabel, R.drawable.ic_check, isFirst() ? Ui.BTN_GHOST : Ui.BTN_GLASS, new Runnable() { @Override public void run() { makePrimary(); } });
-            card.addView(chainBtn, Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+            // Enable, disable and reorder here: the old duplicate settings list is gone.
+            List<String> chain = new ArrayList<>(j.settings.getList(Settings.TTS_CHAIN));
+            if (chain.isEmpty()) { chain.add("edge"); chain.add("gtts"); }
+            final boolean selected = chain.contains(info.id);
+            final boolean slow = p instanceof app.jarvis.core.voice.SlowProvider;
+            LinearLayout control = Ui.row(ctx);
+            control.addView(Ui.text(ctx, slow ? "Только студийный тест" :
+                selected ? "Включён в озвучку ответов" : "Не участвует в ответах",
+                Ui.CAPTION, Ui.P.text2), Ui.lpw(1f));
+            if (!slow) {
+                control.addView(Widgets.toggle(ctx, selected, on -> {
+                    List<String> order = new ArrayList<>(j.settings.getList(Settings.TTS_CHAIN));
+                    if (order.isEmpty()) { order.add("edge"); order.add("gtts"); }
+                    order.remove(info.id);
+                    if (on) order.add(info.id);
+                    if (order.isEmpty()) {
+                        host.overlays().toast("Оставьте хотя бы один голос для ответов", 1);
+                        rebuild();
+                        return;
+                    }
+                    j.settings.setList(Settings.TTS_CHAIN, order);
+                    rebuild();
+                }));
+            }
+            card.addView(control, Ui.lpm(-1, -2, 0, Ui.dp(9), 0, 0));
+            if (selected && !slow) {
+                LinearLayout priority = Ui.row(ctx);
+                if (chain.indexOf(info.id) > 0) {
+                    priority.addView(Ui.iconButton(ctx, R.drawable.ic_arrow_up, 38, Ui.P.text2,
+                        "Повысить приоритет " + info.name, () -> moveChain(info.id, -1)));
+                }
+                if (chain.indexOf(info.id) < chain.size() - 1) {
+                    priority.addView(Ui.iconButton(ctx, R.drawable.ic_arrow_down, 38, Ui.P.text2,
+                        "Понизить приоритет " + info.name, () -> moveChain(info.id, 1)));
+                }
+                priority.addView(Ui.text(ctx, isFirst() ? "Первый в цепочке" : "Приоритет можно менять стрелками",
+                    Ui.CAPTION, Ui.P.text2), Ui.lpw(1f));
+                card.addView(priority, Ui.lpm(-1, -2, 0, Ui.dp(5), 0, 0));
+            }
 
             quotaHost = Ui.column(ctx);
             card.addView(quotaHost, Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
@@ -453,6 +489,16 @@ public class DubTab {
             j.settings.setList(Settings.TTS_CHAIN, chain);
             rebuild();
         }
+    }
+
+    private void moveChain(String id, int delta) {
+        List<String> chain = new ArrayList<>(j.settings.getList(Settings.TTS_CHAIN));
+        if (chain.isEmpty()) { chain.add("edge"); chain.add("gtts"); }
+        int old = chain.indexOf(id), next = old + delta;
+        if (old < 0 || next < 0 || next >= chain.size()) return;
+        java.util.Collections.swap(chain, old, next);
+        j.settings.setList(Settings.TTS_CHAIN, chain);
+        rebuild();
     }
 
     static String fmtSpeed(float v) {
