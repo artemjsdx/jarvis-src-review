@@ -3,6 +3,7 @@ package app.jarvis.rt;
 import app.jarvis.core.voice.EdgeTts;
 import app.jarvis.core.voice.CloudflareStt;
 import app.jarvis.core.voice.GeminiAudioStt;
+import app.jarvis.core.voice.GeminiTranscribeStt;
 import app.jarvis.core.voice.ElevenLabsApi;
 import app.jarvis.core.voice.ElevenLabsStt;
 import app.jarvis.core.voice.ElevenLabsTts;
@@ -50,6 +51,7 @@ public final class VoiceHub implements SttHub {
         stt.add(new GroqStt());
         stt.add(new CloudflareStt());
         stt.add(new GeminiAudioStt());
+        stt.add(new GeminiTranscribeStt());
         stt.add(new ElevenLabsStt());
         stt.add(new OpenRouterStt());
         stt.add(new LocalStt());
@@ -99,6 +101,9 @@ public final class VoiceHub implements SttHub {
             case "cloudflare-stt":
                 c.put("apiKey", j.secrets.get("key.cloudflare-ai"));
                 c.put("accountId", j.settings.get("stt.cloudflare.accountId"));
+                break;
+            case "gemini-transcribe-stt":
+                c.put("apiKey", j.secrets.get("key.gemini"));
                 break;
             case "gemini-audio-stt":
                 c.put("apiKey", j.secrets.get("key.gemini"));
@@ -164,6 +169,7 @@ public final class VoiceHub implements SttHub {
             ids.add("vosk-local");
             ids.add("groq-stt");
             ids.add("cloudflare-stt");
+            ids.add("gemini-transcribe-stt");
             ids.add("gemini-audio-stt");
             ids.add("elevenlabs-stt");
         }
