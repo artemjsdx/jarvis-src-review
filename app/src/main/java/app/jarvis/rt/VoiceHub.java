@@ -36,6 +36,7 @@ public final class VoiceHub implements SttHub {
 
     public VoiceHub(Jarvis j) {
         this.j = j;
+        tts.add(new AndroidSystemTts(j.ctx));
         tts.add(new EdgeTts());
         tts.add(new GoogleTranslateTts());
         tts.add(new ElevenLabsTts());
