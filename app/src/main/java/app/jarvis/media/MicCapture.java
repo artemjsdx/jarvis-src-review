@@ -24,6 +24,9 @@ public final class MicCapture implements MicIn {
     private Thread thread;
     private volatile boolean running;
     private volatile String lastError = "";
+    /** Rotate capture sources when an OEM returns digital silence on an otherwise valid AudioRecord. */
+    private int preferredSource;
+    private int availableSourceCount = 2;
 
     @Override public boolean start(int sampleRate, boolean wantAec, FrameListener l) {
         synchronized (lock) {
@@ -39,8 +42,10 @@ public final class MicCapture implements MicIn {
                 ? new int[]{MediaRecorder.AudioSource.VOICE_RECOGNITION, MediaRecorder.AudioSource.MIC,
                     MediaRecorder.AudioSource.VOICE_COMMUNICATION}
                 : new int[]{MediaRecorder.AudioSource.VOICE_RECOGNITION, MediaRecorder.AudioSource.MIC};
+            availableSourceCount = sources.length;
             AudioRecord r = null;
-            for (int src : sources) {
+            for (int attempt = 0; attempt < sources.length; attempt++) {
+                int src = sources[(preferredSource + attempt) % sources.length];
                 try {
                     AudioRecord t = new AudioRecord(src, sampleRate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, buffer);
                     if (t.getState() == AudioRecord.STATE_INITIALIZED) { r = t; break; }
@@ -101,7 +106,16 @@ public final class MicCapture implements MicIn {
             }
         }
         boolean wasRunning;
-        synchronized (lock) { wasRunning = running; running = false; releaseLocked(); }
+        synchronized (lock) {
+            wasRunning = running;
+            running = false;
+            // Avoid selecting the same silenced input on every automatic restart.
+            // Real audio from any source retains that choice until a future failure.
+            if (NO_AUDIO_MESSAGE.equals(failure)) {
+                preferredSource = (preferredSource + 1) % availableSourceCount;
+            }
+            releaseLocked();
+        }
         if (failure != null && wasRunning) { lastError = failure; try { l.onError(failure); } catch (Throwable ignored) { } }
     }
 
