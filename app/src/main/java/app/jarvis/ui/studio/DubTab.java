@@ -94,11 +94,11 @@ public class DubTab {
                 "Провайдеры озвучки появятся после подключения речевого движка."));
             return;
         }
-        col.addView(chainCard(sp), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(12)));
+        col.addView(chainCard(sp), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(18)));
         for (TtsProvider p : sp.ttsProviders()) {
             ProviderCard card = new ProviderCard(p);
             cards.put(p.info().id, card);
-            col.addView(card.build(), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(12)));
+            col.addView(card.build(), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(18)));
         }
         col.addView(Widgets.sectionTitle(ctx, "Проверка озвучки"));
         col.addView(testBox());
@@ -119,7 +119,7 @@ public class DubTab {
         head.addView(HelpPopup.button(ctx, host, "В ответах ассистента",
             "Здесь видно, какие провайдеры озвучивают ответы и в каком порядке.",
             "Если первый провайдер недоступен, ассистент пробует следующего по списку.",
-            "Порядок меняется кнопкой «Сделать основным» на карточке провайдера."), Ui.lpm(-2, -2, Ui.dp(6), 0, 0, 0));
+            "Включайте нужные голоса и меняйте их приоритет стрелками в карточках."), Ui.lpm(-2, -2, Ui.dp(6), 0, 0, 0));
         card.addView(head);
         List<String> chain = sp.activeChain();
         TextView line;
@@ -138,7 +138,7 @@ public class DubTab {
         }
         card.addView(line, Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
         card.addView(Ui.text(ctx,
-            "Основной провайдер выбирается кнопкой в его карточке. Ключи и поведение — на вкладке «Поведение».",
+            "Включение, голос и приоритет — ниже. Параметры ответа — на вкладке «Поведение».",
             Ui.CAPTION, Ui.P.text2), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
         return card;
     }
@@ -169,7 +169,7 @@ public class DubTab {
 
         View build() {
             LinearLayout card = Widgets.card(ctx);
-            card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14));
+            card.setPadding(Ui.dp(16), Ui.dp(16), Ui.dp(16), Ui.dp(18));
 
             LinearLayout head = Ui.row(ctx);
             TextView name = Ui.text(ctx, info.name, Ui.BODY);
@@ -183,12 +183,12 @@ public class DubTab {
             LinearLayout badges = Ui.row(ctx);
             badges.addView(Widgets.pill(ctx, StudioKit.officialLabel(info),
                 info.official ? Widgets.MUTED : Widgets.WARN));
-            card.addView(badges, Ui.lpm(-1, -2, 0, Ui.dp(4), 0, 0));
+            card.addView(badges, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
 
             String inChain = chainPosition();
             if (!inChain.isEmpty()) {
                 TextView pos = Ui.text(ctx, inChain, Ui.CAPTION, Ui.P.accent);
-                card.addView(pos, Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+                card.addView(pos, Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
             }
             // Full provider details are kept on demand: the default list shows
             // essentials rather than five large metadata rows on every card.
@@ -215,6 +215,7 @@ public class DubTab {
             detailToggle.setPadding(0, Ui.dp(10), 0, Ui.dp(8));
             detailToggle.setClickable(true);
             detailToggle.setFocusable(true);
+            detailToggle.setContentDescription("Подробнее о голосе " + info.name);
             detailToggle.setOnClickListener(v -> {
                 boolean show = detailHost.getVisibility() != View.VISIBLE;
                 detailsExpanded.put(info.id, show);
@@ -224,16 +225,18 @@ public class DubTab {
             card.addView(detailToggle);
             card.addView(detailHost);
 
-
             statusHost = Ui.column(ctx);
             renderStatus();
             card.addView(statusHost, Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
 
             checkBtn = WrapButton.create(ctx, "Проверить", R.drawable.ic_activity, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runCheck(); } });
             View voicesBtn = WrapButton.create(ctx, "Выбрать голос", 0, Ui.BTN_GLASS, new Runnable() { @Override public void run() { openVoices(); } });
-            View quotaBtn = WrapButton.create(ctx, "Квота", 0, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runQuota(); } });
-            View optBtn = WrapButton.create(ctx, "Настройки", R.drawable.ic_sliders, Ui.BTN_GLASS, new Runnable() { @Override public void run() { toggleOptions(); } });
-            card.addView(grid(checkBtn, voicesBtn, quotaBtn, optBtn), Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
+            // All provider cards have the same concise default layout. Less-used
+            // controls are available under "Характеристики и ограничения".
+            card.addView(grid(checkBtn, voicesBtn), Ui.lpm(-1, -2, 0, Ui.dp(12), 0, 0));
+            View quotaBtn = WrapButton.create(ctx, "Проверить квоту", 0, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runQuota(); } });
+            View optBtn = WrapButton.create(ctx, "Параметры голоса", R.drawable.ic_sliders, Ui.BTN_GLASS, new Runnable() { @Override public void run() { toggleOptions(); } });
+            detailHost.addView(grid(quotaBtn, optBtn), Ui.lpm(-1, -2, 0, Ui.dp(14), 0, 0));
 
             // Enable, disable and reorder here: the old duplicate settings list is gone.
             List<String> chain = new ArrayList<>(j.settings.getList(Settings.TTS_CHAIN));
@@ -292,6 +295,7 @@ public class DubTab {
         String chainPosition() {
             List<String> chain = j.settings.getList(Settings.TTS_CHAIN);
             int idx = chain.indexOf(info.id);
+            if (idx < 0 && chain.isEmpty()) idx = "edge".equals(info.id) ? 0 : "gtts".equals(info.id) ? 1 : -1;
             if (idx < 0) return StudioKit.inactiveReason(p, false);
             String where = idx == 0 ? "основной в ответах" : "в цепочке ответов: " + (idx + 1) + "-й";
             if (!p.isConfigured()) return where + " · сейчас не активен: нет ключа";
