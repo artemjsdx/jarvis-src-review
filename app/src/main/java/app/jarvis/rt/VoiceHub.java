@@ -9,6 +9,7 @@ import app.jarvis.core.voice.ElevenLabsTts;
 import app.jarvis.core.voice.GoogleSpeechStt;
 import app.jarvis.core.voice.GoogleTranslateTts;
 import app.jarvis.core.voice.GroqStt;
+import app.jarvis.core.voice.GeminiTts;
 import app.jarvis.core.voice.OpenRouterStt;
 import app.jarvis.core.voice.OpenRouterTts;
 import app.jarvis.core.voice.ProviderConfig;
@@ -37,6 +38,8 @@ public final class VoiceHub implements SttHub {
     public VoiceHub(Jarvis j) {
         this.j = j;
         tts.add(new AndroidSystemTts(j.ctx));
+        tts.add(new GeminiTts("gemini-tts", "Gemini 3.8 Flash TTS", "gemini-3.8-flash-tts"));
+        tts.add(new GeminiTts("gemini-lite-tts", "Gemini 3.8 Flash-Lite TTS", "gemini-3.8-flash-lite-tts"));
         tts.add(new EdgeTts());
         tts.add(new GoogleTranslateTts());
         tts.add(new ElevenLabsTts());
@@ -81,6 +84,9 @@ public final class VoiceHub implements SttHub {
                 c.put("stability", opt("tts.elevenlabs.stability", "0.5"));
                 c.put("similarity", opt("tts.elevenlabs.similarity", "0.75"));
                 c.put("style", opt("tts.elevenlabs.style", "0"));
+                break;
+            case "gemini-tts": case "gemini-lite-tts":
+                c.put("apiKey", j.secrets.get("key.gemini"));
                 break;
             case "openrouter-tts":
                 c.put("apiKey", j.secrets.get("key.openrouter"));
