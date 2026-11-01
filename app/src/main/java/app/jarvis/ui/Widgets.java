@@ -37,7 +37,11 @@ public final class Widgets {
     public static LinearLayout card(Context c) { return Ui.card(c); }
 
     /** Small label above a group, e.g. "Подключение". */
-    public static TextView sectionTitle(Context c, String t) { return Ui.section(c, t); }
+    public static TextView sectionTitle(Context c, String t) {
+        TextView v = Ui.section(c, t);
+        v.setTag("jarvis.section.help");
+        return v;
+    }
 
     /** Adds a divider between consecutive rows of a card automatically: call card.addView(row) then Widgets.divide(card). */
     public static void divide(LinearLayout card) {
@@ -75,9 +79,10 @@ public final class Widgets {
         if (trailing != null) r.addView(trailing, Ui.lpm(-2, -2, 10, 0, 0, 0));
         else if (onClick != null) r.addView(Ui.icon(c, R.drawable.ic_chevron_right, 18, Ui.P.text3), Ui.lpm(-2, -2, 8, 0, 0, 0));
         if (onClick != null) {
-            r.setBackground(Ui.rippleOn(new ColorDrawable(0), 14));
+            r.setBackground(Ui.rippleOn(new ColorDrawable(0), Ui.S.RADIUS_CARD));
             r.setClickable(true);
             r.setFocusable(true);
+            r.setContentDescription(title.toString() + (subtitle == null || subtitle.length() == 0 ? "" : ". " + subtitle));
             r.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { onClick.run(); } });
         }
         return r;
@@ -114,8 +119,51 @@ public final class Widgets {
             this.listener = l;
             setClickable(true);
             setFocusable(true);
+            setContentDescription("Переключатель настройки");
+            updateA11yState();
             setLayoutParams(new ViewGroup.LayoutParams(Ui.dp(46), Ui.dp(28)));
             setOnClickListener(new OnClickListener() { @Override public void onClick(View v) { Motion.tick(v); setChecked(!Toggle.this.on, true); } });
+        }
+
+        @Override protected void onAttachedToWindow() {
+            super.onAttachedToWindow();
+            // All settings toggles sit inside a labelled row. Prefer that label
+            // over the generic role so TalkBack names the setting being changed.
+            android.view.ViewParent p = getParent();
+            if (p instanceof ViewGroup) {
+                String label = findA11yLabel((ViewGroup) p);
+                if (!label.isEmpty()) setContentDescription(label);
+            }
+        }
+
+        private static String findA11yLabel(ViewGroup parent) {
+            for (int i = 0; i < parent.getChildCount(); i++) {
+                View child = parent.getChildAt(i);
+                if (child instanceof TextView) {
+                    CharSequence t = ((TextView) child).getText();
+                    if (t != null && t.length() > 0) return t.toString();
+                }
+            }
+            for (int i = 0; i < parent.getChildCount(); i++) {
+                View child = parent.getChildAt(i);
+                if (child instanceof LinearLayout) {
+                    String t = findA11yLabel((ViewGroup) child);
+                    if (!t.isEmpty()) return t;
+                }
+            }
+            return "";
+        }
+
+        private void updateA11yState() {
+            if (android.os.Build.VERSION.SDK_INT >= 30)
+                setStateDescription(on ? "Включено" : "Выключено");
+        }
+
+        @Override public void onInitializeAccessibilityNodeInfo(android.view.accessibility.AccessibilityNodeInfo info) {
+            super.onInitializeAccessibilityNodeInfo(info);
+            info.setClassName("android.widget.Switch");
+            info.setCheckable(true);
+            info.setChecked(on);
         }
 
         @Override protected void onMeasure(int w, int h) { setMeasuredDimension(Ui.dp(46), Ui.dp(28)); }
@@ -126,6 +174,7 @@ public final class Widgets {
         public void setChecked(boolean v, boolean notify) {
             if (v == on) return;
             on = v;
+            updateA11yState();
             long d = Motion.move(Motion.D_BASE);
             if (d == 0) { t = on ? 1f : 0f; invalidate(); }
             else {
@@ -165,7 +214,7 @@ public final class Widgets {
     public static LinearLayout segmented(final Context c, final String[] labels, int selected, final IntListener l) {
         final LinearLayout bar = Ui.row(c);
         bar.setPadding(Ui.dp(3), Ui.dp(3), Ui.dp(3), Ui.dp(3));
-        bar.setBackground(Ui.rect(Ui.P.field, 14));
+        bar.setBackground(Ui.glassTinted(14, Ui.P.field));
         final TextView[] tv = new TextView[labels.length];
         for (int i = 0; i < labels.length; i++) {
             final int idx = i;
@@ -206,10 +255,33 @@ public final class Widgets {
             super(c);
             this.min = min; this.max = max; this.step = step; this.value = snap(value); this.l = l;
             setClickable(true);
+            setFocusable(true);
+            setContentDescription("Регулировка параметра");
+            updateStateDescription();
+        }
+
+        @Override protected void onAttachedToWindow() {
+            super.onAttachedToWindow();
+            if (getParent() instanceof ViewGroup) {
+                String name = Toggle.findA11yLabel((ViewGroup) getParent());
+                if (!name.isEmpty()) setContentDescription(name);
+            }
+        }
+
+        private void updateStateDescription() {
+            if (android.os.Build.VERSION.SDK_INT >= 30)
+                setStateDescription(String.valueOf(value));
+        }
+
+        @Override public void onInitializeAccessibilityNodeInfo(android.view.accessibility.AccessibilityNodeInfo info) {
+            super.onInitializeAccessibilityNodeInfo(info);
+            info.setClassName("android.widget.SeekBar");
+            info.setRangeInfo(android.view.accessibility.AccessibilityNodeInfo.RangeInfo.obtain(
+                android.view.accessibility.AccessibilityNodeInfo.RangeInfo.RANGE_TYPE_FLOAT, min, max, value));
         }
 
         public float getValue() { return value; }
-        public void setValue(float v) { value = snap(v); invalidate(); }
+        public void setValue(float v) { value = snap(v); updateStateDescription(); invalidate(); }
 
         private float snap(float v) {
             v = Math.max(min, Math.min(max, v));
@@ -241,7 +313,7 @@ public final class Widgets {
             float pad = Ui.dpf(12), w = getWidth() - 2 * pad;
             float f = Math.max(0f, Math.min(1f, (e.getX() - pad) / w));
             float nv = snap(min + f * (max - min));
-            if (nv != value) { value = nv; invalidate(); if (l != null) l.onValue(value, true); }
+            if (nv != value) { value = nv; updateStateDescription(); invalidate(); if (l != null) l.onValue(value, true); }
             if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) { getParent().requestDisallowInterceptTouchEvent(false); if (l != null) l.onValue(value, true); }
             return true;
         }
@@ -281,7 +353,10 @@ public final class Widgets {
     public static FrameLayout fieldBox(Context c, EditText e) {
         final FrameLayout f = new FrameLayout(c);
         final GradientDrawable border = Ui.outlined(Ui.S.RADIUS_FIELD, Ui.P.field, Ui.P.strokeLo);
-        f.setBackground(border);
+        f.setBackground(app.jarvis.ui.glass.Glass.surface(Ui.S.RADIUS_FIELD,
+            new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{
+                new app.jarvis.ui.GlassDrawable(Ui.S.RADIUS_FIELD, false), border
+            }), 0));
         e.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override public void onFocusChange(View v, boolean hasFocus) {
                 Motion.stroke(border, Ui.hairline(), hasFocus ? Ui.P.strokeLo : Ui.P.accent, hasFocus ? Ui.P.accent : Ui.P.strokeLo, Motion.D_FAST);

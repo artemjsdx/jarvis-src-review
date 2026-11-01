@@ -1,6 +1,7 @@
 package app.jarvis.ui.chat.actions;
 
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageView;
@@ -37,9 +38,15 @@ public final class SubBlockView extends LinearLayout {
         head.setClickable(true);
         head.setFocusable(true);
         head.setPadding(Ui.dp(10), Ui.dp(6), Ui.dp(8), Ui.dp(6));
-        head.setBackground(Ui.rect(Ui.P.dark ? 0x12FFFFFF : 0x0D1B1740, 10));
+        head.setBackground(Ui.rippleOn(new ColorDrawable(0), 10));
+        View rail = new View(c);
+        int railColor = it.toolStatus == ChatItem.ToolStatus.RUNNING ? Ui.P.accent
+            : it.toolStatus == ChatItem.ToolStatus.FAILED ? Ui.P.err
+            : it.toolStatus == ChatItem.ToolStatus.INTERRUPTED ? Ui.P.warn : Ui.P.divider;
+        rail.setBackground(Ui.rect(railColor, 2));
+        head.addView(rail, Ui.lpm(Ui.dp(3), Ui.dp(24), 0, 0, 9, 0));
         head.addView(statusSlot(c, it), Ui.lpm(Ui.dp(14), Ui.dp(14), 0, 0, Ui.dp(8), 0));
-        head.addView(Ui.icon(c, ActionGroupView.iconRes(ToolIcons.iconName(it.toolName)), 14, Ui.P.text2),
+        head.addView(Ui.icon(c, ActionGroupView.iconRes(ToolIcons.iconName(it.toolName)), 14, Ui.P.text3),
             Ui.lpm(Ui.dp(14), Ui.dp(14), 0, 0, Ui.dp(6), 0));
         TextView title = Ui.text(c, ChatFormat.toolTitle(it.toolName), Ui.CAPTION, Ui.P.text);
         title.setTypeface(Ui.medium);
@@ -55,7 +62,7 @@ public final class SubBlockView extends LinearLayout {
         addView(head, new LayoutParams(-1, -2));
 
         details = Ui.column(c);
-        details.setPadding(Ui.dp(10), Ui.dp(4), Ui.dp(10), Ui.dp(8));
+        details.setPadding(Ui.dp(36), Ui.dp(4), Ui.dp(10), Ui.dp(8));
         details.setVisibility(open ? View.VISIBLE : View.GONE);
         details.addView(caption(c, "Аргументы"));
         details.addView(mono(c, pretty(item.toolArgs, "{}")), Ui.lpm(-1, -2, 0, Ui.dp(4), 0, 0));
@@ -119,7 +126,7 @@ public final class SubBlockView extends LinearLayout {
 
     private static TextView mono(Context c, String s) {
         TextView t = Ui.text(c, s, Ui.MONO, Ui.P.text2);
-        t.setBackground(Ui.rect(Ui.P.dark ? 0x14000000 : 0x0F1B1740, 10));
+        t.setBackground(Ui.glassTinted(10, Ui.P.dark ? 0x14000000 : 0x0F1B1740));
         t.setPadding(Ui.dp(10), Ui.dp(8), Ui.dp(10), Ui.dp(8));
         return t;
     }

@@ -195,7 +195,16 @@ public class TelegramPage extends SettingsPage {
         card.addView(actions, Ui.lpm(-1, -2, 14, 0, 14, 12));
         content.addView(card);
         if (!s.helperUp) {
-            content.addView(PageUi.note(ctx, s.helperProblem + "\nЕсли ~/tg-mcp ещё нет, сначала в Termux: bash ~/jarvis/tools/tg/setup.sh, затем " + HELPER_START + "."),
+            if (s.helperProblem != null && !s.helperProblem.isEmpty()) {
+                String problem = s.helperProblem;
+                int instruction = problem.indexOf("В Termux выполните:");
+                if (instruction >= 0) problem = problem.substring(0, instruction).trim();
+                if (!problem.isEmpty())
+                    content.addView(PageUi.note(ctx, problem), Ui.lpm(-1, -2, 0, GAP_ITEM, 0, 0));
+            }
+            content.addView(termuxCommand("1. Установить Telegram-помощник",
+                "bash ~/jarvis/tools/tg/setup.sh"), Ui.lpm(-1, -2, 0, GAP_ITEM, 0, 0));
+            content.addView(termuxCommand("2. Запустить помощник", HELPER_START),
                 Ui.lpm(-1, -2, 0, GAP_ITEM, 0, 0));
         }
     }
@@ -290,8 +299,27 @@ public class TelegramPage extends SettingsPage {
             } }), Ui.lpm(-1, -2, 14, 8, 14, 12));
         }
         content.addView(card);
-        content.addView(PageUi.note(ctx, "Токен нужен, чтобы приложение говорило с помощником входа. Команда в Termux: cat ~/tg-mcp/helper.token. Не отправляйте его никому."),
+        content.addView(PageUi.note(ctx, "Токен нужен для связи с помощником входа. Не отправляйте его никому."),
             Ui.lpm(-1, -2, 0, GAP_ITEM, 0, 0));
+        content.addView(termuxCommand("Показать токен в Termux", "cat ~/tg-mcp/helper.token"),
+            Ui.lpm(-1, -2, 0, GAP_ITEM, 0, 0));
+    }
+
+    /** Readable Termux command with a dedicated clipboard action; no terminal side effects. */
+    private View termuxCommand(String title, final String command) {
+        LinearLayout card = Widgets.card(ctx);
+        card.setPadding(Ui.dp(14), Ui.dp(10), Ui.dp(14), Ui.dp(12));
+        card.addView(Ui.text(ctx, title, Ui.CAPTION, Ui.P.text2));
+        TextView code = Ui.text(ctx, command, Ui.MONO, Ui.P.text);
+        code.setTextIsSelectable(true);
+        code.setSingleLine(false);
+        card.addView(code, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+        card.addView(Ui.button(ctx, "Копировать команду", R.drawable.ic_copy, Ui.BTN_GHOST,
+            new Runnable() { @Override public void run() {
+                host.copyToClipboard("Команда Termux", command);
+                host.overlays().toast("Команда скопирована", 1);
+            } }), Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+        return card;
     }
 
     private void addRemovalSection(final Snapshot s) {

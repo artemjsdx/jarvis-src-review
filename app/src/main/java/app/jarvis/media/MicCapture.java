@@ -32,8 +32,13 @@ public final class MicCapture implements MicIn {
             int min = AudioRecord.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
             if (min <= 0) { lastError = "Устройство не поддерживает запись " + sampleRate + " Гц"; return false; }
             int buffer = Math.max(min * 4, sampleRate / 5 * 2);       // at least 200 ms
-            int[] sources = wantAec ? new int[]{MediaRecorder.AudioSource.VOICE_COMMUNICATION, MediaRecorder.AudioSource.VOICE_RECOGNITION, MediaRecorder.AudioSource.MIC}
-                                    : new int[]{MediaRecorder.AudioSource.VOICE_RECOGNITION, MediaRecorder.AudioSource.MIC};
+            // VOICE_COMMUNICATION can be digitally silenced by some OEM voice-processing
+            // stacks even when RECORD_AUDIO is granted. Prefer recognition input, then
+            // plain MIC, and use communication as a last resort when AEC was requested.
+            int[] sources = wantAec
+                ? new int[]{MediaRecorder.AudioSource.VOICE_RECOGNITION, MediaRecorder.AudioSource.MIC,
+                    MediaRecorder.AudioSource.VOICE_COMMUNICATION}
+                : new int[]{MediaRecorder.AudioSource.VOICE_RECOGNITION, MediaRecorder.AudioSource.MIC};
             AudioRecord r = null;
             for (int src : sources) {
                 try {

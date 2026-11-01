@@ -44,6 +44,9 @@ jobs:
       - name: Project build inputs (android.jar, lambda stubs)
         run: bash tools/setup.sh
 
+      - name: JVM policy tests (ducking and agent comments)
+        run: bash tools/run-tests.sh app.jarvis.core.audio.DuckPolicyTest app.jarvis.core.agent.AgentCommentPolicyTest app.jarvis.core.design.PaletteContrastTest app.jarvis.wake.WakeEngineTest app.jarvis.core.voice.GroqGoogleSttTest app.jarvis.core.voice.SttHedgeTest
+
       - name: Test signing key from secrets
         env:
           KS_B64: ${{ secrets.JV_TEST_KEYSTORE_B64 }}
@@ -84,4 +87,90 @@ jobs:
           name: jarvis-uifix-apk
           path: build/outputs/Jarvis-uifix.apk
           if-no-files-found: error
+          retention-days: 30
+
+
+  android-smoke:
+    needs: apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download signed test APK
+        uses: actions/download-artifact@v4
+        with:
+          name: jarvis-uifix-apk
+          path: smoke-input
+
+      - name: Enable hardware virtualization
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; else echo "KVM device not available"; fi
+
+      - name: Boot Android and collect real UI screenshots
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect
+          disable-animations: false
+          script: bash tools/ci/android-smoke.sh
+
+      - name: Upload emulator screenshots and frame metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-uifix-emulator-smoke
+          path: smoke-output/
+          if-no-files-found: warn
+          retention-days: 14
+
+  ui-audit:
+    needs: apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        audit_set: [a, b, c, d]
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download signed APK
+        uses: actions/download-artifact@v4
+        with:
+          name: jarvis-uifix-apk
+          path: smoke-input
+
+      - name: Validate audit runner
+        run: python3 -m py_compile tools/ci/ui-audit.py
+
+      - name: Enable virtualization
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; else echo "KVM unavailable"; fi
+
+      - name: Audit actual Android UI in shard
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect
+          disable-animations: false
+          script: python3 tools/ci/ui-audit.py ${{ matrix.audit_set }}
+
+      - name: Upload every screenshot, hierarchy, videos, and perf data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-ui-audit-${{ matrix.audit_set }}
+          path: audit-output/
+          if-no-files-found: warn
           retention-days: 30

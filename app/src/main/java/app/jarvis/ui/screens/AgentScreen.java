@@ -137,7 +137,7 @@ public class AgentScreen extends Screen {
             @Override public boolean onTouchEvent(MotionEvent e) { return drawer.onTouch(e); }
         };
         root.addView(col, new FrameLayout.LayoutParams(-1, -1));
-        root.addView(drawer, new FrameLayout.LayoutParams(-1, -1));
+        // Drawer attaches to the overlay while this screen is shown, allowing true chat blur.
         return root;
     }
 
@@ -499,6 +499,13 @@ public class AgentScreen extends Screen {
     @Override public String title() { return null; }
 
     @Override public void onShow(String arg) {
+        if (drawer.getParent() != host.overlays()) {
+            if (drawer.getParent() instanceof android.view.ViewGroup)
+                ((android.view.ViewGroup) drawer.getParent()).removeView(drawer);
+            FrameLayout.LayoutParams drawerLp = new FrameLayout.LayoutParams(-1, -1);
+            drawerLp.bottomMargin = host.bottomInset() + Ui.dp(92);
+            host.overlays().addView(drawer, drawerLp);
+        }
         convId = j.chat.currentConversation();
         j.addListener(listener);
         j.sessions.addListener(sessionsListener);
@@ -512,6 +519,7 @@ public class AgentScreen extends Screen {
         j.removeListener(listener);
         j.sessions.removeListener(sessionsListener);
         drawer.hideNow();
+        if (drawer.getParent() == host.overlays()) host.overlays().removeView(drawer);
         streamFooter.setVisibility(View.GONE);
         typing.setActive(false);
     }

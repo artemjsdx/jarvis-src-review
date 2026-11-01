@@ -32,11 +32,14 @@ public final class WakeEngine {
     }
 
     /**
-     * Only {@code auto} asks the cloud to confirm a local wake hit. The local model has a high false-trigger rate on
-     * ordinary speech (measured on ART, see docs/SPEED.md section 9), so under {@code auto} a hit counts only when the
-     * transcript of the same utterance contains the wake word too.
+     * Cloud confirmation is opt-in. A successful local wake must not depend on
+     * Google Speech authorization or OpenRouter credits unless the user enables
+     * this privacy/cost trade-off explicitly.
      */
+    public static boolean verifyLocalHits(String setting, boolean cloudConfirm) {
+        return cloudConfirm && cloudFallbackAllowed(setting);
+    }
     public static boolean verifyLocalHits(String setting) {
-        return cloudFallbackAllowed(setting);
+        return verifyLocalHits(setting, false);
     }
 }

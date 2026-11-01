@@ -67,7 +67,7 @@ public final class GenerationCard {
     }
 
     private void divide(LinearLayout pad) {
-        pad.addView(Ui.divider(c), Ui.lpm(-1, Ui.dp(1), 0, Ui.dp(12), 0, Ui.dp(2)));
+        pad.addView(Ui.divider(c), Ui.lpm(-1, 1, 0, Ui.dp(12), 0, Ui.dp(2)));
     }
 
     private LinearLayout head(String title, String help) {
@@ -83,7 +83,7 @@ public final class GenerationCard {
 
     private void reasoning(LinearLayout pad) {
         pad.addView(head("Уровень рассуждений", "Сколько модель думает перед ответом. Доступные уровни берутся из описания модели у провайдера. "
-            + "Уровень, которого модель не принимает, не отправляется, а выбирается «Авто»."), Ui.lpm(-1, -2, 0, Ui.dp(6), 0, Ui.dp(6)));
+            + "Уровень, которого модель не принимает, не отправляется, а выбирается «Авто»."), Ui.lpm(-1, -2, 0, 6, 0, Ui.dp(6)));
         final String selected = j.settings.get(Settings.LLM_REASONING, "low");
         final TextView[] cells = new TextView[LEVEL_VALUES.length];
         CapChips.Flow grid = new CapChips.Flow(c);
@@ -104,11 +104,11 @@ public final class GenerationCard {
             } });
             grid.addView(cell);
         }
-        pad.addView(grid, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+        pad.addView(grid, Ui.lpm(-1, -2, 0, 8, 0, 0));
         styleCells(cells, selected);
         TextView hint = caption(c, levelText(selected));
         hint.setTag("reasoning.hint");
-        pad.addView(hint, Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+        pad.addView(hint, Ui.lpm(-2, -2, 0, 6, 0, 0));
     }
 
     private void rebuildCaption(LinearLayout pad) {
@@ -122,7 +122,7 @@ public final class GenerationCard {
             if (cells[i] == null) continue;
             boolean no = caps.reasoningLevel(LEVEL_VALUES[i]) == Cap.NO;
             boolean on = i == sel;
-            cells[i].setBackground(on ? Ui.rect(Ui.P.accent, 12) : Ui.rect(Ui.alpha(Ui.P.text2, 0.08f), 12));
+            cells[i].setBackground(on ? Ui.rect(Ui.P.accent, 12) : Ui.glassTinted(12, Ui.alpha(Ui.P.text2, 0.08f)));
             cells[i].setTextColor(on ? Ui.P.onAccent : (no ? Ui.alpha(Ui.P.text3, 0.55f) : Ui.P.text2));
         }
     }
@@ -143,14 +143,14 @@ public final class GenerationCard {
 
     private void temperature(LinearLayout pad) {
         pad.addView(head("Температура", "Насколько разнообразны ответы: меньше — точнее и ровнее, больше — свободнее. "
-            + "Не все модели принимают этот параметр."), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(6)));
+            + "Не все модели принимают этот параметр."), Ui.lpm(-1, -2, 0, 0, 0, 6));
         String range = "диапазон провайдера: " + fmt(cfg.quirks.tempMin) + "–" + fmt(cfg.quirks.tempMax);
         if (caps.temperature == Cap.NO) {
-            pad.addView(caption(c, "Модель не принимает температуру: параметр не отправляется."), Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+            pad.addView(caption(c, "Модель не принимает температуру: параметр не отправляется."), Ui.lpm(-2, -2, 0, 4, 0, 0));
             return;
         }
         final LinearLayout block = Ui.column(c);
-        pad.addView(block, Ui.lpm(-1, -2, 0, Ui.dp(4), 0, 0));
+        pad.addView(block, Ui.lpm(-1, -2, 0, 4, 0, 0));
         buildTemperature(block, range);
     }
 
@@ -164,19 +164,19 @@ public final class GenerationCard {
             if (on) j.settings.remove(Settings.LLM_TEMPERATURE);
             else j.settings.set(Settings.LLM_TEMPERATURE, String.valueOf(Math.max(cfg.quirks.tempMin, Math.min(cfg.quirks.tempMax, 0.75))));
             buildTemperature(block, range);
-        } }), Ui.lpm(-2, -2, Ui.dp(8), 0, 0, 0));
+        } }), Ui.lpm(-2, -2, 8, 0, 0, 0));
         block.addView(head);
         if (!auto) {
             final float saved = j.settings.getFloat(Settings.LLM_TEMPERATURE, 0.75f);
             final TextView val = caption(c, fmt(saved));
-            block.addView(val, Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+            block.addView(val, Ui.lpm(-2, -2, 0, 6, 0, 0));
             block.addView(Widgets.slider(c, (float) cfg.quirks.tempMin, (float) cfg.quirks.tempMax, 0.05f, saved, new Widgets.SliderListener() { @Override public void onValue(float v, boolean fromUser) {
                 val.setText(fmt(v));
                 j.settings.set(Settings.LLM_TEMPERATURE, String.valueOf(v));
-            } }), Ui.lpm(-1, Ui.dp(32), 0, 0, 0, 0));
+            } }), Ui.lpm(-1, 32, 0, 0, 0, 0));
         }
         if (caps.temperature == Cap.UNKNOWN) block.addView(caption(c, "Если модель не примет параметр, ошибка попадёт в журнал, и он перестанет отправляться."),
-            Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+            Ui.lpm(-2, -2, 0, 4, 0, 0));
     }
 
     private static String fmt(double t) {
@@ -188,7 +188,7 @@ public final class GenerationCard {
 
     private void maxTokens(LinearLayout pad) {
         pad.addView(head("Максимум токенов ответа", "Сколько токенов модель может написать за один ответ. Значение больше лимита модели "
-            + "уменьшается до лимита, чтобы провайдер не отклонил запрос."), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(6)));
+            + "уменьшается до лимита, чтобы провайдер не отклонил запрос."), Ui.lpm(-1, -2, 0, 0, 0, 6));
         final EditText field = Widgets.field(c, String.valueOf(DEFAULT_MAX_TOKENS), String.valueOf(j.settings.getInt(Settings.LLM_MAX_TOKENS, DEFAULT_MAX_TOKENS)), false, false);
         field.setInputType(InputType.TYPE_CLASS_NUMBER);
         final TextView note = caption(c, "");
@@ -198,9 +198,9 @@ public final class GenerationCard {
         field.setOnEditorActionListener(new android.widget.TextView.OnEditorActionListener() {
             @Override public boolean onEditorAction(TextView v, int actionId, android.view.KeyEvent e) { save(field, note); return false; }
         });
-        pad.addView(Widgets.fieldBox(c, field), Ui.lpm(-1, -2, 0, Ui.dp(4), 0, 0));
+        pad.addView(Widgets.fieldBox(c, field), Ui.lpm(-1, -2, 0, 4, 0, 0));
         note.setText(limitText());
-        pad.addView(note, Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+        pad.addView(note, Ui.lpm(-2, -2, 0, 4, 0, 0));
     }
 
     private String limitText() {
@@ -228,10 +228,10 @@ public final class GenerationCard {
     private void context(LinearLayout pad) {
         pad.addView(head("Размер контекста", "Сколько истории разговора отправляется модели. «Авто» берёт окно модели из её описания "
             + "(не больше 200 тыс. токенов) и оставляет место для ответа. Ручное значение можно задать, но оно не больше окна модели."),
-            Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(6)));
+            Ui.lpm(-1, -2, 0, 0, 0, 6));
         final boolean auto = j.settings.getBool(Settings.LLM_CONTEXT_AUTO, true);
         final LinearLayout block = Ui.column(c);
-        pad.addView(block, Ui.lpm(-1, -2, 0, Ui.dp(4), 0, 0));
+        pad.addView(block, Ui.lpm(-1, -2, 0, 4, 0, 0));
         buildContext(block, auto);
     }
 
@@ -248,25 +248,25 @@ public final class GenerationCard {
         head.addView(Widgets.toggle(c, auto, new Widgets.Toggle.Listener() { @Override public void onChanged(boolean on) {
             j.settings.setBool(Settings.LLM_CONTEXT_AUTO, on);
             buildContext(block, on);
-        } }), Ui.lpm(-2, -2, Ui.dp(8), 0, 0, 0));
+        } }), Ui.lpm(-2, -2, 8, 0, 0, 0));
         block.addView(head);
         if (!auto) {
             final int kChars = Math.max(8, Math.min(200, j.settings.getInt(Settings.LLM_CONTEXT_CHARS, 60_000) / 1000));
             final TextView val = caption(c, kChars + " тыс. символов истории");
-            block.addView(val, Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+            block.addView(val, Ui.lpm(-2, -2, 0, 6, 0, 0));
             block.addView(Widgets.slider(c, 8, 200, 2, kChars, new Widgets.SliderListener() { @Override public void onValue(float v, boolean fromUser) {
                 int n = Math.round(v);
                 val.setText(n + " тыс. символов истории");
                 j.settings.set(Settings.LLM_CONTEXT_CHARS, String.valueOf(n * 1000));
-            } }), Ui.lpm(-1, Ui.dp(32), 0, Ui.dp(2), 0, 0));
+            } }), Ui.lpm(-1, 32, 0, Ui.dp(2), 0, 0));
         }
     }
 
     private void steps(LinearLayout pad) {
         pad.addView(head("Шагов агента", "Сколько шагов агент может сделать за один запрос: вызовы инструментов и ответ. "
-            + "«Без ограничения» — до 200 шагов, защита от зацикливания; это записывается в журнал."), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(6)));
+            + "«Без ограничения» — до 200 шагов, защита от зацикливания; это записывается в журнал."), Ui.lpm(-1, -2, 0, 0, 0, 6));
         final LinearLayout block = Ui.column(c);
-        pad.addView(block, Ui.lpm(-1, -2, 0, Ui.dp(4), 0, 0));
+        pad.addView(block, Ui.lpm(-1, -2, 0, 4, 0, 0));
         buildSteps(block);
     }
 
@@ -280,14 +280,14 @@ public final class GenerationCard {
         head.addView(Widgets.toggle(c, unlimited, new Widgets.Toggle.Listener() { @Override public void onChanged(boolean on) {
             j.settings.set(Settings.LLM_MAX_STEPS, on ? "0" : "10");
             buildSteps(block);
-        } }), Ui.lpm(-2, -2, Ui.dp(8), 0, 0, 0));
+        } }), Ui.lpm(-2, -2, 8, 0, 0, 0));
         block.addView(head);
         if (!unlimited) {
             block.addView(Widgets.slider(c, 2, 30, 1, Math.max(2, Math.min(30, saved)), new Widgets.SliderListener() { @Override public void onValue(float v, boolean fromUser) {
                 int n = Math.round(v);
                 val.setText(n + " шагов");
                 j.settings.set(Settings.LLM_MAX_STEPS, String.valueOf(n));
-            } }), Ui.lpm(-1, Ui.dp(32), 0, Ui.dp(2), 0, 0));
+            } }), Ui.lpm(-1, 32, 0, Ui.dp(2), 0, 0));
         }
     }
 }

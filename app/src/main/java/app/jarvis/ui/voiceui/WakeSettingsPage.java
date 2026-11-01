@@ -12,6 +12,9 @@ import app.jarvis.core.voice.ProviderInfo;
 import app.jarvis.core.voice.ProviderStatus;
 import app.jarvis.core.voice.SttProvider;
 import app.jarvis.data.Settings;
+import app.jarvis.wake.WakeEngine;
+import app.jarvis.wake.WakePack;
+import java.io.File;
 import app.jarvis.rt.ListenApi;
 import app.jarvis.ui.Host;
 import app.jarvis.ui.Ui;
@@ -30,12 +33,20 @@ public class WakeSettingsPage extends SettingsPage {
     /** Shown when the user has no custom list; must match WakeMatcher.defaultRu(). */
     static final String DEFAULT_PHRASES = "джарвис, джарвиз, жарвис, джервис, джарвес, ярвис, эй джарвис, привет джарвис, хей джарвис, jarvis";
 
+    public enum Panel { BOTH, RECOGNITION, WAKE }
+    private final Panel panel;
     private LinearLayout content, sttHost, checkHost;
+    private TextView modelStatus;
+    private volatile boolean modelInstalling;
     private TextView micNote;
     private final CancelToken checkToken = new CancelToken();
     private String testingPid = "";
 
-    public WakeSettingsPage(Host host) { super(host); }
+    public WakeSettingsPage(Host host) { this(host, Panel.BOTH); }
+    public WakeSettingsPage(Host host, Panel panel) {
+        super(host);
+        this.panel = panel == null ? Panel.BOTH : panel;
+    }
 
     @Override public String title() { return "Обращение и распознавание"; }
 
@@ -44,16 +55,25 @@ public class WakeSettingsPage extends SettingsPage {
         sv.setFillViewport(true);
         content = Ui.column(ctx);
         content.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(24));
-        content.addView(Widgets.sectionTitle(ctx, "Режим обращения"));
-        content.addView(wakeCard());
-        content.addView(Widgets.sectionTitle(ctx, "Распознавание речи"));
-        sttHost = Ui.column(ctx);
-        content.addView(sttHost);
-        renderStt();
-        content.addView(Widgets.sectionTitle(ctx, "Язык"));
-        content.addView(languageCard());
-        content.addView(Widgets.sectionTitle(ctx, "Как это работает"));
-        content.addView(explainCard());
+        if (panel != Panel.RECOGNITION) {
+            content.addView(Widgets.sectionTitle(ctx, "Слово «Джарвис»"));
+            content.addView(wakeCard());
+            content.addView(Widgets.sectionTitle(ctx, "Локальная модель и режим распознавания обращения"));
+            content.addView(wakeEngineCard());
+            content.addView(Widgets.sectionTitle(ctx, "Как это работает"));
+            content.addView(explainCard());
+        }
+        if (panel != Panel.WAKE) {
+            content.addView(Widgets.sectionTitle(ctx, "Кто превращает голос в текст (STT)"));
+            content.addView(VoiceUiKit.note(ctx,
+                "STT не зависит от DeepSeek и озвучки. Каждый сервис использует собственный ключ и лимиты. " +
+                "OpenRouter здесь не является языковой моделью."));
+            sttHost = Ui.column(ctx);
+            content.addView(sttHost);
+            renderStt();
+            content.addView(Widgets.sectionTitle(ctx, "Язык команд"));
+            content.addView(languageCard());
+        }
         sv.addView(content);
         return sv;
     }
@@ -119,12 +139,14 @@ public class WakeSettingsPage extends SettingsPage {
 
         LinearLayout card = Widgets.card(ctx);
         card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14));
-        card.addView(VoiceUiKit.caption(ctx, "Провайдер фильтра «Джарвис» распознаёт каждую фразу в фоне; остальные — резерв и ручные проверки."),
+        card.addView(VoiceUiKit.caption(ctx,
+            "Ниже — сервисы для распознавания команд. При облачном режиме обращения они также могут распознавать «Джарвис». " +
+            "При установленной офлайн-модели обращение распознаётся локально."),
             Ui.lpm(-2, -2, 0, 0, 0, Ui.dp(8)));
 
         List<SttProvider> providers = j.listen == null ? new ArrayList<SttProvider>() : sttList();
         List<String> chain = j.settings.getList(Settings.STT_CHAIN);
-        if (chain.isEmpty() && !providers.isEmpty()) { chain.add("google-stt"); chain.add("groq-stt"); }
+        if (chain.isEmpty() && !providers.isEmpty()) { chain.add("google-stt"); chain.add("groq-stt"); chain.add("vosk-local"); }
         String wakeStt = j.settings.get(Settings.WAKE_STT, chain.isEmpty() ? "google-stt" : chain.get(0));
 
         List<SttProvider> ordered = new ArrayList<>();
@@ -183,7 +205,7 @@ public class WakeSettingsPage extends SettingsPage {
     private void editChain() {
         List<String> chain = j.settings.getList(Settings.STT_CHAIN);
         String cur = j.settings.get(Settings.STT_CHAIN);
-        app.jarvis.ui.Dialogs.prompt(host, "Цепочка распознавания", "id через запятую: google-stt, groq-stt, elevenlabs-stt, openrouter-stt",
+        app.jarvis.ui.Dialogs.prompt(host, "Цепочка распознавания", "id через запятую: google-stt, groq-stt, elevenlabs-stt, openrouter-stt, vosk-local",
             cur, false, false, "Сохранить", new app.jarvis.ui.Dialogs.StringListener() { @Override public void on(String s) {
                 List<String> v = new ArrayList<>();
                 for (String part : s.split(",")) { part = part.trim(); if (!part.isEmpty()) v.add(part); }
@@ -298,16 +320,86 @@ public class WakeSettingsPage extends SettingsPage {
         return card;
     }
 
+    // -------------------------------------------------------------------------------------------- local wake engine
+    private View wakeEngineCard() {
+        LinearLayout card = Widgets.card(ctx);
+        card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14));
+        String[] values = {"auto", "local", "cloud"};
+        int selected = 0;
+        String mode = j.settings.get(Settings.WAKE_ENGINE, WakeEngine.AUTO);
+        for (int i = 0; i < values.length; i++) if (values[i].equals(mode)) selected = i;
+        card.addView(VoiceUiKit.caption(ctx, "Распознавание обращения"),
+            Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(8)));
+        card.addView(Widgets.segmented(ctx,
+            new String[]{"Авто", "Офлайн", "Облако"}, selected, index -> {
+                j.settings.set(Settings.WAKE_ENGINE, values[index]);
+                host.overlays().toast("Режим обращения: " + values[index], 1);
+            }));
+        card.addView(VoiceUiKit.note(ctx,
+            "Авто использует Vosk, если модель установлена; иначе облако. «Офлайн» не использует облако для обнаружения обращения."),
+            Ui.lpm(-1, -2, 0, Ui.dp(8), 0, Ui.dp(12)));
+
+        File modelDir = new File(ctx.getFilesDir(), "models/" + WakePack.MODEL_NAME);
+        modelStatus = Ui.text(ctx, new WakePack(modelDir,
+            new File(ctx.getCacheDir(), "wake-model"), j.journal).isInstalled()
+            ? "Офлайн-модель установлена · 46 МБ исходный архив"
+            : "Офлайн-модель не установлена. Без неё «Авто» обращается к платным/ограниченным STT.",
+            Ui.CAPTION, Ui.P.text2);
+        modelStatus.setSingleLine(false);
+        card.addView(modelStatus, Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(8)));
+        card.addView(WrapButton.create(ctx, "Установить офлайн-модель (46 МБ)", R.drawable.ic_download,
+            Ui.BTN_GLASS, () -> installModel()), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(12)));
+
+        LinearLayout confirm = Ui.row(ctx);
+        confirm.addView(Ui.text(ctx, "Подтверждать «Джарвис» через облако", Ui.CAPTION), Ui.lpw(1f));
+        confirm.addView(Widgets.toggle(ctx, j.settings.getBool("wake.cloudConfirm", false),
+            on -> j.settings.setBool("wake.cloudConfirm", on)));
+        card.addView(confirm);
+        card.addView(VoiceUiKit.note(ctx, "Выключено по умолчанию: обнаруженное Vosk обращение срабатывает даже без кредитов OpenRouter."),
+            Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+        return card;
+    }
+
+    private void installModel() {
+        if (modelInstalling) return;
+        modelInstalling = true;
+        if (modelStatus != null) modelStatus.setText("Подготовка загрузки офлайн-модели…");
+        new Thread(() -> {
+            File dir = new File(ctx.getFilesDir(), "models/" + WakePack.MODEL_NAME);
+            File cache = new File(ctx.getCacheDir(), "wake-model");
+            WakePack pack = new WakePack(dir, cache, j.journal);
+            try {
+                pack.install(status -> j.main.post(() -> {
+                    if (modelStatus == null) return;
+                    String msg = status.message;
+                    if (status.bytesTotal > 0 && status.bytesDone >= 0)
+                        msg += " · " + Math.round(100.0 * status.bytesDone / status.bytesTotal) + " %";
+                    modelStatus.setText(msg.isEmpty() ? "Модель установлена" : msg);
+                }), new CancelToken());
+                j.main.post(() -> {
+                    modelInstalling = false;
+                    if (modelStatus != null) modelStatus.setText("Офлайн-модель установлена. «Джарвис» теперь можно обнаруживать без облака.");
+                    host.overlays().toast("Офлайн-модель установлена", 1);
+                });
+            } catch (Exception e) {
+                j.main.post(() -> {
+                    modelInstalling = false;
+                    if (modelStatus != null) modelStatus.setText("Ошибка установки: " + e.getMessage());
+                });
+            }
+        }, "jv-wake-model-install").start();
+    }
+
     // -------------------------------------------------------------------------------------------- explanation
     private View explainCard() {
         LinearLayout card = Widgets.card(ctx);
         card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14));
         card.addView(VoiceUiKit.caption(ctx,
-            "· Микрофон работает постоянно, но в сеть уходит только речь: фразы длиной 0,3–8 с отправляются выбранному сервису распознавания, чтобы найти «Джарвис» (не чаще 10 фраз в минуту).\n"
-            + "· Пока ассистент говорит, ничего не отправляется.\n"
-            + "· В шторке уведомлений висит системное уведомление — Android требует его для фоновой работы.\n"
-            + "· Расход батареи на вашем телефоне не измерялся; проверьте за день.\n"
-            + "· После перезагрузки телефона откройте приложение один раз — режим включится сам, но фоновая служба стартует только из приложения."));
+            "· Локальный Vosk распознаёт «Джарвис» без OpenRouter и Google; офлайн-модель должна быть установлена.\n"
+            + "· В автоматическом режиме без модели будет использована облачная цепочка STT, у которой могут быть лимиты и ошибки ключей.\n"
+            + "· Подтверждение через облако — отдельная необязательная функция. Она может снизить ложные срабатывания, но требует работоспособного STT.\n"
+            + "· Если ассистент не слышит команду после обращения, проверьте отдельную вкладку «Распознавание».\n"
+            + "· В фоне Android может ограничить микрофон: настройте фоновую службу и батарею."));
         return card;
     }
 

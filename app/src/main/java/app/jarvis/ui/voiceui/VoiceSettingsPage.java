@@ -34,7 +34,8 @@ public class VoiceSettingsPage extends SettingsPage {
     private static final String[][] KEYS = {
         {"elevenlabs", "Ключ ElevenLabs", "квота 10 000 символов в месяц на free; один ключ на озвучку и распознавание Scribe"},
         {"openrouter", "Ключ OpenRouter", "тот же ключ, что и для языковой модели; есть бесплатные TTS/STT и бесплатное клонирование"},
-        {"groq", "Ключ Groq", "тот же ключ, что и для LLM; используется Whisper-распознаванием"},
+        {"groq", "Ключ Groq", "используется Groq Whisper для распознавания речи"},
+        {"google-stt", "Ключ Google Speech STT", "неофициальный сервис Google: в тестовом APK нет встроенного ключа; без собственного ключа выберите Vosk или Groq"},
     };
 
     private LinearLayout content;
@@ -58,18 +59,18 @@ public class VoiceSettingsPage extends SettingsPage {
         content.removeAllViews();
         content.addView(Widgets.sectionTitle(ctx, "Озвучка ответов"));
         content.addView(autoCard());
-        content.addView(Widgets.sectionTitle(ctx, "Провайдеры озвучки"));
-        chainHost = Ui.column(ctx);
-        content.addView(chainHost);
-        renderChain();
-        content.addView(Widgets.sectionTitle(ctx, "Ключи API"));
+        // The provider chain is managed in the Studio's «Озвучка» tab, not duplicated here.
+        content.addView(Widgets.sectionTitle(ctx, "Ключи сервисов речи"));
         content.addView(keysCard());
         content.addView(Widgets.sectionTitle(ctx, "Скорость речи"));
         content.addView(speedCard());
-        content.addView(Ui.space(ctx, 1, 4));
-        content.addView(WrapButton.create(ctx, "Открыть Студию голоса", R.drawable.ic_voice, Ui.BTN_GLASS, new Runnable() { @Override public void run() {
-            host.navigate("studio");
-        } }));
+        content.addView(Widgets.sectionTitle(ctx, "Приглушение музыки"));
+        content.addView(duckCard());
+        content.addView(Widgets.sectionTitle(ctx, "Комментарии агента"));
+        content.addView(commentsCard());
+        content.addView(Widgets.sectionTitle(ctx, "Перед действием"));
+        content.addView(preActionCard());
+        content.addView(VoiceUiKit.note(ctx, "Провайдеры речи выбираются на вкладках «Озвучка» и «Распознавание». Здесь настраивается поведение ассистента."));
     }
 
     // -------------------------------------------------------------------------------------------- auto mode
@@ -83,7 +84,7 @@ public class VoiceSettingsPage extends SettingsPage {
             j.settings.set(Settings.TTS_AUTO, AUTO_VALUES[index]);
         } }));
         card.addView(VoiceUiKit.caption(ctx, "Никогда — молчать. На голосовые — отвечать голосом только на речь. Всегда — озвучивать каждый ответ."),
-            Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+            Ui.lpm(-2, -2, 0, 8, 0, 0));
         return card;
     }
 
@@ -98,7 +99,7 @@ public class VoiceSettingsPage extends SettingsPage {
         LinearLayout card = Widgets.card(ctx);
         card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14));
         card.addView(VoiceUiKit.caption(ctx, "Порядок = приоритет: если первый не сработал, пробуется следующий (только по сетевым сбоям, не по отмене)."),
-            Ui.lpm(-2, -2, 0, 0, 0, Ui.dp(8)));
+            Ui.lpm(-2, -2, 0, 0, 0, 8));
 
         // chain members first (in order), then the rest
         List<TtsProvider> ordered = new ArrayList<>();
@@ -119,38 +120,33 @@ public class VoiceSettingsPage extends SettingsPage {
                 if (p instanceof app.jarvis.core.voice.SlowProvider) sub = "студийный: минуты на фразу, в ответы не включается";
             }
 
-            LinearLayout row = Ui.row(ctx);
-            row.setPadding(0, Ui.dp(10), 0, Ui.dp(10));
-            LinearLayout tx = Ui.column(ctx);
-            LinearLayout head = Ui.row(ctx);
+            LinearLayout entry = Ui.column(ctx);
+            entry.setPadding(0, Ui.dp(10), 0, Ui.dp(10));
+            LinearLayout top = Ui.row(ctx);
             TextView name = Ui.text(ctx, info.name, Ui.BODY);
             name.setTypeface(Ui.medium);
-            name.setSingleLine(true);
-            name.setEllipsize(TextUtils.TruncateAt.END);
-            head.addView(name, Ui.lpw(1f));
-            if (!info.official) head.addView(Widgets.pill(ctx, "неофиц.", Widgets.WARN), Ui.lpm(-2, -2, Ui.dp(6), 0, 0, 0));
-            tx.addView(head);
-            TextView s = VoiceUiKit.note(ctx, sub);
-            s.setMaxLines(2);
-            tx.addView(s, Ui.lpm(-2, -2, 0, Ui.dp(2), 0, 0));
-            row.addView(tx, Ui.lpw(1f));
-
-            boolean slow = p instanceof app.jarvis.core.voice.SlowProvider;
-            if (!slow && inChain && pos > 0) {
-                row.addView(Ui.iconButton(ctx, R.drawable.ic_arrow_up, 36, Ui.P.text2, new Runnable() { @Override public void run() { move(info.id, -1); } }));
-            }
-            if (!slow && inChain && pos < chain.size() - 1) {
-                row.addView(Ui.iconButton(ctx, R.drawable.ic_arrow_down, 36, Ui.P.text2, new Runnable() { @Override public void run() { move(info.id, 1); } }));
-            }
-            if (!slow) {
-                row.addView(Widgets.toggle(ctx, inChain, new Widgets.Toggle.Listener() { @Override public void onChanged(boolean on) {
-                    toggle(info.id, on);
-                } }), Ui.lpm(-2, -2, Ui.dp(4), 0, 0, 0));
-            } else {
-                row.addView(Widgets.pill(ctx, "студия", Widgets.MUTED), Ui.lpm(-2, -2, Ui.dp(4), 0, 0, 0));
-            }
+            name.setMaxLines(2);
+            name.setSingleLine(false);
+            top.addView(name, Ui.lpw(1f));
+            final boolean slow = p instanceof app.jarvis.core.voice.SlowProvider;
+            if (!slow) top.addView(Widgets.toggle(ctx, inChain, new Widgets.Toggle.Listener() {
+                @Override public void onChanged(boolean on) { toggle(info.id, on); }
+            }), Ui.lpm(-2, -2, 8, 0, 0, 0));
+            else top.addView(Widgets.pill(ctx, "студия", Widgets.MUTED), Ui.lpm(-2, -2, 8, 0, 0, 0));
+            entry.addView(top);
+            TextView subtitle = VoiceUiKit.note(ctx, sub);
+            subtitle.setMaxLines(3);
+            entry.addView(subtitle, Ui.lpm(-1, -2, 0, 4, 0, 0));
+            LinearLayout actions = Ui.row(ctx);
+            if (!info.official) actions.addView(Widgets.pill(ctx, "неофиц.", Widgets.WARN));
+            actions.addView(Ui.space(ctx, 1, 1), Ui.lpw(1f));
+            if (!slow && inChain && pos > 0) actions.addView(Ui.iconButton(ctx, R.drawable.ic_arrow_up, 36, Ui.P.text2,
+                new Runnable() { @Override public void run() { move(info.id, -1); } }));
+            if (!slow && inChain && pos < chain.size() - 1) actions.addView(Ui.iconButton(ctx, R.drawable.ic_arrow_down, 36, Ui.P.text2,
+                new Runnable() { @Override public void run() { move(info.id, 1); } }));
+            if (!info.official || (!slow && inChain && (pos > 0 || pos < chain.size() - 1))) entry.addView(actions, Ui.lpm(-1, -2, 0, 4, 0, 0));
             if (rowI > 0) Widgets.divide(card);
-            card.addView(row);
+            card.addView(entry);
             rowI++;
         }
         chainHost.addView(card);
@@ -197,9 +193,9 @@ public class VoiceSettingsPage extends SettingsPage {
         TextView mask = Ui.text(ctx, j.secrets.has("key." + pid) ? "задан · " + app.jarvis.data.Secrets.mask(j.secrets.get("key." + pid)) : "не задан",
             Ui.CAPTION, j.secrets.has("key." + pid) ? Ui.P.ok : Ui.P.warn);
         mask.setSingleLine(true);
-        head.addView(mask, Ui.lpm(-2, -2, Ui.dp(8), 0, 0, 0));
+        head.addView(mask, Ui.lpm(-2, -2, 8, 0, 0, 0));
         block.addView(head);
-        block.addView(VoiceUiKit.note(ctx, note), Ui.lpm(-2, -2, 0, Ui.dp(2), 0, 0));
+        block.addView(VoiceUiKit.note(ctx, note), Ui.lpm(-2, -2, 0, 2, 0, 0));
 
         final EditText field = Widgets.field(ctx, "Вставить новый ключ…", "", false, true);
         LinearLayout fieldRow = Ui.row(ctx);
@@ -213,7 +209,7 @@ public class VoiceSettingsPage extends SettingsPage {
             fref.setTypeface(Ui.regular);
             if (sel >= 0 && sel <= fref.getText().length()) fref.setSelection(sel);
         } }));
-        block.addView(fieldRow, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+        block.addView(fieldRow, Ui.lpm(-1, -2, 0, 8, 0, 0));
 
         LinearLayout btns = VoiceUiKit.buttonRow(ctx,
             WrapButton.create(ctx, "Сохранить", R.drawable.ic_key, Ui.BTN_PRIMARY, new Runnable() { @Override public void run() {
@@ -234,7 +230,7 @@ public class VoiceSettingsPage extends SettingsPage {
                 if (j.speech != null) j.speech.reconfigure();
                 host.overlays().toast("Ключ удалён", 0);
             } }));
-        block.addView(btns, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+        block.addView(btns, Ui.lpm(-1, -2, 0, 8, 0, 0));
         return block;
     }
 
@@ -245,14 +241,99 @@ public class VoiceSettingsPage extends SettingsPage {
         final float cur = j.settings.getFloat(Settings.TTS_SPEED, 1f);
         final TextView val = VoiceUiKit.caption(ctx, (cur == 1f ? "Обычная (1×)" : String.format(java.util.Locale.US, "%.2f×", cur).replace(".", ",")));
         val.setTypeface(Ui.medium);
-        card.addView(val, Ui.lpm(-2, -2, 0, 0, 0, Ui.dp(4)));
+        card.addView(val, Ui.lpm(-2, -2, 0, 0, 0, 4));
         card.addView(Widgets.slider(ctx, 0.7f, 1.3f, 0.05f, cur, new Widgets.SliderListener() { @Override public void onValue(float v, boolean fromUser) {
             val.setText(v == 1f ? "Обычная (1×)" : String.format(java.util.Locale.US, "%.2f×", v).replace(".", ","));
             if (v == 1f) j.settings.remove(Settings.TTS_SPEED);
             else j.settings.set(Settings.TTS_SPEED, String.valueOf(v));
-        } }), Ui.lpm(-1, Ui.dp(32), 0, 0, 0, 0));
+        } }), Ui.lpm(-1, 32, 0, 0, 0, 0));
         card.addView(VoiceUiKit.note(ctx, "Скорость ответов ассистента. Отдельная скорость для тестов — на карточке провайдера в студии."),
-            Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+            Ui.lpm(-2, -2, 0, 6, 0, 0));
+        return card;
+    }
+
+
+    private View duckCard() {
+        LinearLayout card = Widgets.card(ctx);
+        card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14));
+        LinearLayout header = Ui.row(ctx);
+        header.addView(Ui.text(ctx, "Тише, пока Джарвис говорит", Ui.BODY), Ui.lpw(1f));
+        header.addView(Widgets.toggle(ctx, j.settings.getBool("tts.duck", true), new Widgets.Toggle.Listener() {
+            @Override public void onChanged(boolean on) {
+                j.settings.setBool("tts.duck", on);
+                if (!on) j.duckMusic("speech", false);
+            }
+        }));
+        card.addView(header);
+        final int percent = Math.max(0, Math.min(100, j.settings.getInt("tts.duckPercent", 10)));
+        final TextView label = VoiceUiKit.caption(ctx, "Громкость музыки во время ответа: " + percent + " %");
+        card.addView(label, Ui.lpm(-1, -2, 0, 12, 0, 0));
+        card.addView(Widgets.slider(ctx, 0f, 100f, 1f, percent, new Widgets.SliderListener() {
+            @Override public void onValue(float value, boolean fromUser) {
+                int n = Math.max(0, Math.min(100, Math.round(value)));
+                label.setText("Громкость музыки во время ответа: " + n + " %");
+                if (fromUser) j.settings.set("tts.duckPercent", String.valueOf(n));
+            }
+        }), Ui.lpm(-1, 32, 0, 6, 0, 0));
+        card.addView(VoiceUiKit.note(ctx,
+            "Плавное снижение и возврат за 200 мс. Пауза музыки не затрагивается; 10 % — исходное значение."),
+            Ui.lpm(-1, -2, 0, 8, 0, 0));
+        return card;
+    }
+
+
+    private View commentsCard() {
+        LinearLayout card = Widgets.card(ctx);
+        card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14));
+        int n = Math.max(0, Math.min(20, j.settings.getInt("agent.commentEvery", 0)));
+        final TextView frequency = VoiceUiKit.caption(ctx, n == 0 ? "Комментарии выключены" : "Комментировать каждые " + n + " действий");
+        card.addView(frequency);
+        card.addView(Widgets.slider(ctx, 0f, 20f, 1f, n, new Widgets.SliderListener() {
+            @Override public void onValue(float value, boolean fromUser) {
+                int step = Math.max(0, Math.min(20, Math.round(value)));
+                frequency.setText(step == 0 ? "Комментарии выключены" : "Комментировать каждые " + step + " действий");
+                if (fromUser) j.settings.set("agent.commentEvery", String.valueOf(step));
+            }
+        }), Ui.lpm(-1, 32, 0, 6, 0, 0));
+        LinearLayout line = Ui.row(ctx);
+        line.addView(Ui.text(ctx, "Озвучивать комментарии", Ui.BODY), Ui.lpw(1f));
+        line.addView(Widgets.toggle(ctx, j.settings.getBool("agent.commentVoice", false), new Widgets.Toggle.Listener() {
+            @Override public void onChanged(boolean enabled) { j.settings.setBool("agent.commentVoice", enabled); }
+        }));
+        card.addView(line, Ui.lpm(-1, -2, 0, 8, 0, 0));
+        card.addView(VoiceUiKit.note(ctx,
+            "Короткие сообщения появляются в ленте во время длинной цепочки инструментов. Финальный ответ остаётся отдельным."),
+            Ui.lpm(-1, -2, 0, 8, 0, 0));
+        return card;
+    }
+
+    private View preActionCard() {
+        LinearLayout card = Widgets.card(ctx);
+        card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14));
+        LinearLayout enabled = Ui.row(ctx);
+        enabled.addView(Ui.text(ctx, "Реплика перед первым действием", Ui.BODY), Ui.lpw(1f));
+        enabled.addView(Widgets.toggle(ctx, j.settings.getBool("agent.preAction", true), new Widgets.Toggle.Listener() {
+            @Override public void onChanged(boolean value) { j.settings.setBool("agent.preAction", value); }
+        }));
+        card.addView(enabled);
+        LinearLayout voice = Ui.row(ctx);
+        voice.addView(Ui.text(ctx, "Произносить реплику", Ui.BODY), Ui.lpw(1f));
+        voice.addView(Widgets.toggle(ctx, j.settings.getBool("agent.preActionVoice", true), new Widgets.Toggle.Listener() {
+            @Override public void onChanged(boolean value) { j.settings.setBool("agent.preActionVoice", value); }
+        }));
+        card.addView(voice, Ui.lpm(-1, -2, 0, 8, 0, 0));
+        card.addView(VoiceUiKit.note(ctx,
+            "Если модель сразу вызывает инструмент, ассистент скажет, что собирается сделать. Уже прозвучавшее подтверждение не повторяется."),
+            Ui.lpm(-1, -2, 0, 8, 0, 0));
+        final EditText phrases = Widgets.field(ctx, "Свои фразы через | (необязательно)",
+            j.settings.get("agent.preActionPhrases", ""), true, false);
+        card.addView(Widgets.fieldBox(ctx, phrases), Ui.lpm(-1, -2, 0, 10, 0, 0));
+        card.addView(Ui.button(ctx, "Сохранить фразы", 0, Ui.BTN_GLASS, new Runnable() {
+            @Override public void run() {
+                j.settings.set("agent.preActionPhrases", phrases.getText().toString().trim());
+                host.overlays().toast("Фразы сохранены", 1);
+            }
+        }), Ui.lpm(-1, -2, 0, 8, 0, 0));
         return card;
     }
 

@@ -3,6 +3,8 @@ package app.jarvis.ui;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.os.Looper;
+import android.os.MessageQueue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +46,34 @@ public final class Shell extends FrameLayout {
     private final OverlayHost overlays;
     private final Map<String, Screen> screens = new HashMap<>();
     private final List<View> dockItems = new ArrayList<>();
+    private static final String[] PREWARM_ORDER = {"settings", "agent", "files", "terminal", "log", "studio"};
+    private int prewarmIndex;
+    private final Runnable schedulePrewarm = new Runnable() {
+        @Override public void run() {
+            if (!isAttachedToWindow()) return;
+            Looper.myQueue().addIdleHandler(new MessageQueue.IdleHandler() {
+                @Override public boolean queueIdle() {
+                    if (!isAttachedToWindow() || prewarmIndex >= PREWARM_ORDER.length) return false;
+                    final String id = PREWARM_ORDER[prewarmIndex++];
+                    if (!screens.containsKey(id)) {
+                        try {
+                            Screen s = Screens.create(id, host);
+                            if (s != null) {
+                                // Build views only on the main thread while the message queue is idle.
+                                // Never attach listeners or run onShow until the screen is selected.
+                                s.view();
+                                screens.put(id, s);
+                            }
+                        } catch (Throwable error) {
+                            j.journal.e(Journal.Cat.SYSTEM, "Не удалось заранее создать экран " + id, error);
+                        }
+                    }
+                    if (prewarmIndex < PREWARM_ORDER.length) postDelayed(schedulePrewarm, 350);
+                    return false;
+                }
+            });
+        }
+    };
     private final Settings.Listener settingsListener = new Settings.Listener() {
         @Override public void onSettingChanged(String key) {
             if (GlassLevel.KEY.equals(key)) { GlassLevel.configure(j.settings.get(GlassLevel.KEY, "auto")); invalidateTree(Shell.this); }
@@ -82,7 +112,7 @@ public final class Shell extends FrameLayout {
         header.addView(stateDot, Ui.lpm(Ui.dp(8), Ui.dp(8), 0, 0, 8, 0));
         stateView = Ui.text(c, "", Ui.CAPTION);
         header.addView(stateView, Ui.lpm(-2, -2, 0, 0, 6, 0));
-        header.addView(Ui.iconButton(c, R.drawable.ic_settings, 44, Ui.P.text2, new Runnable() { @Override public void run() { navigate("settings"); } }));
+        header.addView(Ui.iconButton(c, R.drawable.ic_settings, 44, Ui.P.text2, "Открыть настройки", new Runnable() { @Override public void run() { navigate("settings"); } }));
         col.addView(header, new LinearLayout.LayoutParams(-1, -2));
         screenHost = new FrameLayout(c);
         col.addView(screenHost, new LinearLayout.LayoutParams(-1, 0, 1f));
@@ -128,6 +158,8 @@ public final class Shell extends FrameLayout {
             lb.setSingleLine(true);
             item.addView(lb, Ui.lpm(-2, -2, 6, 0, 0, 0));
             item.setClickable(true);
+            item.setFocusable(true);
+            item.setContentDescription("Раздел: " + Screens.DOCK_LABELS[i]);
             item.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { navigate(id); } });
             Ui.pressScale(item);
             dockRow.addView(item, new LinearLayout.LayoutParams(-2, -2));
@@ -158,9 +190,14 @@ public final class Shell extends FrameLayout {
     public void attach() {
         j.addListener(listener);
         j.settings.addListener(settingsListener);
+        // Leave the first paint untouched; prebuild one screen per idle interval.
+        // This prevents synchronous Screens.create/view from blocking the tap transition.
+        removeCallbacks(schedulePrewarm);
+        postDelayed(schedulePrewarm, 1100);
     }
 
     public void destroy() {
+        removeCallbacks(schedulePrewarm);
         j.removeListener(listener);
         if (current != null) current.onHide();
         j.settings.removeListener(settingsListener);
@@ -245,11 +282,15 @@ public final class Shell extends FrameLayout {
         if (old != null) {
             old.onHide();
             final View ov = old.view();
+            // Cache the outgoing screen during the transition to avoid repeatedly
+            // recording a complex scroll hierarchy on every animation frame.
+            if (!Ui.reduceMotion) ov.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             Motion.screenExit(ov, dir, new Runnable() {
                 @Override public void run() {
                     // the old screen may have been navigated back to while it was leaving: keep it then
                     if (ov.getParent() == screenHost && (current == null || current.view() != ov)) screenHost.removeView(ov);
                     ov.setAlpha(1f); ov.setTranslationX(0); ov.setTranslationY(0);
+                    ov.setLayerType(View.LAYER_TYPE_NONE, null);
                 }
             });
         }

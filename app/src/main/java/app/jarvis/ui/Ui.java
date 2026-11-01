@@ -230,6 +230,20 @@ public final class Ui {
     /** Glass card/background with a distinct 1dp gradient border. */
     public static Drawable glass(float rDp) { return Glass.surface(rDp, new GlassDrawable(rDp, false), 0); }
 
+    /** A lightly accented glass surface that still participates in the host-space wallpaper blur. */
+    public static Drawable glassTinted(float rDp, int tint) {
+        return Glass.surface(rDp, new android.graphics.drawable.LayerDrawable(new Drawable[]{
+            new GlassDrawable(rDp, false), rect(tint, rDp)
+        }), 0);
+    }
+
+    /** Frosted outlined surface: translucent controls participate in the shared backdrop blur. */
+    public static Drawable glassOutlined(float rDp, int tint, int stroke) {
+        return Glass.surface(rDp, new android.graphics.drawable.LayerDrawable(new Drawable[]{
+            new GlassDrawable(rDp, false), outlined(rDp, tint, stroke)
+        }), 0);
+    }
+
     public static Drawable glassPressable(float rDp) { return Glass.surface(rDp, rippleOn(new GlassDrawable(rDp, false), rDp), 0); }
 
     /** Accent-filled button surface (lavender gradient) with a hairline edge. */
@@ -249,9 +263,9 @@ public final class Ui {
         return g;
     }
 
-    /** Card surface: glass inset by half the gap, so neighbouring cards show a S.GAP space between them. */
+    /** Card surface fills View bounds so the border, ripple and outline share the same geometry. */
     public static Drawable cardSurface(float rDp) {
-        return Glass.surface(rDp, new GlassDrawable(rDp, false), dp(S.GAP / 2f));
+        return Glass.surface(rDp, new GlassDrawable(rDp, false), 0);
     }
 
     /**
@@ -259,7 +273,13 @@ public final class Ui {
      * violet stripe over the cards at the right edge. The app draws no scrollbar anywhere else either.
      */
     public static ScrollView scroll(Context c) {
-        ScrollView sv = new ScrollView(c);
+        ScrollView sv = new ScrollView(c) {
+            @Override protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+                super.onScrollChanged(l, t, oldl, oldt);
+                app.jarvis.ui.glass.GlassHost host = Glass.hostOf(this);
+                if (host != null) host.invalidateContentGlass();
+            }
+        };
         sv.setFillViewport(true);
         sv.setVerticalScrollBarEnabled(false);
         sv.setHorizontalScrollBarEnabled(false);
@@ -340,12 +360,47 @@ public final class Ui {
         if (style == BTN_DANGER) b.setBackground(glassPressable(14));
         b.setClickable(true);
         b.setFocusable(true);
+        if (label != null && label.length() > 0) b.setContentDescription(label.toString());
         if (onClick != null) b.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { onClick.run(); } });
         pressScale(b);
         return b;
     }
 
     public static FrameLayout iconButton(Context c, int iconRes, float sizeDp, int color, final Runnable onClick) {
+        return iconButton(c, iconRes, sizeDp, color, iconActionLabel(c, iconRes), onClick);
+    }
+
+    private static String iconActionLabel(Context c, int id) {
+        String raw;
+        try { raw = c.getResources().getResourceEntryName(id); }
+        catch (Throwable ignored) { return "Действие"; }
+        if (raw.startsWith("ic_")) raw = raw.substring(3);
+        switch (raw) {
+            case "settings": return "Настройки";
+            case "help": case "info": return "Справка";
+            case "close": return "Закрыть";
+            case "back": case "arrow_left": return "Назад";
+            case "check": return "Подтвердить";
+            case "copy": return "Копировать";
+            case "trash": return "Удалить";
+            case "edit": return "Изменить";
+            case "play": return "Воспроизвести";
+            case "pause": return "Пауза";
+            case "stop": return "Остановить";
+            case "refresh": return "Обновить";
+            case "plus": return "Добавить";
+            case "arrow_up": return "Назад по истории";
+            case "arrow_down": return "Вперёд по истории";
+            case "paperclip": return "Вставить из буфера";
+            case "upload": return "Выбрать файл";
+            case "volume": return "Включить голос";
+            case "volume_off": return "Выключить голос";
+            default: return "Действие: " + raw.replace('_', ' ');
+        }
+    }
+
+    public static FrameLayout iconButton(Context c, int iconRes, float sizeDp, int color, String description,
+                                          final Runnable onClick) {
         FrameLayout f = new FrameLayout(c);
         ImageView ic = icon(c, iconRes, sizeDp * 0.5f, color);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(dp(sizeDp * 0.5f), dp(sizeDp * 0.5f), Gravity.CENTER);
@@ -353,6 +408,8 @@ public final class Ui {
         f.setBackground(rippleOn(new ColorDrawable(0), sizeDp / 2f));
         f.setClickable(true);
         f.setFocusable(true);
+        f.setContentDescription(description);
+        f.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
         f.setLayoutParams(new LinearLayout.LayoutParams(dp(sizeDp), dp(sizeDp)));
         if (onClick != null) f.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { onClick.run(); } });
         pressScale(f);
@@ -364,7 +421,7 @@ public final class Ui {
         TextView v = text(c, t, CAPTION, color);
         v.setTypeface(medium);
         v.setPadding(dp(10), dp(5), dp(10), dp(5));
-        v.setBackground(outlined(S.RADIUS_CHIP, alpha(color, 0.14f), alpha(color, 0.35f)));
+        v.setBackground(glassOutlined(S.RADIUS_CHIP, alpha(color, 0.14f), alpha(color, 0.35f)));
         v.setSingleLine(true);
         return v;
     }

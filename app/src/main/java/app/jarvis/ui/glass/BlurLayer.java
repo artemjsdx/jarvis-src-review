@@ -35,6 +35,7 @@ final class BlurLayer {
         height = h;
         scale = s;
         captured.setEmpty();
+        recorded = false;
         if (snap != null) snap.recycle();
         snap = Bitmap.createBitmap(Math.max(1, Math.round(w * s)), Math.max(1, Math.round(h * s)), Bitmap.Config.RGB_565);
         snapCanvas = new Canvas(snap);
@@ -57,9 +58,15 @@ final class BlurLayer {
     void capture(View content, RectF region, float blurRadiusHostPx) {
         if (snap == null) return;
         snapCanvas.save();
-        snapCanvas.clipRect(region.left * scale, region.top * scale, region.right * scale, region.bottom * scale);
+        // Wipe the full reduced-resolution bitmap before clipping the actual capture
+        // to the backdrop region plus sampling margin: no stale rectangular strips,
+        // and ScrollViews outside the panel do not need to be redrawn.
         snapCanvas.drawColor(0xFF000000, PorterDuff.Mode.SRC);
         snapCanvas.scale(scale, scale);
+        // Clip before traversing the expensive screen hierarchy. GlassHost gives
+        // this rect a 40dp blur margin; no visible glass path samples the cleared
+        // pixels outside it. Clearing the full bitmap above prevents stale strips.
+        snapCanvas.clipRect(region.left, region.top, region.right, region.bottom);
         content.draw(snapCanvas);
         snapCanvas.restore();
         captured.set(region);

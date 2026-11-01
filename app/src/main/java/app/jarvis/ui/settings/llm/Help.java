@@ -11,7 +11,7 @@ public final class Help {
     private Help() { }
 
     public static View button(final Host host, final String title, final String text) {
-        return Ui.iconButton(host.context(), R.drawable.ic_info, 28, Ui.P.text3, new Runnable() { @Override public void run() {
+        return Ui.iconButton(host.context(), R.drawable.ic_help, 28, Ui.P.text3, new Runnable() { @Override public void run() {
             Dialogs.info(host, title, text);
         } });
     }

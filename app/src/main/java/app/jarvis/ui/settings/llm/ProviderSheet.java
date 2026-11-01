@@ -85,7 +85,7 @@ public final class ProviderSheet {
             boolean current = p.id.equals(j.providerId());
             LinearLayout row = Ui.row(c);
             row.setPadding(Ui.dp(12), Ui.dp(10), Ui.dp(12), Ui.dp(10));
-            row.setBackground(current ? Ui.rect(Ui.P.accentSoft, 12) : Ui.rippleOn(new android.graphics.drawable.ColorDrawable(0), 12));
+            row.setBackground(current ? Ui.glassTinted(12, Ui.P.accentSoft) : Ui.rippleOn(new android.graphics.drawable.ColorDrawable(0), 12));
             LinearLayout tx = Ui.column(c);
             TextView name = Ui.text(c, p.name, Ui.BODY);
             name.setTypeface(current ? Ui.medium : Ui.regular);

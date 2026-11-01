@@ -261,7 +261,7 @@ public final class ModelSheets {
             TextView pill = (TextView) convertView.findViewWithTag("pill");
             pill.setText(hasKey ? "ключ есть" : "нет ключа");
             pill.setTextColor(hasKey ? Ui.P.ok : Ui.P.text3);
-            pill.setBackground(Ui.rect(Ui.alpha(hasKey ? Ui.P.ok : Ui.P.text3, 0.13f), 20));
+            pill.setBackground(Ui.glassTinted(20, Ui.alpha(hasKey ? Ui.P.ok : Ui.P.text3, 0.13f)));
             convertView.setOnClickListener(new View.OnClickListener() {
                 @Override public void onClick(View v) { select(p.id); }
             });

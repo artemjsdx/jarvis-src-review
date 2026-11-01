@@ -89,6 +89,20 @@ public class GroqGoogleSttTest {
 
     // ---------------------------------------------------------------- Google
 
+    @Test public void redactedReviewCredentialCannotBeUsedAsARealKey() throws Exception {
+        GoogleSpeechStt stt = new GoogleSpeechStt();
+        ProviderConfig cfg = new ProviderConfig();
+        cfg.put("key", "REDACTED");
+        stt.configure(cfg);
+        assertFalse("Sanitized APK must not call Google with a fake key", stt.isConfigured());
+        try {
+            stt.transcribe(new PcmAudio(pcm(80), 16000), opts(), new CancelToken());
+            throw new AssertionError("expected a configuration error, not an HTTP request");
+        } catch (VoiceException e) {
+            assertEquals(VoiceException.Kind.CONFIG, e.kind);
+        }
+    }
+
     @Test public void google_multilineJsonParsing() throws Exception {
         try (VoiceMockServer s = new VoiceMockServer()) {
             byte[] pcm = pcm(3200);

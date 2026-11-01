@@ -48,7 +48,7 @@ public class SettingsScreen extends Screen {
         R.drawable.ic_plug, R.drawable.ic_plug, R.drawable.ic_layers, R.drawable.ic_bolt};
 
     /** Groups of page ids, each rendered as one card with a section title. */
-    private static final String[][] GROUPS = {{"llm", "context"}, {"voice", "wake", "sounds"}, {"music", "triggers", "sandbox"}, {"adb", "background"}, {"appearance"}, {"advanced", "diagnostics", "mcp", "mcpsrv", "telegram"}};
+    private static final String[][] GROUPS = {{"llm", "context"}, {"sounds"}, {"music", "triggers", "sandbox"}, {"adb", "background"}, {"appearance"}, {"advanced", "diagnostics", "mcp", "mcpsrv", "telegram"}};
 
     private static final String[] GROUP_TITLES = {"Подключение", "Голос", "Музыка и данные", "Система", "Интерфейс", "Обслуживание"};
 
@@ -100,6 +100,11 @@ public class SettingsScreen extends Screen {
         col.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(24));
         for (int g = 0; g < GROUPS.length; g++) {
             col.addView(Widgets.sectionTitle(ctx, GROUP_TITLES[g]));
+            if (g == 1) {
+                col.addView(Widgets.row(ctx, R.drawable.ic_voice, "Студия голоса",
+                    "Озвучка · распознавание · обращение · голосовые профили", null,
+                    new Runnable() { @Override public void run() { host.navigate("studio"); } }));
+            }
             LinearLayout card = Widgets.card(ctx);
             for (int i = 0; i < GROUPS[g].length; i++) {
                 final String id = GROUPS[g][i];
@@ -187,6 +192,9 @@ public class SettingsScreen extends Screen {
     // --------------------------------------------------------------------------------------- sub-pages
     /** @param deepLink optional "voice"/"adb/…" part after the page id, forwarded to the page via onShow. */
     public void openPage(String id, String deepLink) {
+        // Preserve legacy deep links while keeping voice controls in one location.
+        if ("voice".equals(id)) { host.navigate("studio/behavior"); return; }
+        if ("wake".equals(id)) { host.navigate("studio/wake"); return; }
         if (PAGES.length == 0) return;
         SettingsPage page = createPage(id);
         if (page == null) return;
@@ -210,9 +218,10 @@ public class SettingsScreen extends Screen {
         if (!Ui.reduceMotion) {
             pageColumn.setTranslationX(Ui.dp(48));
             pageColumn.setAlpha(0f);
-            pageColumn.animate().translationX(0f).alpha(1f).setDuration(Ui.ms(220))
+            pageColumn.animate().translationX(0f).alpha(1f).setDuration(app.jarvis.ui.motion.Motion.screenTime(220))
                 .withEndAction(new Runnable() { @Override public void run() { if (current != null) listScroll.setVisibility(View.INVISIBLE); } }).start();
-            listScroll.animate().translationX(-Ui.dp(48)).alpha(0.35f).setDuration(Ui.ms(220)).start();
+            listScroll.animate().translationX(-Ui.dp(48)).alpha(0.35f)
+                .setDuration(app.jarvis.ui.motion.Motion.screenTime(220)).start();
         } else {
             pageColumn.setTranslationX(0);
             pageColumn.setAlpha(1f);
@@ -236,10 +245,11 @@ public class SettingsScreen extends Screen {
             }
         } };
         if (animate && !Ui.reduceMotion) {
-            pc.animate().translationX(Ui.dp(64)).alpha(0f).setDuration(Ui.ms(180)).withEndAction(new Runnable() { @Override public void run() {
+            pc.animate().translationX(Ui.dp(64)).alpha(0f).setDuration(app.jarvis.ui.motion.Motion.screenTime(180)).withEndAction(new Runnable() { @Override public void run() {
                 pc.setTranslationX(0); pc.setAlpha(1f); finish.run();
             } }).start();
-            listScroll.animate().translationX(0).alpha(1f).setDuration(Ui.ms(180)).start();
+            listScroll.animate().translationX(0).alpha(1f)
+                .setDuration(app.jarvis.ui.motion.Motion.screenTime(180)).start();
         } else finish.run();
         refreshStatuses();
     }

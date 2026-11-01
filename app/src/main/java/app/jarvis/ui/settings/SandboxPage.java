@@ -118,10 +118,11 @@ public class SandboxPage extends SettingsPage {
         LinearLayout checkRow = Widgets.row(ctx, R.drawable.ic_refresh, "Проверка связи",
             "отправляет в Termux `echo` и показывает ответ (нужен allow-external-apps = true в ~/.termux/termux.properties)", null, null);
         final TextView status = (TextView) checkRow.findViewWithTag("subtitle");
-        checkRow.addView(Ui.button(ctx, "Проверить", 0, Ui.BTN_GHOST, new Runnable() { @Override public void run() {
-            runBridgeCheck(status);
-        } }), Ui.lpm(-2, -2, 6, 0, 0, 0));
+        if (status != null) { status.setMaxLines(Integer.MAX_VALUE); status.setEllipsize(null); }
         card.addView(checkRow);
+        card.addView(Ui.button(ctx, "Проверить", 0, Ui.BTN_GLASS, new Runnable() { @Override public void run() {
+            runBridgeCheck(status);
+        } }), Ui.lpm(-1, -2, 16, 4, 16, 14));
         return card;
     }
 
@@ -199,7 +200,7 @@ public class SandboxPage extends SettingsPage {
         LinearLayout card = Widgets.card(ctx);
         List<ToolSpec> specs = j.tools.specs();
         if (specs.isEmpty()) {
-            card.addView(PageUi.note(ctx, "Инструменты не зарегистрированы."), Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(12)));
+            card.addView(PageUi.note(ctx, "Инструменты не зарегистрированы."), Ui.lpm(-2, -2, 16, Ui.dp(12), Ui.dp(16), Ui.dp(12)));
             return card;
         }
         for (final ToolSpec s : specs) {
@@ -209,11 +210,16 @@ public class SandboxPage extends SettingsPage {
             LinearLayout tx = textColumn(row);
             final TextView schema = Ui.text(ctx, pretty, Ui.MONO, Ui.P.text3);
             schema.setVisibility(View.GONE);
-            tx.addView(schema, Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+            tx.addView(schema, Ui.lpm(-2, -2, 0, 6, 0, 0));
             row.setBackground(Ui.rippleOn(new android.graphics.drawable.ColorDrawable(0), 14));
             row.setClickable(true);
+            row.setFocusable(true);
+            row.setContentDescription("Инструмент " + s.name + ". Показать параметры");
             row.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
-                schema.setVisibility(schema.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+                boolean expanding = schema.getVisibility() != View.VISIBLE;
+                schema.setVisibility(expanding ? View.VISIBLE : View.GONE);
+                v.setContentDescription("Инструмент " + s.name
+                    + (expanding ? ". Скрыть параметры" : ". Показать параметры"));
             } });
             card.addView(row);
             Widgets.divide(card);
@@ -232,11 +238,12 @@ public class SandboxPage extends SettingsPage {
         t.setTypeface(Ui.medium);
         tx.addView(t);
         memoryCount = PageUi.note(ctx, "");
-        tx.addView(memoryCount, Ui.lpm(-2, -2, 0, Ui.dp(2), 0, 0));
+        tx.addView(memoryCount, Ui.lpm(-2, -2, 0, 2, 0, 0));
         head.addView(tx, Ui.lpw(1f));
-        head.addView(Ui.button(ctx, "Добавить", R.drawable.ic_plus, Ui.BTN_GHOST, new Runnable() { @Override public void run() { editMemory(null); } }));
-        head.addView(Ui.space(ctx, Ui.dp(6), 1));
-        head.addView(Ui.button(ctx, "Очистить", R.drawable.ic_trash, Ui.BTN_DANGER, new Runnable() { @Override public void run() {
+        card.addView(head);
+        LinearLayout actions = PageUi.buttonRow(ctx,
+            Ui.button(ctx, "Добавить", R.drawable.ic_plus, Ui.BTN_GLASS, new Runnable() { @Override public void run() { editMemory(null); } }),
+            Ui.button(ctx, "Очистить", R.drawable.ic_trash, Ui.BTN_DANGER, new Runnable() { @Override public void run() {
             Dialogs.confirm(host, "Очистить память?", "Ассистент забудет все записи: предпочтения, привычки, факты о вас.", "Очистить", true, new Runnable() { @Override public void run() {
                 try {
                     j.memory.clear();
@@ -247,7 +254,7 @@ public class SandboxPage extends SettingsPage {
                 }
             } });
         } }));
-        card.addView(head);
+        card.addView(actions, Ui.lpm(-1, -2, 16, 4, 16, 14));
         Widgets.divide(card);
         memoryHost = Ui.column(ctx);
         card.addView(memoryHost);
@@ -296,7 +303,7 @@ public class SandboxPage extends SettingsPage {
         text.setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY);
         text.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL);
         body.addView(text);
-        body.addView(PageUi.note(ctx, "Сохранено: " + MemoryOrder.stamp(en.updated, TimeZone.getDefault())), Ui.lpm(-1, -2, 0, Ui.dp(12), 0, 0));
+        body.addView(PageUi.note(ctx, "Сохранено: " + MemoryOrder.stamp(en.updated, TimeZone.getDefault())), Ui.lpm(-1, -2, 0, 12, 0, 0));
         final OverlayHost.Layer[] ly = new OverlayHost.Layer[1];
         View edit = Ui.button(ctx, "Изменить", R.drawable.ic_edit, Ui.BTN_GHOST, new Runnable() { @Override public void run() {
             host.overlays().dismiss(ly[0]);
@@ -311,8 +318,8 @@ public class SandboxPage extends SettingsPage {
             host.overlays().dismiss(ly[0]);
             confirmForget(en);
         } });
-        body.addView(PageUi.buttonRow(ctx, edit, copy), Ui.lpm(-1, -2, 0, Ui.dp(16), 0, 0));
-        body.addView(forget, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+        body.addView(PageUi.buttonRow(ctx, edit, copy), Ui.lpm(-1, -2, 0, 16, 0, 0));
+        body.addView(forget, Ui.lpm(-1, -2, 0, 8, 0, 0));
         ly[0] = Dialogs.sheet(host, en.key, body, true);
     }
 

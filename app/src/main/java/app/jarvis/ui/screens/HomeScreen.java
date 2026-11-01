@@ -350,7 +350,7 @@ public class HomeScreen extends Screen {
         lastActionText.setText(t);
         lastActionPill.setText(j.lastActionOk() ? "ок" : "сбой");
         lastActionPill.setTextColor(j.lastActionOk() ? Ui.P.ok : Ui.P.err);
-        lastActionPill.setBackground(Ui.rect(Ui.alpha(j.lastActionOk() ? Ui.P.ok : Ui.P.err, 0.14f), 20));
+        lastActionPill.setBackground(Ui.glassTinted(20, Ui.alpha(j.lastActionOk() ? Ui.P.ok : Ui.P.err, 0.14f)));
     }
 
     // ---- lifecycle -------------------------------------------------------------------------------------------------

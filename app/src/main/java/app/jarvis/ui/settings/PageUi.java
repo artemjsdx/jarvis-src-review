@@ -45,8 +45,10 @@ final class PageUi {
     /** Row of buttons that share the width equally. */
     static LinearLayout buttonRow(Context c, View... bs) {
         LinearLayout r = Ui.row(c);
-        for (View b : bs) {
-            r.addView(b, Ui.lpw(1f));
+        for (int i = 0; i < bs.length; i++) {
+            LinearLayout.LayoutParams lp = Ui.lpw(1f);
+            if (i > 0) lp.leftMargin = Ui.dp(8);
+            r.addView(bs[i], lp);
         }
         return r;
     }
