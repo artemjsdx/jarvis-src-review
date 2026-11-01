@@ -18,6 +18,7 @@ import app.jarvis.core.voice.ProviderStatus;
 import app.jarvis.core.voice.TtsProvider;
 import app.jarvis.core.voice.TtsRequest;
 import app.jarvis.data.Settings;
+import app.jarvis.data.Secrets;
 import app.jarvis.rt.SpeechApi;
 import app.jarvis.ui.Dialogs;
 import app.jarvis.ui.HelpPopup;
@@ -159,6 +160,27 @@ public class DubTab {
     }
 
     // ---------------------------------------------------------------------------------------------- provider card
+    private static String ttsSecretName(String providerId) {
+        switch (providerId) {
+            case "gemini-tts": case "gemini-lite-tts": return "key.gemini";
+            case "elevenlabs": return "key.elevenlabs";
+            case "openrouter-tts": return "key.openrouter";
+            default: return "";
+        }
+    }
+
+    private void editTtsApiKey(String key, String providerName) {
+        Dialogs.prompt(host, "API-ключ · " + providerName,
+            "Вставьте ключ провайдера", "", false, true, "Сохранить", raw -> {
+                String value = raw.trim();
+                if (value.isEmpty()) return;
+                j.secrets.set(key, value);
+                if (j.speech != null) j.speech.reconfigure();
+                host.overlays().toast("Ключ сохранён", 1);
+                rebuild();
+            });
+    }
+
     private final class ProviderCard {
         final TtsProvider p;
         final ProviderInfo info;
@@ -228,6 +250,13 @@ public class DubTab {
             statusHost = Ui.column(ctx);
             renderStatus();
             card.addView(statusHost, Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+            final String credential = ttsSecretName(info.id);
+            if (info.needsKey && !credential.isEmpty()) {
+                String masked = Secrets.mask(j.secrets.get(credential));
+                card.addView(WrapButton.create(ctx, "API: " + masked,
+                    0, Ui.BTN_GLASS, () -> editTtsApiKey(credential, info.name)),
+                    Ui.lpm(-1, -2, 0, Ui.dp(12), 0, 0));
+            }
 
             checkBtn = WrapButton.create(ctx, "Проверить", R.drawable.ic_activity, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runCheck(); } });
             View voicesBtn = WrapButton.create(ctx, "Выбрать голос", 0, Ui.BTN_GLASS, new Runnable() { @Override public void run() { openVoices(); } });
