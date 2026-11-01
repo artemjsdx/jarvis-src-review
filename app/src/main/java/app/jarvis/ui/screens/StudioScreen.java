@@ -99,6 +99,11 @@ public class StudioScreen extends app.jarvis.ui.Screen {
     }
 
     @Override public void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
+        // User-selected cue audio belongs to SoundsPage even though it is hosted inside StudioScreen.
+        if (soundsPage != null && (requestCode == 61 || requestCode == 62)) {
+            soundsPage.onActivityResult(requestCode, resultCode, data);
+            return;
+        }
         if (requestCode == CloneTab.REQ_IMPORT_SAMPLE && resultCode == android.app.Activity.RESULT_OK
             && data != null && data.getData() != null && clone != null) {
             clone.onSamplePicked(data.getData());
