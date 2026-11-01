@@ -11,7 +11,7 @@ Scope: Russian-first Android voice assistant. **Do not treat a signup credit as 
 | Groq Whisper large-v3 / turbo | Recurring rate-limited free plan, account key | Yes | REST multipart | Implemented already |
 | Cloudflare Workers AI Whisper v3 Turbo | Shared 10k Neurons/day recurring free quota | Yes | REST account ID/token, JSON base64 WAV | Added in review branch |
 | Gemini Flash Audio understanding | Model-specific API free tier and rate limits | Yes | REST Interactions inline audio | Added in review branch; not dedicated Transcribe |
-| Gemini 3.5 Transcribe | Dedicated ASR; free tier shown in Gemini API price table | Yes | REST Interactions + Files API, custom vocabulary | Candidate, not implemented (requires 2-step upload) |
+| Gemini 3.5 Transcribe | Dedicated ASR; free tier shown in Gemini API price table | Yes | REST Interactions + resumable Files API, custom vocabulary | Implemented in review; requires live API check |
 | ElevenLabs Scribe | Free-plan usage restrictions, check current quotas | Yes | Existing REST multipart | Implemented already |
 | OpenRouter audio transcription | Usage billed to credits | Yes via Whisper | Existing REST API | Implemented, **not free**; previously caused HTTP 402 |
 | Google Speech unofficial endpoint | Key/quota restrictions and possible HTTP 403 | Yes | Existing legacy endpoint | Implemented, **unreliable**, do not default |
@@ -40,7 +40,7 @@ Scope: Russian-first Android voice assistant. **Do not treat a signup credit as 
 | Silero Space | Public model/demo can throttle | Yes | Existing |
 | F5 Space | Public demo availability not guaranteed | Voice/model-dependent | Existing optional |
 | ElevenLabs TTS | Recurring limited free quota | Yes | Existing |
-| Gemini 3.8 Flash / Flash-Lite TTS | Gemini API free tier varies by model/region | Yes (verify voices) | Research only; needs audio output protocol integration |
+| Gemini 3.8 Flash / Flash-Lite TTS | Gemini API free tier varies by model/region | Yes (verify voices) | Both implemented in review; live voice API check pending |
 | Google Cloud Standard / WaveNet | Free recurring character allowance but **billing required** | Yes | Research only |
 | Microsoft Azure neural TTS | Speech free-tier quotas, setup required | Yes | Research only |
 | RHVoice | Local open-source, Android-compatible engine | Yes | Can supply AndroidSystemTts once installed |
@@ -55,9 +55,9 @@ Scope: Russian-first Android voice assistant. **Do not treat a signup credit as 
 
 1. Wake word: **local Vosk** for "Джарвис"; do not require cloud/credits just to activate.
 2. Short command transcription: **Groq Whisper v3** (free recurring), **Cloudflare Whisper Turbo** as next fallback; Gemini Audio as optional text-quality comparator.
-3. Better-context transcription: optional **Gemini 3.5 Transcribe** once the official Files API upload flow is implemented and tested.
+3. Better-context transcription: optional **Gemini 3.5 Transcribe**, with official resumable Files API integration and vocabulary; verify live on the phone.
 4. Unlimited offline Russian transcription: sherpa-onnx **GigaAM-v3 INT8** after APK-size, RAM and latency profiling on the actual Android handset. Do not claim runtime support before adding native binaries and downloading model.
-5. TTS: Edge as attractive keyless voice with Google Translate and **AndroidSystemTts** as independent fallback. Install RHVoice for a fully offline Russian system engine.
+5. TTS: Edge as attractive keyless voice, Google Translate and **AndroidSystemTts** as independent fallback. Both Gemini 3.8 TTS variants are available after connecting a shared Gemini API key. Install RHVoice for a fully offline Russian system engine.
 6. Keys: encrypted Secrets storage, each provider independently configured; STT chain and TTS chain must never reuse LLM credentials implicitly.
 7. Diagnostics: display precise recording RMS, sample count, chosen AudioRecord source, STT provider id, HTTP status kind, playback stream, detected system volume and cue decode errors. Log without API secrets.
 
@@ -88,4 +88,4 @@ Scope: Russian-first Android voice assistant. **Do not treat a signup credit as 
 - Community Chinese comparison: https://cloud.tencent.cn/developer/article/2642961
 - Free-tier survey (secondary, may lag changes): https://aifree.dev/learn/free-speech-to-text-api
 
-Status at writing: design/research sources verified; live provider credentials and on-device sound tests have not been run.
+Status at writing: provider implementations and public API protocols added to review branch; no live provider credentials or on-device sound tests have been run. The APK CI must pass before this can be considered build verified.
