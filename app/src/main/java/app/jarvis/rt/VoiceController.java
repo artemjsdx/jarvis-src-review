@@ -133,7 +133,7 @@ public final class VoiceController implements ListenApi {
         });
         rebuildSegmenter();
         reloadMatcher();
-        main.postDelayed(new Runnable() { @Override public void run() { cues.warmUp(); } }, 3000);
+        main.postDelayed(new Runnable() { @Override public void run() { cues.warmUp(); } }, 250);
         arbiter.start();
         j.settings.addListener(new Settings.Listener() {
             @Override public void onSettingChanged(String key) {
