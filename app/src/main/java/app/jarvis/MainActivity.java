@@ -16,6 +16,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -56,6 +57,8 @@ public class MainActivity extends Activity implements Host {
 
     @Override protected void onCreate(Bundle b) {
         super.onCreate(b);
+        // Allow screenshots of settings, including the LLM page. Never inherit a secure window flag.
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
         j = Jarvis.get();
         if (j == null) { showFatal(JarvisApp.startupFailure); return; }
         Ui.init(this, Theme.resolveDark(j.settings.get("ui.theme", Theme.DARK), getResources().getConfiguration()));
@@ -70,6 +73,12 @@ public class MainActivity extends Activity implements Host {
         shell.navigate(start.equals("settings") ? "home" : start);
         handleIntent(getIntent(), true);
         maybeShowCrash();
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        // Some vendor transitions can recreate window attributes. Keep in-app screenshots enabled.
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
 
     private void installInsets(final Shell s) {
