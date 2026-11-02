@@ -203,7 +203,7 @@ public final class SearchProvidersPage extends SettingsPage {
                 if (!names.contains("web_search") && !names.contains("web_search_exa"))
                     throw new IllegalStateException("Сервер подключился, но инструмента поиска в нём нет.");
                 success = true;
-                message = "Подключено. Инструментов: " + names.size() +
+                message = "MCP подключён, список инструментов получен: " + names.size() +
                     ". Через MCP-серверы можно проверить или выключить его.";
             } catch (Exception error) {
                 message = "Сервер сохранён выключенным: " +
@@ -213,7 +213,7 @@ public final class SearchProvidersPage extends SettingsPage {
             final boolean ok = success;
             final String result = message;
             j.main.post(() -> {
-                Dialogs.info(host, ok ? "Поиск MCP работает" : "Поиск MCP не подключён", result);
+                Dialogs.info(host, ok ? "MCP-сервер доступен" : "MCP-сервер не подключён", result);
                 if (ok) render();
             });
         }, "jv-search-mcp-" + id).start();
