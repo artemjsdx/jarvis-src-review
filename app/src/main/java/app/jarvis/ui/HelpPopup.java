@@ -57,6 +57,11 @@ public final class HelpPopup {
         next.setGravity(Gravity.CENTER);
         prev.setPadding(Ui.dp(12), Ui.dp(12), Ui.dp(12), Ui.dp(12));
         next.setPadding(Ui.dp(12), Ui.dp(12), Ui.dp(12), Ui.dp(12));
+        prev.setBackground(Ui.glassPressable(12));
+        next.setBackground(Ui.accentFill(12));
+        next.setTextColor(Ui.P.onAccent);
+        actions.setPadding(Ui.dp(4), Ui.dp(4), Ui.dp(4), Ui.dp(4));
+        actions.setBackground(Ui.glassTinted(16, Ui.alpha(Ui.P.accent, 0.08f)));
         actions.addView(prev, new LinearLayout.LayoutParams(0, -2, 1));
         actions.addView(next, new LinearLayout.LayoutParams(0, -2, 1));
         body.addView(actions, Ui.lpm(-1, -2, 0, 18, 0, 0));
@@ -72,7 +77,7 @@ public final class HelpPopup {
                     n == steps.length - 1 ? "Что важно запомнить" : "Как это использовать");
             pageTitle.setText(heading);
             explanation.setText(line);
-            prev.setVisibility(n == 0 ? View.INVISIBLE : View.VISIBLE);
+            prev.setVisibility(n == 0 ? View.GONE : View.VISIBLE);
             next.setText(n == steps.length - 1 ? "Готово" : "Далее");
             illustration.removeAllViews();
 
