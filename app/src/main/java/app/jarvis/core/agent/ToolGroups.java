@@ -50,7 +50,7 @@ public final class ToolGroups {
             "music_list", "music_play", "music_play_latest_received", "music_pause", "music_resume", "music_stop", "music_next", "music_prev",
             "music_status", "music_set_favorite");
         def(FILES, "файлы и папки", "fs_list", "fs_read", "fs_write", "fs_mkdir", "fs_move", "fs_delete", "fs_stat");
-        def(WEB, "страницы по ссылке, документация, скачивание", "web_fetch", "docs_search", "http_fetch", "download");
+        def(WEB, "страницы по ссылке, документация, скачивание", "web_fetch", "docs_search", "http_fetch", "download", "web_search_extra", "web_provider_guide");
         def(SHELL, "терминал", "shell_exec", "termux_exec");
         def(ADB, "ADB: другие приложения, экран, звук, звонки", "adb_status", "adb_pair", "adb_connect", "adb_shell", "adb_disconnect");
         def(MEMORY, "правка и удаление памяти", "memory_replace", "memory_pin", "memory_delete");
