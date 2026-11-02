@@ -75,12 +75,6 @@ public class MainActivity extends Activity implements Host {
         maybeShowCrash();
     }
 
-    @Override protected void onResume() {
-        super.onResume();
-        // Some vendor transitions can recreate window attributes. Keep in-app screenshots enabled.
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
-    }
-
     private void installInsets(final Shell s) {
         s.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
             @SuppressWarnings("deprecation")
@@ -285,6 +279,8 @@ public class MainActivity extends Activity implements Host {
 
     @Override protected void onResume() {
         super.onResume();
+        // Keep screenshots enabled when Android restores the activity window.
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
         if (j == null) return;
         // After a reboot/update/process death the microphone service can only be re-armed while the app is visible.
         if (j.settings.getBool("wake.enabled", false) && !j.voice.isWakeEnabled()) j.voice.setWakeEnabled(true);
