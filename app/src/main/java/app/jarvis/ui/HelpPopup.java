@@ -27,11 +27,11 @@ public final class HelpPopup {
             ? new String[]{"Это раздел «" + title + "». Нажимайте на элементы, чтобы изменить параметры."} : lines;
         final int[] current = {0};
         LinearLayout body = Ui.column(c);
-        body.setPadding(Ui.dp(20), Ui.dp(6), Ui.dp(20), Ui.dp(10));
+        body.setPadding(Ui.dp(18), Ui.dp(4), Ui.dp(18), Ui.dp(10));
 
         // Visual legend: a compact miniature flow of the feature, not unrelated stock imagery.
         LinearLayout illustration = Ui.column(c);
-        body.addView(illustration, Ui.lpm(-1, -2, 0, 4, 0, 14));
+        body.addView(illustration, Ui.lpm(-1, -2, 0, 2, 0, 10));
 
         TextView progress = Ui.text(c, "", Ui.CAPTION, Ui.P.text3);
         progress.setGravity(Gravity.CENTER);
@@ -39,7 +39,7 @@ public final class HelpPopup {
 
         LinearLayout progressDots = Ui.row(c);
         progressDots.setGravity(Gravity.CENTER);
-        body.addView(progressDots, Ui.lpm(-1, -2, 0, 8, 0, 12));
+        body.addView(progressDots, Ui.lpm(-1, -2, 0, 6, 0, 10));
 
         TextView pageTitle = Ui.text(c, "", Ui.BODY);
         pageTitle.setTypeface(Ui.medium);
@@ -64,7 +64,7 @@ public final class HelpPopup {
         actions.setBackground(Ui.glassTinted(16, Ui.alpha(Ui.P.accent, 0.08f)));
         actions.addView(prev, new LinearLayout.LayoutParams(0, -2, 1));
         actions.addView(next, new LinearLayout.LayoutParams(0, -2, 1));
-        body.addView(actions, Ui.lpm(-1, -2, 0, 18, 0, 0));
+        body.addView(actions, Ui.lpm(-1, -2, 0, 14, 0, 0));
 
         final Runnable[] repaint = {null};
         repaint[0] = () -> {
@@ -86,7 +86,7 @@ public final class HelpPopup {
             visual.setGravity(Gravity.CENTER_VERTICAL);
             String[] labels = diagramLabels(title, lower, n);
             int[] icons = diagramIcons(title, lower);
-            visual.addView(node(c, labels[0], icons[0]), new LinearLayout.LayoutParams(0, Ui.dp(78), 1));
+            visual.addView(node(c, labels[0], icons[0]), new LinearLayout.LayoutParams(0, Ui.dp(66), 1));
             visual.addView(Ui.text(c, "→", Ui.BODY, Ui.P.accent), Ui.lpm(-2, -2, 6, 0, 6, 0));
             visual.addView(node(c, labels[1], icons[1]), new LinearLayout.LayoutParams(0, Ui.dp(78), 1));
             illustration.addView(visual);
