@@ -31,20 +31,20 @@ public final class ExtraSearch {
     }
 
     public static final List<Provider> CATALOG = java.util.Collections.unmodifiableList(Arrays.asList(
-        new Provider("exa", "Exa Search", "key.exa", "$10 кредитов/месяц; бонусы отдельно",
+        new Provider("exa", "Exa Search", "key.web-extra.exa", "$10 кредитов/месяц; бонусы отдельно",
             "Семантический поиск по документации, техническим статьям, GitHub и нишевым материалам.",
             "Режим Lite дешевле Auto; $10 бесплатных кредитов не означает безлимит.", "https://docs.exa.ai/reference/search"),
-        new Provider("tavily", "Tavily", "key.tavily", "1 000 API-кредитов/месяц",
+        new Provider("tavily", "Tavily", "key.web-extra.tavily", "1 000 API-кредитов/месяц",
             "Поиск для ИИ с удобными короткими выдержками, быстрый обзор нескольких источников.",
             "Advanced-запросы расходуют больше кредитов, чем базовые.", "https://docs.tavily.com/documentation/api-reference/endpoint/search"),
-        new Provider("brave", "Brave Search", "key.brave", "$5 кредитов/месяц; тариф проверяйте",
+        new Provider("brave", "Brave Search", "key.web-extra.brave", "$5 кредитов/месяц; тариф проверяйте",
             "Независимый индекс с обычной выдачей сайтов и фильтром свежести.",
             "Для подключения бесплатного тарифного уровня может требоваться платёжный метод.", "https://api-dashboard.search.brave.com/app/documentation/web-search"),
-        new Provider("parallel", "Parallel Search", "key.parallel", "$5 кредитов/месяц; отдельно есть бесплатный MCP",
+        new Provider("parallel", "Parallel Search", "key.web-extra.parallel", "$5 кредитов/месяц; отдельно есть бесплатный MCP",
             "Быстрый поиск для агентов, подбор источников по смыслу и цитируемые фрагменты.",
             "У Search API и бесплатного Parallel Search MCP разные способы подключения.",
             "https://docs.parallel.ai/search/search-quickstart"),
-        new Provider("serper", "Serper Google", "key.serper", "2 500 пробных запросов (разово)",
+        new Provider("serper", "Serper Google", "key.web-extra.serper", "2 500 пробных запросов (разово)",
             "Структурированная поисковая выдача Google: удобна для фактов и свежих страниц.",
             "Стартовый запас запросов не обновляется каждый месяц.",
             "https://serper.dev/playground")
