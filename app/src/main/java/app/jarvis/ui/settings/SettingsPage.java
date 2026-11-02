@@ -73,6 +73,8 @@ public abstract class SettingsPage {
                 ViewGroup.LayoutParams original = label.getLayoutParams();
                 parent.removeViewAt(i);
                 LinearLayout line = Ui.row(ctx);
+                // Align every question-mark column to the same 16dp right inset as card headers.
+                line.setPadding(0, 0, Ui.dp(16), 0);
                 line.addView(label, new LinearLayout.LayoutParams(0, -2, 1f));
                 line.addView(HelpPopup.button(ctx, host, heading, SectionHelp.guide(heading)));
                 parent.addView(line, i, original);
