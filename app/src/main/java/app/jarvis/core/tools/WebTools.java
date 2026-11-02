@@ -7,6 +7,7 @@ import app.jarvis.core.llm.ToolSpec.Param;
 import app.jarvis.core.util.J;
 import app.jarvis.core.web.DocsIndex;
 import app.jarvis.core.web.SearchBackend;
+import app.jarvis.core.web.ExtraSearch;
 import app.jarvis.core.web.SearchHit;
 import app.jarvis.core.web.SearchRouter;
 import app.jarvis.core.web.WebConfig;
@@ -71,6 +72,60 @@ public final class WebTools {
             }
             return ToolResult.ok(o, total + " результатов по " + queries.size() + " запросам");
         });
+        r.add(ToolSpec.of("web_search_extra",
+                "Поиск через отдельно настроенный, включённый и реально проверенный веб-провайдер. Стандартный web_search работает независимо. Получите инструкцию через web_provider_guide.",
+                Param.str("provider", "Идентификатор: exa, tavily, brave, parallel, serper.", true)
+                    .oneOf("exa", "tavily", "brave", "parallel", "serper"),
+                Param.str("query", "Что найти в интернете.", true),
+                Param.integer("limit", "Сколько ссылок вернуть (1–10).", false)),
+            "web", 24_000, false, (a, ctx) -> {
+                String id = J.str(a, "provider").trim().toLowerCase(Locale.ROOT);
+                ExtraSearch.Provider p = ExtraSearch.provider(id);
+                if (p == null) return ToolResult.fail("Неизвестный дополнительный провайдер.");
+                if (!ExtraSearch.validated(id, settings, secrets))
+                    return ToolResult.fail("Провайдер " + p.title + " не включён или не прошёл актуальную проверку. Откройте Настройки → Дополнительный веб-поиск.");
+                String query = J.str(a, "query").trim();
+                if (query.isEmpty()) return ToolResult.fail("Пустой поисковый запрос.");
+                int limit = Math.max(1, Math.min(10, J.num(a, "limit", 5)));
+                SearchBackend backend;
+                try {
+                    backend = ExtraSearch.backend(id, secrets.apply(p.secret),
+                        WebConfig.from(settings, secrets, proxyRef[0]).proxy, System::currentTimeMillis);
+                    List<SearchHit> hits = backend.search(new app.jarvis.core.web.SearchRequest(query, limit, "", ""), ctx.cancel);
+                    JSONArray rows = new JSONArray();
+                    for (SearchHit hit : hits) rows.put(hit.toJson());
+                    JSONObject result = new JSONObject();
+                    J.put(result, "provider", id);
+                    J.put(result, "query", query);
+                    J.put(result, "hits", rows);
+                    if (hits.isEmpty()) return ToolResult.fail("Провайдер не нашёл результатов: " + p.title, result);
+                    return ToolResult.ok(result, hits.size() + " ссылок · " + p.title);
+                } catch (WebException e) {
+                    return ToolResult.fail(p.title + ": " + e.userMessage);
+                }
+            });
+
+        r.add(ToolSpec.of("web_provider_guide",
+                "Детальная инструкция по отдельному веб-провайдеру. Вызовите перед первым использованием, чтобы понять особенности, ограничения и примеры.",
+                Param.str("provider", "Какой поисковик: exa, tavily, brave, parallel, serper.", true)
+                    .oneOf("exa", "tavily", "brave", "parallel", "serper")),
+            "web", 5_000, false, (a, ctx) -> {
+                String id = J.str(a, "provider").trim().toLowerCase(Locale.ROOT);
+                ExtraSearch.Provider p = ExtraSearch.provider(id);
+                if (p == null) return ToolResult.fail("Неизвестный провайдер.");
+                JSONObject o = new JSONObject();
+                J.put(o, "provider", p.id);
+                J.put(o, "name", p.title);
+                J.put(o, "verifiedAndEnabled", ExtraSearch.validated(id, settings, secrets));
+                J.put(o, "bestFor", p.purpose);
+                J.put(o, "freeTier", p.freeText);
+                J.put(o, "limitations", p.caveat);
+                J.put(o, "documentation", p.docs);
+                J.put(o, "call", "web_search_extra(provider=\"" + p.id + "\", query=\"ваш вопрос\", limit=5)");
+                J.put(o, "fallback", "Если запрос вернул ошибку или ничего не нашёл, используй обычный web_search(queries=[...]).");
+                J.put(o, "sourceRule", "Показывай реальные URL и не выдумывай содержание неоткрытых страниц; для чтения вызови web_fetch.");
+                return ToolResult.ok(o, "Инструкция " + p.title);
+            });
         r.add(fetchSpec(), "web", 60_000, false, (a, ctx) -> {
             String url = J.str(a, "url").trim();
             WebConfig cfg = WebConfig.from(settings, secrets, proxyRef[0]);
