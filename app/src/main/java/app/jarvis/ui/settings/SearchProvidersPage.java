@@ -206,9 +206,10 @@ public final class SearchProvidersPage extends SettingsPage {
                 List<String> names = j.mcp.hub().testServer(id, new CancelToken());
                 if (!names.contains(searchTool))
                     throw new IllegalStateException("Сервер подключился, но инструмента поиска в нём нет.");
+                j.mcp.hub().testSearchTool(id, searchTool, new CancelToken());
                 success = true;
-                message = "MCP подключён, список инструментов получен: " + names.size() +
-                    ". Через MCP-серверы можно проверить или выключить его.";
+                message = "MCP подключён, инструментов: " + names.size() +
+                    ". Тестовый поиск вернул ссылку. Сервер можно выключить в разделе MCP.";
             } catch (Exception error) {
                 message = "Сервер сохранён выключенным: " +
                     (error.getMessage() == null ? error.getClass().getSimpleName() : error.getMessage());
