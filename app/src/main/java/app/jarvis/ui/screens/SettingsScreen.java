@@ -212,6 +212,7 @@ public class SettingsScreen extends Screen {
         pageColumn.addView(content, new LinearLayout.LayoutParams(-1, 0, 1f));
         pageColumn.setVisibility(View.VISIBLE);
         page.onShow();
+        page.refreshSectionHelps();
         refreshStatuses();
         if (!Ui.reduceMotion) {
             pageColumn.setTranslationX(Ui.dp(48));
