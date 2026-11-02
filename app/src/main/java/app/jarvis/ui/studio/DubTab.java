@@ -24,6 +24,7 @@ import app.jarvis.ui.Dialogs;
 import app.jarvis.ui.HelpPopup;
 import app.jarvis.ui.WrapButton;
 import app.jarvis.ui.Host;
+import app.jarvis.ui.ProviderGuides;
 import app.jarvis.ui.Ui;
 import app.jarvis.ui.Widgets;
 import java.util.ArrayList;
@@ -197,10 +198,8 @@ public class DubTab {
             TextView name = Ui.text(ctx, info.name, Ui.BODY);
             name.setTypeface(Ui.medium);
             head.addView(name, Ui.lpw(1f));
-            head.addView(HelpPopup.button(ctx, host, info.name,
-                "Статус, кнопки и цифры ниже относятся только к этому провайдеру.",
-                "«Проверить» делает реальный короткий синтез и показывает задержку.",
-                "«Голоса» выбирает голос, «Квота» запрашивает остаток у сервиса, если он его публикует."), Ui.lpm(-2, -2, Ui.dp(6), 0, 0, 0));
+            head.addView(HelpPopup.button(ctx, host, info.name, ProviderGuides.tts(p)),
+                Ui.lpm(-2, -2, Ui.dp(6), 0, 0, 0));
             card.addView(head);
             LinearLayout badges = Ui.row(ctx);
             badges.addView(Widgets.pill(ctx, StudioKit.officialLabel(info),
