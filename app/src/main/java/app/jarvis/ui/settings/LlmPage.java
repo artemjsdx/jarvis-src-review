@@ -61,6 +61,7 @@ public class LlmPage extends SettingsPage {
     private LinearLayout fallbackOptions;
     private TextView fallbackSummary;
     private boolean fallbackExpanded;
+    private boolean keyEditorExpanded;
     private boolean checking;
     private final CancelToken checkCancel = new CancelToken();
     private final ModelCatalog.Listener catalogListener = new ModelCatalog.Listener() {
@@ -266,7 +267,38 @@ public class LlmPage extends SettingsPage {
 
         if (p.keyRequired || j.secrets.has("key." + pid)) {
             Widgets.divide(card);
-            card.addView(new KeyBlock(host, p, new Runnable() { @Override public void run() { rebuildProviderRow(); } }).view());
+            LinearLayout keyRow = Ui.row(ctx);
+            keyRow.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(14), Ui.dp(8));
+            TextView keyLabel = Ui.text(ctx,
+                j.secrets.has("key." + pid) ? "API-ключ сохранён" : "API-ключ не задан",
+                Ui.BODY, j.secrets.has("key." + pid) ? Ui.P.text2 : Ui.P.warn);
+            keyRow.addView(keyLabel, Ui.lpw(1f));
+            TextView keyAction = Ui.text(ctx, keyEditorExpanded ? "Свернуть" : "Настроить", Ui.CAPTION, Ui.P.accent);
+            keyAction.setGravity(Gravity.CENTER);
+            keyAction.setMinHeight(Ui.dp(40));
+            keyRow.addView(keyAction);
+            keyRow.setClickable(true);
+            keyRow.setFocusable(true);
+            keyRow.setContentDescription("Управление API-ключом провайдера. " + keyLabel.getText());
+            final LinearLayout editor = Ui.column(ctx);
+            editor.setVisibility(keyEditorExpanded ? View.VISIBLE : View.GONE);
+            if (keyEditorExpanded) editor.addView(
+                new KeyBlock(host, p, new Runnable() { @Override public void run() {
+                    rebuildProviderRow();
+                    keyLabel.setText(j.secrets.has("key." + pid) ? "API-ключ сохранён" : "API-ключ не задан");
+                } }).view());
+            keyRow.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
+                keyEditorExpanded = !keyEditorExpanded;
+                keyAction.setText(keyEditorExpanded ? "Свернуть" : "Настроить");
+                if (keyEditorExpanded && editor.getChildCount() == 0) editor.addView(
+                    new KeyBlock(host, p, new Runnable() { @Override public void run() {
+                        rebuildProviderRow();
+                        keyLabel.setText(j.secrets.has("key." + pid) ? "API-ключ сохранён" : "API-ключ не задан");
+                    } }).view());
+                editor.setVisibility(keyEditorExpanded ? View.VISIBLE : View.GONE);
+            } });
+            card.addView(keyRow);
+            card.addView(editor);
         }
         if (pid.equals("custom")) {
             Widgets.divide(card);
