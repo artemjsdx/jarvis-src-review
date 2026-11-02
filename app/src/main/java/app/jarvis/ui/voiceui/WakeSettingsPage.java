@@ -188,7 +188,7 @@ public class WakeSettingsPage extends SettingsPage {
             final boolean selected = chain.contains(pid);
             final int priority = chain.indexOf(pid);
             LinearLayout card = Widgets.card(ctx);
-            card.setPadding(Ui.dp(16), Ui.dp(16), Ui.dp(16), Ui.dp(18));
+            card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(12));
 
             LinearLayout heading = Ui.row(ctx);
             TextView name = Ui.text(ctx, p.info().name, Ui.BODY);
@@ -204,7 +204,7 @@ public class WakeSettingsPage extends SettingsPage {
                 p.isConfigured() ? Widgets.MUTED : Widgets.WARN));
             if (!p.info().official) flags.addView(Widgets.pill(ctx, "неофициальный", Widgets.WARN),
                 Ui.lpm(-2, -2, Ui.dp(8), 0, 0, 0));
-            card.addView(flags, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+            card.addView(flags, Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
 
             ProviderStatus status = p.lastStatus();
             String state = status == ProviderStatus.NEVER ? "Не проверялся" :
@@ -212,17 +212,17 @@ public class WakeSettingsPage extends SettingsPage {
             String destination = p.info().sendsDataTo;
             card.addView(VoiceUiKit.note(ctx, state +
                 (destination == null || destination.isEmpty() ? "" : " · " + destination)),
-                Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+                Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
 
             if (p.info().needsKey) {
                 String keyName = secretName(pid);
                 String hint = keyName.isEmpty() ? "ключ провайдера" : Secrets.mask(j.secrets.get(keyName));
                 card.addView(WrapButton.create(ctx, "API: " + hint, 0, Ui.BTN_GLASS,
-                    () -> editProviderCredentials(pid)), Ui.lpm(-1, -2, 0, Ui.dp(12), 0, 0));
+                    () -> editProviderCredentials(pid)), Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
                 if ("cloudflare-stt".equals(pid)) {
                     String account = j.settings.get("stt.cloudflare.accountId", "");
                     card.addView(WrapButton.create(ctx, "Account ID: " + (account.isEmpty() ? "не задан" : "задан"),
-                        0, Ui.BTN_GLASS, () -> editAccountId()), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+                        0, Ui.BTN_GLASS, () -> editAccountId()), Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
                 }
             }
 
@@ -231,7 +231,7 @@ public class WakeSettingsPage extends SettingsPage {
                 ? "Включён · приоритет " + (priority + 1)
                 : "Не используется для команд", Ui.CAPTION, Ui.P.text2), Ui.lpw(1f));
             enabled.addView(Widgets.toggle(ctx, selected, on -> toggleStt(pid, on)));
-            card.addView(enabled, Ui.lpm(-1, -2, 0, Ui.dp(14), 0, 0));
+            card.addView(enabled, Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
 
             if (selected) {
                 LinearLayout rank = Ui.row(ctx);
@@ -241,7 +241,7 @@ public class WakeSettingsPage extends SettingsPage {
                     "Повысить приоритет " + p.info().name, () -> moveStt(pid, -1)));
                 if (priority < chain.size() - 1) rank.addView(Ui.iconButton(ctx, R.drawable.ic_arrow_down, 40, Ui.P.text2,
                     "Понизить приоритет " + p.info().name, () -> moveStt(pid, 1)));
-                card.addView(rank, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+                card.addView(rank, Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
             }
 
             LinearLayout tests = Ui.row(ctx);
@@ -250,7 +250,7 @@ public class WakeSettingsPage extends SettingsPage {
             tests.addView(Ui.space(ctx, 8, 1));
             tests.addView(WrapButton.create(ctx, "Образец", 0, Ui.BTN_GLASS,
                 () -> runSampleCheck(pid)), Ui.lpw(1f));
-            card.addView(tests, Ui.lpm(-1, -2, 0, Ui.dp(14), 0, 0));
+            card.addView(tests, Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
 
             card.addView(WrapButton.create(ctx,
                 pid.equals(wakeStt) ? "Выбран для облачной проверки «Джарвис»" :
@@ -258,8 +258,8 @@ public class WakeSettingsPage extends SettingsPage {
                 R.drawable.ic_star, Ui.BTN_GHOST, () -> {
                     j.settings.set(Settings.WAKE_STT, pid);
                     renderStt();
-                }), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
-            sttHost.addView(card, Ui.lpm(-1, -2, 0, Ui.dp(16), 0, 0));
+                }), Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+            sttHost.addView(card, Ui.lpm(-1, -2, 0, Ui.dp(12), 0, 0));
         }
 
         sttHost.addView(checkHost, Ui.lpm(-1, -2, 0, Ui.dp(16), 0, 0));
