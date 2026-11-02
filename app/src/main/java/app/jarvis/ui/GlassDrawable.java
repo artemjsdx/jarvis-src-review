@@ -51,11 +51,11 @@ public final class GlassDrawable extends Drawable {
         // blobs may never read as an overlay ON TOP of a neutral card.
         // Real background blur must remain visible through the card fill.
         // Previously the 86-92% opaque underlay hid the frosted wallpaper almost completely.
-        underlay.setColor(overlayFrost ? (p.dark ? 0x5224232C : 0x6CF6F5FA) :
+        underlay.setColor(overlayFrost ? (p.dark ? 0xA024232C : 0xB0F6F5FA) :
             (p.dark ? (strong ? 0xAA24232C : 0x9224232B) : 0xA0F6F5FA));
-        float topOpacity = overlayFrost ? (p.dark ? 0.11f : 0.20f) :
+        float topOpacity = overlayFrost ? (p.dark ? 0.12f : 0.16f) :
             (p.dark ? (strong ? 0.22f : 0.16f) : 0.25f);
-        float bottomOpacity = overlayFrost ? (p.dark ? 0.07f : 0.13f) :
+        float bottomOpacity = overlayFrost ? (p.dark ? 0.06f : 0.10f) :
             (p.dark ? 0.09f : 0.18f);
         int top = Ui.alpha(p.glassTop, topOpacity);
         int bot = Ui.alpha(p.glassBottom, bottomOpacity);
