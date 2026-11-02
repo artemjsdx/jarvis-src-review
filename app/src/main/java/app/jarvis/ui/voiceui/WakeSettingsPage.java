@@ -17,6 +17,8 @@ import app.jarvis.wake.WakePack;
 import java.io.File;
 import app.jarvis.rt.ListenApi;
 import app.jarvis.ui.Host;
+import app.jarvis.ui.HelpPopup;
+import app.jarvis.ui.ProviderGuides;
 import app.jarvis.ui.Dialogs;
 import app.jarvis.data.Secrets;
 import app.jarvis.ui.Ui;
@@ -188,10 +190,13 @@ public class WakeSettingsPage extends SettingsPage {
             LinearLayout card = Widgets.card(ctx);
             card.setPadding(Ui.dp(16), Ui.dp(16), Ui.dp(16), Ui.dp(18));
 
+            LinearLayout heading = Ui.row(ctx);
             TextView name = Ui.text(ctx, p.info().name, Ui.BODY);
             name.setTypeface(Ui.medium);
             name.setSingleLine(false);
-            card.addView(name);
+            heading.addView(name, Ui.lpw(1f));
+            heading.addView(HelpPopup.button(ctx, host, p.info().name, ProviderGuides.stt(p)));
+            card.addView(heading);
 
             LinearLayout flags = Ui.row(ctx);
             flags.addView(Widgets.pill(ctx,
