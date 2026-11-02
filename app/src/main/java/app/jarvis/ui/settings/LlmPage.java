@@ -87,7 +87,7 @@ public class LlmPage extends SettingsPage {
         content.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(24));
         content.addView(Widgets.sectionTitle(ctx, "Провайдер"));
         providerHost = Ui.column(ctx);
-        content.addView(providerHost);
+        content.addView(providerHost, Ui.lpm(-1, -2, 0, 0, 0, 0));
         rebuildProviderRow();
         configHost = Ui.column(ctx);
         content.addView(configHost, Ui.lpm(-1, -2, 0, 12, 0, 0));
@@ -151,7 +151,7 @@ public class LlmPage extends SettingsPage {
         ModelCaps caps = j.catalog.caps(pid, model);
         LinearLayout card = Widgets.card(ctx);
         LinearLayout head = Ui.column(ctx);
-        head.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), 0);
+        head.setPadding(Ui.dp(16), Ui.dp(10), Ui.dp(16), 0);
         TextView t = Ui.text(ctx, model.isEmpty() ? "Модель не выбрана" : model, Ui.BODY);
         t.setTypeface(Ui.mono);
         t.setSingleLine(true);
@@ -160,16 +160,16 @@ public class LlmPage extends SettingsPage {
         head.addView(Ui.text(ctx, (p == null ? pid : p.name) + " · " + sourceLabel(caps), Ui.CAPTION, Ui.P.text3), Ui.lpm(-2, -2, 0, 2, 0, 0));
         card.addView(head);
         if (!model.isEmpty()) {
-            card.addView(CapChips.chips(ctx, caps), Ui.lpm(-1, -2, 16, 8, 16, 0));
+            card.addView(CapChips.chips(ctx, caps), Ui.lpm(-1, -2, 16, 6, 16, 0));
             TextView price = CapChips.priceLine(ctx, caps);
             if (price != null) card.addView(price, Ui.lpm(-1, -2, 16, 6, 16, 0));
         }
         ModelCatalog.Status st = j.catalog.status(pid);
         card.addView(Ui.text(ctx, statusLine(st), Ui.CAPTION, st.lastError.isEmpty() ? Ui.P.text3 : Ui.P.warn),
-            Ui.lpm(-1, -2, 16, 8, 16, 0));
+            Ui.lpm(-1, -2, 16, 6, 16, 0));
         Widgets.divide(card);
         LinearLayout btns = Ui.row(ctx);
-        btns.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(14), Ui.dp(12));
+        btns.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(14), Ui.dp(10));
         btns.addView(Ui.button(ctx, "Сменить модель", R.drawable.ic_edit, Ui.BTN_PRIMARY, new Runnable() { @Override public void run() {
             ModelBrowser.open(host, pid, new Runnable() { @Override public void run() { rebuildAll(); } });
         } }));
@@ -263,7 +263,7 @@ public class LlmPage extends SettingsPage {
             p.verified == null || p.verified.isEmpty()
                 ? "Дата независимой проверки не указана."
                 : "Проверено: " + p.verified));
-        card.addView(accessHead, Ui.lpm(-1, -2, 16, 10, 16, 10));
+        card.addView(accessHead, Ui.lpm(-1, -2, 16, 8, 16, 8));
 
         if (p.keyRequired || j.secrets.has("key." + pid)) {
             Widgets.divide(card);
@@ -318,7 +318,7 @@ public class LlmPage extends SettingsPage {
         } }));
         card.addView(importRow);
         configHost.addView(card);
-        configHost.addView(proxyCard(), Ui.lpm(-1, -2, 0, 12, 0, 0));
+        configHost.addView(proxyCard(), Ui.lpm(-1, -2, 0, 14, 0, 0));
     }
 
     private View baseUrlBlock(final ProviderPreset p) {
@@ -345,7 +345,7 @@ public class LlmPage extends SettingsPage {
         LinearLayout card = Widgets.card(ctx);
         TextView t = Ui.text(ctx, "Прокси для LLM", Ui.BODY);
         t.setTypeface(Ui.medium);
-        card.addView(t, Ui.lpm(-2, -2, 16, 12, 16, 0));
+        card.addView(t, Ui.lpm(-2, -2, 16, 10, 16, 0));
         card.addView(PageUi.note(ctx, "Только для LLM · HTTP или SOCKS5 · пусто — напрямую"),
             Ui.lpm(-1, -2, 16, 2, 16, 0));
         final EditText e = PageUi.saveField(ctx, "например, socks5://127.0.0.1:1080", j.settings.get(Settings.LLM_PROXY), new PageUi.TextListener() { @Override public void on(String s) {
@@ -359,7 +359,7 @@ public class LlmPage extends SettingsPage {
                 host.overlays().toast("Неверный прокси: " + err.getMessage(), 2);
             }
         } });
-        card.addView(Widgets.fieldBox(ctx, e), Ui.lpm(-1, -2, 16, 8, 16, 14));
+        card.addView(Widgets.fieldBox(ctx, e), Ui.lpm(-1, -2, 16, 8, 16, 12));
         return card;
     }
 
