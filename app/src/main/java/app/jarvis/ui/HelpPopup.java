@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import app.jarvis.R;
+import app.jarvis.ui.motion.Motion;
 
 /**
  * Tiny question mark opens an illustrated, paginated mini-guide instead of
@@ -92,17 +93,37 @@ public final class HelpPopup {
                     i == 0 ? 0 : Ui.dp(5), 0, 0, 0));
             }
         };
-        prev.setOnClickListener(v -> { if (current[0] > 0) { current[0]--; repaint[0].run(); } });
+        prev.setOnClickListener(v -> { if (current[0] > 0) { current[0]--; repaint[0].run(); animateStep(illustration, pageTitle, explanation, progress, progressDots); } });
         next.setOnClickListener(v -> {
             if (current[0] == steps.length - 1) {
                 h.overlays().dismiss(layer[0]);
             } else {
                 current[0]++;
                 repaint[0].run();
+                animateStep(illustration, pageTitle, explanation, progress, progressDots);
             }
         });
         repaint[0].run();
         layer[0] = Dialogs.sheet(h, title, body, true);
+    }
+
+    /** Feedback on each step: the page content arrives with a short fade and rise; reduced motion is respected. */
+    private static void animateStep(View... parts) {
+        long duration = Motion.fade(240);
+        if (duration <= 0) return;
+        for (View v : parts) {
+            v.animate().cancel();
+            v.setAlpha(0f);
+            v.setTranslationY(Motion.mode() == Motion.FULL ? Ui.dp(10) : 0f);
+            v.animate().alpha(1f).translationY(0f).setDuration(duration)
+                .setInterpolator(Motion.DECELERATE).start();
+        }
+    }
+
+    private static boolean isRecognition(String s) {
+        return s.contains("распозна") || s.contains("stt") || s.contains("vosk")
+            || s.contains("whisper") || s.contains("транскрип") || s.contains("scribe")
+            || s.contains("диктов") || s.contains("микрофон") || s.contains("речи в текст");
     }
 
     private static View node(Context c, String text, int icon) {
@@ -126,11 +147,10 @@ public final class HelpPopup {
             return new int[]{R.drawable.ic_search, R.drawable.ic_globe};
         if (s.contains("mcp") || s.contains("сервер") || s.contains("мост"))
             return new int[]{R.drawable.ic_bot, R.drawable.ic_plug};
+        if (isRecognition(s) || s.contains("джарвис"))
+            return new int[]{R.drawable.ic_mic, R.drawable.ic_file_text};
         if (s.contains("озвуч") || s.contains("tts") || s.contains("голос"))
             return new int[]{R.drawable.ic_file_text, R.drawable.ic_speaker};
-        if (s.contains("микрофон") || s.contains("распозна") || s.contains("stt")
-                || s.contains("джарвис"))
-            return new int[]{R.drawable.ic_mic, R.drawable.ic_ear};
         if (s.contains("api") || s.contains("ключ") || s.contains("токен")
                 || s.contains("авторизац"))
             return new int[]{R.drawable.ic_key, R.drawable.ic_shield};
@@ -148,10 +168,10 @@ public final class HelpPopup {
         String s = (title + " " + line).toLowerCase(java.util.Locale.ROOT);
         if (s.contains("поиск") || s.contains("search") || s.contains("exa") || s.contains("tavily"))
             return new String[]{"Запрос", page == 0 ? "Источники" : "Ссылки"};
+        if (isRecognition(s) || s.contains("джарвис"))
+            return new String[]{"Речь", page == 0 ? "Текст" : "Команда"};
         if (s.contains("озвуч") || s.contains("голос") || s.contains("tts"))
             return new String[]{"Текст", "Звук"};
-        if (s.contains("микрофон") || s.contains("распозна") || s.contains("stt"))
-            return new String[]{"Речь", "Команда"};
         if (s.contains("api") || s.contains("ключ") || s.contains("токен"))
             return new String[]{"Ключ", "Проверка"};
         if (s.contains("mcp") || s.contains("сервер") || s.contains("мост"))
