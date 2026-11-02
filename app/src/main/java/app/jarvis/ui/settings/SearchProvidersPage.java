@@ -72,11 +72,18 @@ public final class SearchProvidersPage extends SettingsPage {
             column.addView(providerCard(p), Ui.lpm(-1, -2, 0, Ui.dp(14), 0, 0));
         LinearLayout mcp = Widgets.card(ctx);
         mcp.setPadding(Ui.dp(16), Ui.dp(15), Ui.dp(16), Ui.dp(15));
-        mcp.addView(Ui.text(ctx, "Parallel Search MCP — отдельный бесплатный путь", Ui.BODY));
+        LinearLayout mcpTitle = Ui.row(ctx);
+        mcpTitle.addView(Ui.text(ctx, "Бесплатный поиск через MCP", Ui.BODY), Ui.lpw(1f));
+        mcpTitle.addView(HelpPopup.button(ctx, host, "MCP без API-ключа",
+            "Это отдельный способ подключить удалённый поиск. Ключ не нужен для тестового анонимного доступа.",
+            "Нажмите кнопку выбранного сервиса. Jarvis проверит соединение, получит инструменты и сделает настоящий тестовый поиск.",
+            "После успеха инструменты появятся у агента как MCP-функции. Обычный web_search не изменится.",
+            "Ограничения: бесплатный анонимный доступ может блокироваться по частоте запросов или географии."));
+        mcp.addView(mcpTitle);
         mcp.addView(Ui.text(ctx,
-            "Для бесплатного MCP без API-ключа можно добавить удалённый сервер " +
-            "https://search.parallel.ai/mcp через раздел внешних MCP-серверов. " +
-            "Этот путь не равен платному Search API, который настраивается выше.",
+            "Три независимых удалённых сервиса: Parallel Search, Exa Search и Firecrawl Search. " +
+            "Анонимный доступ ограничен по частоте. Каждый проверяется реальным поиском перед включением. " +
+            "Управление — в существующем разделе внешних MCP-серверов.",
             Ui.CAPTION, Ui.P.text2), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, Ui.dp(12)));
         mcp.addView(WrapButton.create(ctx, "Подключить Parallel MCP бесплатно",
             R.drawable.ic_plug, Ui.BTN_GLASS,
