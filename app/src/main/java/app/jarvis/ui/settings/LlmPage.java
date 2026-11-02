@@ -58,6 +58,9 @@ public class LlmPage extends SettingsPage {
     private LinearLayout recentHost;
     private LinearLayout generationHost;
     private LinearLayout fallbackCard;
+    private LinearLayout fallbackOptions;
+    private TextView fallbackSummary;
+    private boolean fallbackExpanded;
     private boolean checking;
     private final CancelToken checkCancel = new CancelToken();
     private final ModelCatalog.Listener catalogListener = new ModelCatalog.Listener() {
@@ -86,7 +89,7 @@ public class LlmPage extends SettingsPage {
         content.addView(providerHost);
         rebuildProviderRow();
         configHost = Ui.column(ctx);
-        content.addView(configHost);
+        content.addView(configHost, Ui.lpm(-1, -2, 0, Ui.dp(12), 0, 0));
         rebuildConfig();
         content.addView(Widgets.sectionTitle(ctx, "Модель"));
         modelCardHost = Ui.column(ctx);
@@ -166,11 +169,11 @@ public class LlmPage extends SettingsPage {
         Widgets.divide(card);
         LinearLayout btns = Ui.row(ctx);
         btns.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(14), Ui.dp(12));
-        btns.addView(Ui.button(ctx, "Выбрать модель", R.drawable.ic_edit, Ui.BTN_PRIMARY, new Runnable() { @Override public void run() {
+        btns.addView(Ui.button(ctx, "Сменить модель", R.drawable.ic_edit, Ui.BTN_PRIMARY, new Runnable() { @Override public void run() {
             ModelBrowser.open(host, pid, new Runnable() { @Override public void run() { rebuildAll(); } });
         } }));
         btns.addView(Ui.space(ctx, 8, 1));
-        btns.addView(Ui.button(ctx, "Обновить список", R.drawable.ic_refresh, Ui.BTN_GLASS, new Runnable() { @Override public void run() {
+        btns.addView(Ui.button(ctx, "Обновить", R.drawable.ic_refresh, Ui.BTN_GLASS, new Runnable() { @Override public void run() {
             j.catalog.refresh(pid);
         } }));
         card.addView(btns);
@@ -259,7 +262,7 @@ public class LlmPage extends SettingsPage {
             p.verified == null || p.verified.isEmpty()
                 ? "Дата независимой проверки не указана."
                 : "Проверено: " + p.verified));
-        card.addView(accessHead, Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(8)));
+        card.addView(accessHead, Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(10), Ui.dp(16), Ui.dp(10)));
 
         if (p.keyRequired || j.secrets.has("key." + pid)) {
             Widgets.divide(card);
@@ -283,7 +286,7 @@ public class LlmPage extends SettingsPage {
         } }));
         card.addView(importRow);
         configHost.addView(card);
-        configHost.addView(proxyCard());
+        configHost.addView(proxyCard(), Ui.lpm(-1, -2, 0, Ui.dp(12), 0, 0));
     }
 
     private View baseUrlBlock(final ProviderPreset p) {
@@ -311,8 +314,8 @@ public class LlmPage extends SettingsPage {
         TextView t = Ui.text(ctx, "Прокси для LLM", Ui.BODY);
         t.setTypeface(Ui.medium);
         card.addView(t, Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(12), Ui.dp(16), 0));
-        card.addView(PageUi.note(ctx, "http://хост:порт или socks5://хост:порт; пусто — прямое подключение. Действует только на запросы к языковой модели."),
-            Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(2), Ui.dp(16), 0));
+        card.addView(PageUi.note(ctx, "Только для LLM · HTTP или SOCKS5 · пусто — напрямую"),
+            Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(2), Ui.dp(16), 0));
         final EditText e = PageUi.saveField(ctx, "например, socks5://127.0.0.1:1080", j.settings.get(Settings.LLM_PROXY), new PageUi.TextListener() { @Override public void on(String s) {
             String v = s.trim();
             if (v.isEmpty()) { j.settings.remove(Settings.LLM_PROXY); host.overlays().toast("Прокси отключён", 0); return; }
@@ -432,16 +435,53 @@ public class LlmPage extends SettingsPage {
     }
 
     // ------------------------------------------------------------------------------- fallbacks
+    private String fallbackSummaryText() {
+        List<String> selected = j.settings.getList(Settings.LLM_FALLBACKS);
+        if (selected.isEmpty()) return "OpenRouter включён по умолчанию";
+        StringBuilder names = new StringBuilder();
+        int count = 0;
+        for (ProviderPreset p : Presets.all()) {
+            if (!selected.contains(p.id)) continue;
+            if (count < 2) {
+                if (names.length() > 0) names.append(", ");
+                names.append(p.name);
+            }
+            count++;
+        }
+        if (count == 0) return "Не выбрано запасных провайдеров";
+        return count > 2 ? "Выбрано: " + count + " · " + names + "…" : names.toString();
+    }
+
     private LinearLayout fallbackCard() {
         LinearLayout card = Widgets.card(ctx);
-        LinearLayout intro = Ui.column(ctx);
-        intro.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(4));
-        TextView t = Ui.text(ctx, "Если основной провайдер недоступен", Ui.BODY);
-        t.setTypeface(Ui.medium);
-        intro.addView(t);
-        intro.addView(PageUi.note(ctx, "Например: Mercury через OpenRouter, если Inception недоступен из вашей страны. Используются только запасные с заданным ключом."),
-            Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
-        card.addView(intro);
+        LinearLayout summaryRow = Ui.row(ctx);
+        summaryRow.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(14), Ui.dp(12));
+        LinearLayout details = Ui.column(ctx);
+        TextView title = Ui.text(ctx, "Резервные подключения", Ui.BODY);
+        title.setTypeface(Ui.medium);
+        details.addView(title);
+        fallbackSummary = Ui.text(ctx, fallbackSummaryText(), Ui.CAPTION, Ui.P.text2);
+        fallbackSummary.setMaxLines(2);
+        details.addView(fallbackSummary, Ui.lpm(-1, -2, 0, Ui.dp(4), 0, 0));
+        summaryRow.addView(details, Ui.lpw(1f));
+        final TextView toggle = Ui.text(ctx, fallbackExpanded ? "Свернуть" : "Изменить", Ui.CAPTION, Ui.P.accent);
+        toggle.setGravity(Gravity.CENTER);
+        toggle.setMinHeight(Ui.dp(38));
+        summaryRow.addView(toggle, Ui.lpm(-2, -2, Ui.dp(8), 0, 0, 0));
+        summaryRow.setClickable(true);
+        summaryRow.setFocusable(true);
+        summaryRow.setContentDescription("Резервные провайдеры. " + fallbackSummaryText() + ". Нажмите для настройки");
+        summaryRow.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
+            fallbackExpanded = !fallbackExpanded;
+            fallbackOptions.setVisibility(fallbackExpanded ? View.VISIBLE : View.GONE);
+            toggle.setText(fallbackExpanded ? "Свернуть" : "Изменить");
+        } });
+        card.addView(summaryRow);
+        fallbackOptions = Ui.column(ctx);
+        fallbackOptions.setVisibility(fallbackExpanded ? View.VISIBLE : View.GONE);
+        fallbackOptions.addView(PageUi.note(ctx,
+            "Jarvis использует выбранные запасные подключения, только если основной провайдер не отвечает."),
+            Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(6), Ui.dp(16), Ui.dp(8)));
         List<String> sel = j.settings.getList(Settings.LLM_FALLBACKS);
         for (final ProviderPreset p : Presets.all()) {
             boolean on = sel.isEmpty() ? p.id.equals("openrouter") : sel.contains(p.id);
@@ -456,17 +496,15 @@ public class LlmPage extends SettingsPage {
                 refreshFallbackChecks();
             } });
             row.setTag("fbtrail." + p.id);
-            if (p.id.equals("openrouter")) {
-                LinearLayout tx = (LinearLayout) row.getChildAt(0);
-                tx.addView(PageUi.note(ctx, "рекомендуется для обхода гео-блока Inception"), Ui.lpm(-2, -2, 0, Ui.dp(2), 0, 0));
-            }
-            card.addView(row);
+            fallbackOptions.addView(row);
         }
+        card.addView(fallbackOptions);
         return card;
     }
 
     private void refreshFallbackChecks() {
         List<String> sel = j.settings.getList(Settings.LLM_FALLBACKS);
+        if (fallbackSummary != null) fallbackSummary.setText(fallbackSummaryText());
         for (ProviderPreset p : Presets.all()) {
             View row = content.findViewWithTag("fbtrail." + p.id);
             if (!(row instanceof LinearLayout)) continue;
