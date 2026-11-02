@@ -101,12 +101,33 @@ public final class ExtraSearch {
         if (apiKey == null || apiKey.trim().isEmpty())
             throw new WebException("Добавьте API-ключ поискового сервиса.", "missing key for " + id, 0, false);
         switch (id) {
-            case "exa": return new SearchBackends.Exa(apiKey, SearchBackends.EXA_BASE, proxy, clock);
+            case "exa": return new ExaLite(apiKey, proxy);
             case "tavily": return new SearchBackends.Tavily(apiKey, SearchBackends.TAVILY_BASE, proxy);
             case "brave": return new SearchBackends.Brave(apiKey, SearchBackends.BRAVE_BASE, proxy);
             case "serper": return new Serper(apiKey, proxy);
             case "parallel": return new Parallel(apiKey, proxy);
             default: throw new WebException("Неизвестный поисковый провайдер.", "unknown provider", 0, false);
+        }
+    }
+
+    /** Use the Exa 3.0 Lite mode ($4/1k) for an optional cost-aware tool, without changing legacy default Exa behavior. */
+    public static final class ExaLite implements SearchBackend {
+        private final String key; private final Proxy proxy;
+        ExaLite(String key, Proxy proxy) { this.key = key; this.proxy = proxy; }
+        @Override public String id() { return "exa"; }
+        @Override public String label() { return "Exa Lite"; }
+        @Override public List<SearchHit> search(SearchRequest request, CancelToken cancel) throws WebException {
+            JSONObject body = new JSONObject();
+            J.put(body, "query", request.text());
+            J.put(body, "type", "lite");
+            J.put(body, "numResults", Math.max(1, Math.min(10, request.limit)));
+            J.put(body, "contents", J.put(new JSONObject(), "text",
+                J.put(new JSONObject(), "maxCharacters", 350)));
+            SearchBackends.Reply rep = SearchBackends.post(label(), SearchBackends.EXA_BASE,
+                SearchBackends.headers("Content-Type", "application/json", "x-api-key", key),
+                body.toString(), proxy, cancel);
+            rep.requireOk(label());
+            return SearchBackends.Exa.parse(rep.text, Math.max(1, Math.min(10, request.limit)));
         }
     }
 
