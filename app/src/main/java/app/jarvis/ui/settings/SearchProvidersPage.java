@@ -6,6 +6,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import app.jarvis.R;
 import app.jarvis.core.util.CancelToken;
+import app.jarvis.core.mcp.client.ServerConfig;
 import app.jarvis.core.web.ExtraSearch;
 import app.jarvis.core.web.SearchBackend;
 import app.jarvis.core.web.SearchHit;
@@ -71,8 +72,18 @@ public final class SearchProvidersPage extends SettingsPage {
             "https://search.parallel.ai/mcp через раздел внешних MCP-серверов. " +
             "Этот путь не равен платному Search API, который настраивается выше.",
             Ui.CAPTION, Ui.P.text2), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, Ui.dp(12)));
-        mcp.addView(WrapButton.create(ctx, "Открыть MCP-серверы", R.drawable.ic_plug,
-            Ui.BTN_GLASS, () -> host.navigate("settings/mcpsrv")));
+        mcp.addView(WrapButton.create(ctx, "Подключить Parallel MCP бесплатно",
+            R.drawable.ic_plug, Ui.BTN_GLASS,
+            () -> addSearchMcp("parallel-search", "Parallel Search MCP",
+                "https://search.parallel.ai/mcp")),
+            Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(9)));
+        mcp.addView(WrapButton.create(ctx, "Подключить Exa MCP бесплатно",
+            R.drawable.ic_plug, Ui.BTN_GLASS,
+            () -> addSearchMcp("exa-search", "Exa Search MCP",
+                "https://mcp.exa.ai/mcp")),
+            Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(9)));
+        mcp.addView(WrapButton.create(ctx, "Управлять MCP-серверами", R.drawable.ic_plug,
+            Ui.BTN_GHOST, () -> host.navigate("settings/mcpsrv")));
         column.addView(mcp, Ui.lpm(-1, -2, 0, Ui.dp(18), 0, 0));
     }
 
@@ -143,6 +154,52 @@ public final class SearchProvidersPage extends SettingsPage {
                 Ui.CAPTION, Ui.P.text3), Ui.lpm(-1, -2, 0, Ui.dp(9), 0, 0));
         }
         return card;
+    }
+
+    /** Install a known hosted, keyless search MCP. Connection is actually tested before success is claimed. */
+    private void addSearchMcp(final String id, final String name, final String url) {
+        if (j.mcp.hub().config(id) != null) {
+            host.overlays().toast(name + ": сервер уже сохранён; откройте MCP-серверы", 0);
+            host.navigate("settings/mcpsrv");
+            return;
+        }
+        host.overlays().toast("Подключаю " + name + "…", 0);
+        new Thread(() -> {
+            boolean success = false;
+            String message = "";
+            try {
+                ServerConfig cfg = new ServerConfig();
+                cfg.id = id;
+                cfg.name = name;
+                cfg.url = url;
+                cfg.transport = ServerConfig.Transport.HTTP;
+                cfg.enabled = true;
+                cfg.exposure = ServerConfig.Exposure.AUTO;
+                cfg.confirmWrites = true;
+                // Only web-search and web-fetch tools may reach the model from these presets.
+                cfg.allow.add("web_search");
+                cfg.allow.add("web_fetch");
+                cfg.allow.add("web_search_exa");
+                cfg.allow.add("web_fetch_exa");
+                j.mcp.hub().save(cfg, null);
+                List<String> names = j.mcp.hub().testServer(id, new CancelToken());
+                if (!names.contains("web_search") && !names.contains("web_search_exa"))
+                    throw new IllegalStateException("Сервер подключился, но инструмента поиска в нём нет.");
+                success = true;
+                message = "Подключено. Инструментов: " + names.size() +
+                    ". Через MCP-серверы можно проверить или выключить его.";
+            } catch (Exception error) {
+                message = "Сервер сохранён выключенным: " +
+                    (error.getMessage() == null ? error.getClass().getSimpleName() : error.getMessage());
+                try { j.mcp.hub().setEnabled(id, false); } catch (Exception ignored) { }
+            }
+            final boolean ok = success;
+            final String result = message;
+            j.main.post(() -> {
+                Dialogs.info(host, ok ? "Поиск MCP работает" : "Поиск MCP не подключён", result);
+                if (ok) render();
+            });
+        }, "jv-search-mcp-" + id).start();
     }
 
     private boolean isVerifiedKey(ExtraSearch.Provider p) {
