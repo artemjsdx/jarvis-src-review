@@ -96,11 +96,11 @@ public class DubTab {
                 "Провайдеры озвучки появятся после подключения речевого движка."));
             return;
         }
-        col.addView(chainCard(sp), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(18)));
+        col.addView(chainCard(sp), Ui.lpm(-1, -2, 0, 0, 0, 18));
         for (TtsProvider p : sp.ttsProviders()) {
             ProviderCard card = new ProviderCard(p);
             cards.put(p.info().id, card);
-            col.addView(card.build(), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(18)));
+            col.addView(card.build(), Ui.lpm(-1, -2, 0, 0, 0, 18));
         }
         col.addView(Widgets.sectionTitle(ctx, "Проверка озвучки"));
         col.addView(testBox());
@@ -121,7 +121,7 @@ public class DubTab {
         head.addView(HelpPopup.button(ctx, host, "В ответах ассистента",
             "Здесь видно, какие провайдеры озвучивают ответы и в каком порядке.",
             "Если первый провайдер недоступен, ассистент пробует следующего по списку.",
-            "Включайте нужные голоса и меняйте их приоритет стрелками в карточках."), Ui.lpm(-2, -2, Ui.dp(6), 0, 0, 0));
+            "Включайте нужные голоса и меняйте их приоритет стрелками в карточках."), Ui.lpm(-2, -2, 6, 0, 0, 0));
         card.addView(head);
         List<String> chain = sp.activeChain();
         TextView line;
@@ -138,10 +138,10 @@ public class DubTab {
             line = Ui.text(ctx, sb.toString(), Ui.CAPTION, Ui.P.text2);
             line.setMaxLines(2);
         }
-        card.addView(line, Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+        card.addView(line, Ui.lpm(-2, -2, 0, 6, 0, 0));
         card.addView(Ui.text(ctx,
             "Включение, голос и приоритет — ниже. Параметры ответа — на вкладке «Поведение».",
-            Ui.CAPTION, Ui.P.text2), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+            Ui.CAPTION, Ui.P.text2), Ui.lpm(-1, -2, 0, 8, 0, 0));
         return card;
     }
 
@@ -199,35 +199,35 @@ public class DubTab {
             name.setTypeface(Ui.medium);
             head.addView(name, Ui.lpw(1f));
             head.addView(HelpPopup.button(ctx, host, info.name, ProviderGuides.tts(p)),
-                Ui.lpm(-2, -2, Ui.dp(6), 0, 0, 0));
+                Ui.lpm(-2, -2, 6, 0, 0, 0));
             card.addView(head);
             LinearLayout badges = Ui.row(ctx);
             badges.addView(Widgets.pill(ctx, StudioKit.officialLabel(info),
                 info.official ? Widgets.MUTED : Widgets.WARN));
-            card.addView(badges, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+            card.addView(badges, Ui.lpm(-1, -2, 0, 8, 0, 0));
 
             String inChain = chainPosition();
             if (!inChain.isEmpty()) {
                 TextView pos = Ui.text(ctx, inChain, Ui.CAPTION, Ui.P.accent);
-                card.addView(pos, Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+                card.addView(pos, Ui.lpm(-2, -2, 0, 8, 0, 0));
             }
             // Full provider details are kept on demand: the default list shows
             // essentials rather than five large metadata rows on every card.
             final LinearLayout detailHost = Ui.column(ctx);
             detailHost.addView(StudioKit.metaRow(ctx, "голоса:", info.voices),
-                Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
+                Ui.lpm(-1, -2, 0, 10, 0, 0));
             detailHost.addView(StudioKit.metaRow(ctx, "доступ:",
                 info.needsKey ? "нужен ключ API" : info.needsAccount ? "нужен аккаунт" : "без аккаунта и ключа"),
-                Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+                Ui.lpm(-1, -2, 0, 6, 0, 0));
             detailHost.addView(StudioKit.metaRow(ctx, "квота:", info.freeQuota),
-                Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+                Ui.lpm(-1, -2, 0, 6, 0, 0));
             detailHost.addView(StudioKit.metaRow(ctx, "клонирование:", info.cloning ? info.cloningNote : "нет"),
-                Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+                Ui.lpm(-1, -2, 0, 6, 0, 0));
             detailHost.addView(StudioKit.metaRow(ctx, "получатель данных:", info.sendsDataTo),
-                Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+                Ui.lpm(-1, -2, 0, 6, 0, 0));
             TextView lim = Ui.text(ctx, info.limitations, Ui.CAPTION, Ui.P.text2);
             lim.setSingleLine(false);
-            detailHost.addView(lim, Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+            detailHost.addView(lim, Ui.lpm(-2, -2, 0, 6, 0, 0));
             final boolean initiallyExpanded = Boolean.TRUE.equals(detailsExpanded.get(info.id));
             detailHost.setVisibility(initiallyExpanded ? View.VISIBLE : View.GONE);
             TextView detailToggle = Ui.text(ctx,
@@ -248,23 +248,23 @@ public class DubTab {
 
             statusHost = Ui.column(ctx);
             renderStatus();
-            card.addView(statusHost, Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+            card.addView(statusHost, Ui.lpm(-2, -2, 0, 8, 0, 0));
             final String credential = ttsSecretName(info.id);
             if (info.needsKey && !credential.isEmpty()) {
                 String masked = Secrets.mask(j.secrets.get(credential));
                 card.addView(WrapButton.create(ctx, "API: " + masked,
                     0, Ui.BTN_GLASS, () -> editTtsApiKey(credential, info.name)),
-                    Ui.lpm(-1, -2, 0, Ui.dp(12), 0, 0));
+                    Ui.lpm(-1, -2, 0, 12, 0, 0));
             }
 
             checkBtn = WrapButton.create(ctx, "Проверить", R.drawable.ic_activity, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runCheck(); } });
             View voicesBtn = WrapButton.create(ctx, "Выбрать голос", 0, Ui.BTN_GLASS, new Runnable() { @Override public void run() { openVoices(); } });
             // All provider cards have the same concise default layout. Less-used
             // controls are available under "Характеристики и ограничения".
-            card.addView(grid(checkBtn, voicesBtn), Ui.lpm(-1, -2, 0, Ui.dp(12), 0, 0));
+            card.addView(grid(checkBtn, voicesBtn), Ui.lpm(-1, -2, 0, 12, 0, 0));
             View quotaBtn = WrapButton.create(ctx, "Проверить квоту", 0, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runQuota(); } });
             View optBtn = WrapButton.create(ctx, "Параметры голоса", R.drawable.ic_sliders, Ui.BTN_GLASS, new Runnable() { @Override public void run() { toggleOptions(); } });
-            detailHost.addView(grid(quotaBtn, optBtn), Ui.lpm(-1, -2, 0, Ui.dp(14), 0, 0));
+            detailHost.addView(grid(quotaBtn, optBtn), Ui.lpm(-1, -2, 0, 14, 0, 0));
 
             // Enable, disable and reorder here: the old duplicate settings list is gone.
             List<String> chain = new ArrayList<>(j.settings.getList(Settings.TTS_CHAIN));
@@ -290,7 +290,7 @@ public class DubTab {
                     rebuild();
                 }));
             }
-            card.addView(control, Ui.lpm(-1, -2, 0, Ui.dp(9), 0, 0));
+            card.addView(control, Ui.lpm(-1, -2, 0, 9, 0, 0));
             if (selected && !slow) {
                 LinearLayout priority = Ui.row(ctx);
                 if (chain.indexOf(info.id) > 0) {
@@ -303,13 +303,13 @@ public class DubTab {
                 }
                 priority.addView(Ui.text(ctx, isFirst() ? "Первый в цепочке" : "Приоритет можно менять стрелками",
                     Ui.CAPTION, Ui.P.text2), Ui.lpw(1f));
-                card.addView(priority, Ui.lpm(-1, -2, 0, Ui.dp(5), 0, 0));
+                card.addView(priority, Ui.lpm(-1, -2, 0, 5, 0, 0));
             }
 
             quotaHost = Ui.column(ctx);
-            card.addView(quotaHost, Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+            card.addView(quotaHost, Ui.lpm(-2, -2, 0, 4, 0, 0));
             optionsHost = Ui.column(ctx);
-            card.addView(optionsHost, Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+            card.addView(optionsHost, Ui.lpm(-2, -2, 0, 4, 0, 0));
             return card;
         }
 
@@ -343,7 +343,7 @@ public class DubTab {
             row.setGravity(Gravity.CENTER_VERTICAL);
             row.addView(StudioKit.pillForStatus(ctx, st));
             String when = StudioKit.checkedAgo(ctx, st);
-            if (!when.isEmpty()) row.addView(Ui.text(ctx, when, Ui.CAPTION, Ui.P.text3), Ui.lpm(-2, -2, Ui.dp(8), 0, 0, 0));
+            if (!when.isEmpty()) row.addView(Ui.text(ctx, when, Ui.CAPTION, Ui.P.text3), Ui.lpm(-2, -2, 8, 0, 0, 0));
             statusHost.addView(row);
             String detail = StudioKit.statusDetail(ctx, st);
             if (!detail.isEmpty()) {
@@ -355,9 +355,9 @@ public class DubTab {
                 if (!st.ok && !st.detail.isEmpty()) {
                     second.addView(Ui.iconButton(ctx, R.drawable.ic_info, 30, Ui.P.text3, new Runnable() { @Override public void run() {
                         Dialogs.info(host, "Подробности последней ошибки", st.detail);
-                    } }), Ui.lpm(-2, -2, Ui.dp(6), 0, 0, 0));
+                    } }), Ui.lpm(-2, -2, 6, 0, 0, 0));
                 }
-                statusHost.addView(second, Ui.lpm(-1, -2, 0, Ui.dp(4), 0, 0));
+                statusHost.addView(second, Ui.lpm(-1, -2, 0, 4, 0, 0));
             }
         }
 
@@ -443,12 +443,12 @@ public class DubTab {
             box.addView(speedHead);
             final float speed = perProviderSpeed(info.id);
             final TextView speedVal = Ui.text(ctx, fmtSpeed(speed), Ui.CAPTION, Ui.P.text);
-            box.addView(speedVal, Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+            box.addView(speedVal, Ui.lpm(-2, -2, 0, 4, 0, 0));
             box.addView(Widgets.slider(ctx, 0.7f, 1.3f, 0.05f, speed, new Widgets.SliderListener() { @Override public void onValue(float v, boolean fromUser) {
                 speedVal.setText(fmtSpeed(v));
                 if (Math.abs(v - 1f) < 0.01f) j.settings.remove("tts." + info.id + ".speed");
                 else j.settings.set("tts." + info.id + ".speed", String.valueOf(v));
-            } }), Ui.lpm(-1, Ui.dp(32), 0, Ui.dp(2), 0, 0));
+            } }), Ui.lpm(-1, Ui.dp(32), 0, 2, 0, 0));
 
             if (info.id.equals("elevenlabs")) addElevenLabsOptions(box);
             return box;
@@ -478,10 +478,10 @@ public class DubTab {
             boostRow.addView(Widgets.toggle(ctx, j.settings.getBool("tts.elevenlabs.boost", true), new Widgets.Toggle.Listener() { @Override public void onChanged(boolean on) {
                 j.settings.setBool("tts.elevenlabs.boost", on);
                 j.speech.reconfigure();
-            } }), Ui.lpm(-2, -2, Ui.dp(8), 0, 0, 0));
-            box.addView(boostRow, Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+            } }), Ui.lpm(-2, -2, 8, 0, 0, 0));
+            box.addView(boostRow, Ui.lpm(-2, -2, 0, 8, 0, 0));
             box.addView(Ui.text(ctx, "Модели v3/v4 понимают теги эмоций [whispers] на английском — один тег на фразу.",
-                Ui.CAPTION, Ui.P.text3), Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+                Ui.CAPTION, Ui.P.text3), Ui.lpm(-2, -2, 0, 6, 0, 0));
         }
 
         private void sliderOption(LinearLayout box, String title, final String key, float def) {
@@ -565,13 +565,13 @@ public class DubTab {
         head.addView(HelpPopup.button(ctx, host, "Текст проверки",
             "Фраза синтезируется выбранным провайдером напрямую, минуя цепочку и кэш.",
             "Варианты ниже подставляются в поле; можно ввести свой текст, до " + MAX_TEST_CHARS + " знаков.",
-            "«Озвучить» — один синтез, «Стоп» — прервать, «Снять 3 дубля» — три записи с повтором."), Ui.lpm(-2, -2, Ui.dp(6), 0, 0, 0));
+            "«Озвучить» — один синтез, «Стоп» — прервать, «Снять 3 дубля» — три записи с повтором."), Ui.lpm(-2, -2, 6, 0, 0, 0));
         card.addView(head);
 
         testProviderValue = Ui.text(ctx, "", Ui.CAPTION, Ui.P.accent);
         testProviderValue.setClickable(true);
         testProviderValue.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { pickTestProvider(); } });
-        card.addView(testProviderValue, Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+        card.addView(testProviderValue, Ui.lpm(-2, -2, 0, 4, 0, 0));
 
         LinearLayout presets = Ui.column(ctx);
         for (final String preset : PRESETS) {
@@ -580,13 +580,13 @@ public class DubTab {
             chip.setBackground(Ui.glassPressable(12));
             chip.setClickable(true);
             chip.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { testText.setText(preset); } });
-            presets.addView(chip, Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+            presets.addView(chip, Ui.lpm(-1, -2, 0, 6, 0, 0));
         }
-        card.addView(presets, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+        card.addView(presets, Ui.lpm(-1, -2, 0, 8, 0, 0));
 
         testText = Widgets.field(ctx, "Свой текст…", PRESETS[0], true, false);
         testText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(MAX_TEST_CHARS)});
-        card.addView(Widgets.fieldBox(ctx, testText), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+        card.addView(Widgets.fieldBox(ctx, testText), Ui.lpm(-1, -2, 0, 8, 0, 0));
         testCounter = Ui.text(ctx, "", Ui.CAPTION, Ui.P.text3);
         testCounter.setGravity(Gravity.END);
         testText.addTextChangedListener(new TextWatcher() {
@@ -597,12 +597,12 @@ public class DubTab {
             @Override public void afterTextChanged(Editable s) { }
         });
         testCounter.setText(testText.getText().length() + " / " + MAX_TEST_CHARS);
-        card.addView(testCounter, Ui.lpm(-1, -2, 0, Ui.dp(4), 0, 0));
+        card.addView(testCounter, Ui.lpm(-1, -2, 0, 4, 0, 0));
 
         View speak = WrapButton.create(ctx, "Озвучить", R.drawable.ic_volume, Ui.BTN_PRIMARY, new Runnable() { @Override public void run() { runTest(); } });
         View stop = WrapButton.create(ctx, "Стоп", R.drawable.ic_stop, Ui.BTN_DANGER, new Runnable() { @Override public void run() { stopRun(); } });
         View takes = WrapButton.create(ctx, "Снять 3 дубля", R.drawable.ic_layers, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runTakes(); } });
-        card.addView(grid(speak, stop, takes), Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
+        card.addView(grid(speak, stop, takes), Ui.lpm(-1, -2, 0, 10, 0, 0));
 
         testResultHost = Ui.column(ctx);
         card.addView(testResultHost);
@@ -645,7 +645,7 @@ public class DubTab {
         refreshTestProvider();
         testResultHost.removeAllViews();
         testResultHost.addView(Ui.text(ctx, "«Озвучить» синтезирует текст одним провайдером, без цепочки и кэша: честные задержки.",
-            Ui.CAPTION, Ui.P.text3), Ui.lpm(-2, -2, 0, Ui.dp(2), 0, 0));
+            Ui.CAPTION, Ui.P.text3), Ui.lpm(-2, -2, 0, 2, 0, 0));
     }
 
     private TtsRequest buildRequest(String pid, String rawText) {
@@ -756,7 +756,7 @@ public class DubTab {
         LinearLayout row = Ui.row(ctx);
         row.addView(Widgets.spinner(ctx, 16));
         row.addView(Ui.text(ctx, "  " + (total > 1 ? "Дубль " + (takes.size()) + " из " + total + " · " : "") + s, Ui.CAPTION, Ui.P.text2));
-        testResultHost.addView(row, Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+        testResultHost.addView(row, Ui.lpm(-2, -2, 0, 4, 0, 0));
     }
 
     private void renderRunDone(String s) {
@@ -764,7 +764,7 @@ public class DubTab {
         LinearLayout row = Ui.row(ctx);
         row.addView(Widgets.pill(ctx, "готово", Widgets.OK));
         row.addView(Ui.text(ctx, "  " + s, Ui.CAPTION, Ui.P.text2));
-        testResultHost.addView(row, Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+        testResultHost.addView(row, Ui.lpm(-2, -2, 0, 4, 0, 0));
     }
 
     private void renderRunFail(String userMessage, final String technical) {
@@ -779,21 +779,21 @@ public class DubTab {
                 Dialogs.info(host, "Подробности", technical);
             } }));
         }
-        testResultHost.addView(row, Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+        testResultHost.addView(row, Ui.lpm(-2, -2, 0, 4, 0, 0));
     }
 
     private void renderRunIdleAfterStop() {
         testResultHost.removeAllViews();
         LinearLayout row = Ui.row(ctx);
         row.addView(Widgets.pill(ctx, "остановлено", Widgets.MUTED));
-        testResultHost.addView(row, Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+        testResultHost.addView(row, Ui.lpm(-2, -2, 0, 4, 0, 0));
     }
 
     private void renderTakes() {
         takesHost.removeAllViews();
         if (takes.isEmpty()) return;
         takesHost.addView(Ui.text(ctx, "Дубли (повтор синтезирует заново: у ElevenLabs тратятся символы)", Ui.CAPTION, Ui.P.text3),
-            Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+            Ui.lpm(-2, -2, 0, 4, 0, 0));
         for (final Take tk : takes) {
             LinearLayout row = Ui.row(ctx);
             row.setPadding(0, Ui.dp(6), 0, 0);
@@ -809,7 +809,7 @@ public class DubTab {
             TextView sub = Ui.text(ctx, line, Ui.CAPTION, tk.error.isEmpty() ? Ui.P.text3 : Ui.P.err);
             sub.setMaxLines(2);
             sub.setEllipsize(TextUtils.TruncateAt.END);
-            mid.addView(sub, Ui.lpm(-2, -2, Ui.dp(10), 0, 0, 0));
+            mid.addView(sub, Ui.lpm(-2, -2, 10, 0, 0, 0));
             row.addView(mid, Ui.lpw(1f));
             row.addView(Ui.iconButton(ctx, R.drawable.ic_play, 38, Ui.P.accent, new Runnable() { @Override public void run() { replayTake(tk); } }));
             row.addView(Ui.iconButton(ctx, R.drawable.ic_check, 38, chosenTake.equals(takeKey(tk)) ? Ui.P.accent : Ui.P.text3,
