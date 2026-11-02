@@ -102,12 +102,12 @@ public final class KeyBlock {
             if (v.isEmpty()) host.overlays().toast("Буфер обмена пуст", OverlayHost.INFO);
             else { field.setText(v.trim()); field.setSelection(field.getText().length()); }
         } }));
-        root.addView(fieldRow, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+        root.addView(fieldRow, Ui.lpm(-1, -2, 0, 8, 0, 0));
 
         storage = Ui.text(c, "", Ui.CAPTION, Ui.P.text3);
-        root.addView(storage, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+        root.addView(storage, Ui.lpm(-1, -2, 0, 8, 0, 0));
         status = Ui.text(c, "", Ui.CAPTION, Ui.P.text2);
-        root.addView(status, Ui.lpm(-1, -2, 0, Ui.dp(3), 0, 0));
+        root.addView(status, Ui.lpm(-1, -2, 0, 3, 0, 0));
 
         LinearLayout btns = Ui.row(c);
         saveButton = Ui.button(c, "Сохранить", R.drawable.ic_key, Ui.BTN_PRIMARY, new Runnable() { @Override public void run() { save(); } });
@@ -115,12 +115,12 @@ public final class KeyBlock {
         btns.addView(saveButton, new LinearLayout.LayoutParams(0, Ui.dp(BUTTON_H_DP), 1f));
         btns.addView(new Space(c), new LinearLayout.LayoutParams(Ui.dp(GAP_DP), Ui.dp(BUTTON_H_DP), 0f));
         btns.addView(deleteButton, new LinearLayout.LayoutParams(0, Ui.dp(BUTTON_H_DP), 1f));
-        root.addView(btns, Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
+        root.addView(btns, Ui.lpm(-1, -2, 0, 10, 0, 0));
 
         root.addView(Ui.button(c, "Проверить ключ", R.drawable.ic_check, Ui.BTN_GLASS, new Runnable() { @Override public void run() { check(); } }),
-            Ui.lpm(-1, Ui.dp(BUTTON_H_DP), 0, Ui.dp(10), 0, 0));
+            Ui.lpm(-1, Ui.dp(BUTTON_H_DP), 0, 10, 0, 0));
         checkHost = Ui.column(c);
-        root.addView(checkHost, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+        root.addView(checkHost, Ui.lpm(-1, -2, 0, 8, 0, 0));
     }
 
     private View eyeButton() {
@@ -214,17 +214,17 @@ public final class KeyBlock {
         if (r.ok) {
             row.addView(Widgets.pill(c, KeyDisplay.label(null), Widgets.OK));
             checkHost.addView(row);
-            checkHost.addView(caption("ответ за " + r.latencyMs + " мс · GET " + r.path), Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+            checkHost.addView(caption("ответ за " + r.latencyMs + " мс · GET " + r.path), Ui.lpm(-2, -2, 0, 6, 0, 0));
         } else {
             row.addView(Widgets.pill(c, KeyDisplay.label(r.kind), r.kind == LlmException.Kind.GEO_BLOCK ? Widgets.WARN : Widgets.ERR));
             checkHost.addView(row);
-            checkHost.addView(caption(r.userMessage), Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+            checkHost.addView(caption(r.userMessage), Ui.lpm(-2, -2, 0, 6, 0, 0));
             if (!r.technical.isEmpty()) checkHost.addView(Ui.button(c, "Подробности", R.drawable.ic_info, Ui.BTN_GHOST, new Runnable() { @Override public void run() {
                 Dialogs.info(host, "Технические подробности", "HTTP " + r.status + "\n" + r.technical);
-            } }), Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+            } }), Ui.lpm(-2, -2, 0, 6, 0, 0));
         }
         checkHost.addView(note("Один запрос к " + p.name + " (GET " + r.path + "). Токены модели не тратятся; результат записан в журнал."),
-            Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+            Ui.lpm(-2, -2, 0, 8, 0, 0));
     }
 
     private void renderIdle() {
