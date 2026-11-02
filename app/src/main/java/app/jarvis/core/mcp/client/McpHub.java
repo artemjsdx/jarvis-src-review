@@ -177,6 +177,49 @@ public final class McpHub implements ExternalMcpInfo {
         return names;
     }
 
+    /**
+     * Checks an opted-in search connector with a real read-only search rather than only tools/list.
+     * Called only for known search-tool names from the Settings connection wizard.
+     * Returns a small count of URL markers in the tool's text response, never raw content.
+     */
+    public int testSearchTool(String serverId, String searchName, CancelToken cancel) throws McpException {
+        if (!("web_search".equals(searchName) || "web_search_exa".equals(searchName)
+                || "firecrawl_search".equals(searchName)))
+            throw new McpException(McpException.Kind.UNSUPPORTED,
+                "Этот MCP инструмент нельзя проверять как веб-поиск.", searchName);
+        Entry entry = find(serverId);
+        if (entry == null) throw new McpException(McpException.Kind.UNSUPPORTED,
+            "Поисковый MCP-сервер не найден.", serverId);
+        ServerConfig cfg = snapshot(entry);
+        if (!cfg.enabled || !cfg.allowed(searchName))
+            throw new McpException(McpException.Kind.UNSUPPORTED,
+                "Поисковый инструмент выключен.", searchName);
+        RemoteTool search = cfg.tool(searchName);
+        if (search == null) throw new McpException(McpException.Kind.UNSUPPORTED,
+            "У MCP-сервера нет такого инструмента.", searchName);
+
+        JSONObject args = new JSONObject();
+        J.put(args, "query", "official Android developer documentation");
+        JSONObject properties = search.inputSchema.optJSONObject("properties");
+        if (properties != null) {
+            if (properties.has("numResults")) J.put(args, "numResults", 3);
+            if (properties.has("limit")) J.put(args, "limit", 3);
+            if (properties.has("objective")) J.put(args, "objective",
+                "Find official Android documentation pages, include source URLs.");
+            if (properties.has("search_queries"))
+                J.put(args, "search_queries", new JSONArray().put("official Android developer documentation"));
+        }
+
+        CancelToken active = cancel == null ? new CancelToken() : cancel;
+        ToolCallResult response = clientFor(entry, active).callTool(searchName, args, active);
+        String text = response.text == null ? "" : response.text;
+        if (response.isError || text.trim().length() < 25 || !text.contains("http"))
+            throw new McpException(McpException.Kind.PROTOCOL,
+                "Поисковый MCP подключился, но не вернул ссылок в тестовом запросе.",
+                "MCP search empty/failed: " + searchName);
+        return 1; // At least one URL was returned; a precise count is provider-specific.
+    }
+
     /** Model-facing search over the cached tools; connects a server with an empty cache. Names and short descriptions only. */
     public ToolResult search(String serverFilter, String query, CancelToken cancel) {
         String q = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
