@@ -18,6 +18,7 @@ import android.widget.TextView;
 import app.jarvis.R;
 import app.jarvis.ui.motion.Motion;
 import app.jarvis.ui.glass.Glass;
+import app.jarvis.ui.glass.GlassLevel;
 import java.util.ArrayList;
 
 /**
@@ -56,7 +57,13 @@ public final class OverlayHost extends FrameLayout {
 
     /** Panels are translucent so the host can blur what is behind them (see Glass.mark). */
     private Drawable panelBg(float r) {
-        Drawable base = Ui.rect(Ui.P.dark ? 0x58121019 : 0x73FBFAFF, r);
+        // RenderEffect is unavailable on older devices and intentionally disabled in OFF mode.
+        // Without blur the same translucency would expose legible text and the dock
+        // THROUGH dialog content. Use an opaque-enough fallback in that case.
+        boolean blurred = GlassLevel.blur();
+        Drawable base = Ui.rect(blurred ?
+            (Ui.P.dark ? 0x58121019 : 0x73FBFAFF) :
+            (Ui.P.dark ? 0xDF121019 : 0xEAFBFAFF), r);
         return new LayerDrawable(new Drawable[]{base, new GlassDrawable(r, true).overlayFrost()});
     }
 
