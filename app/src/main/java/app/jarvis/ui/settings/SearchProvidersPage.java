@@ -47,7 +47,10 @@ public final class SearchProvidersPage extends SettingsPage {
 
     private void render() {
         column.removeAllViews();
-        column.addView(Widgets.sectionTitle(ctx, "Два разных способа поиска"));
+        column.addView(sectionHeader("Два разных способа поиска",
+            "Обычный web_search работает всегда по старым настройкам.",
+            "Дополнительный web_search_extra активируется только для проверенного сервиса.",
+            "Агент сам выбирает, какой поиск соответствует вопросу и доступной квоте."));
         LinearLayout explanation = Widgets.card(ctx);
         explanation.setPadding(Ui.dp(16), Ui.dp(15), Ui.dp(16), Ui.dp(16));
         explanation.addView(Ui.text(ctx, "Обычный поиск всегда остаётся", Ui.BODY));
@@ -61,7 +64,10 @@ public final class SearchProvidersPage extends SettingsPage {
             "3. Только после удачной проверки появляется отдельный web_search_extra. Агент выбирает его по задаче, а не автоматически расходует сразу все квоты.",
             "4. Нужны детали — агент вызывает web_provider_guide. Если доппоиск недоступен, остаётся стандартный web_search."));
         column.addView(explanation);
-        column.addView(Widgets.sectionTitle(ctx, "Подключаемые поисковики"));
+        column.addView(sectionHeader("Подключаемые поисковики",
+            "Каждому поисковику соответствует собственный ключ API и ограничение.",
+            "Проверка выполняет настоящий запрос; без результатов нельзя включить поисковик.",
+            "Отключение не удаляет ключ, а замена ключа требует повторной проверки."));
         for (ExtraSearch.Provider p : ExtraSearch.CATALOG)
             column.addView(providerCard(p), Ui.lpm(-1, -2, 0, Ui.dp(14), 0, 0));
         LinearLayout mcp = Widgets.card(ctx);
@@ -85,6 +91,17 @@ public final class SearchProvidersPage extends SettingsPage {
         mcp.addView(WrapButton.create(ctx, "Управлять MCP-серверами", R.drawable.ic_plug,
             Ui.BTN_GHOST, () -> host.navigate("settings/mcpsrv")));
         column.addView(mcp, Ui.lpm(-1, -2, 0, Ui.dp(18), 0, 0));
+    }
+
+    private View sectionHeader(String title, String... guide) {
+        LinearLayout row = Ui.row(ctx);
+        TextView caption = Widgets.sectionTitle(ctx, title);
+        // This page re-renders after every test. Set the help directly so it is never
+        // lost when SettingsPage's one-time section decorator has already run.
+        caption.setTag(null);
+        row.addView(caption, Ui.lpw(1f));
+        row.addView(HelpPopup.button(ctx, host, title, guide));
+        return row;
     }
 
     private View providerCard(final ExtraSearch.Provider p) {
