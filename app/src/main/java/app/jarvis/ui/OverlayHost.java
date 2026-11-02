@@ -56,7 +56,7 @@ public final class OverlayHost extends FrameLayout {
 
     /** Panels are translucent so the host can blur what is behind them (see Glass.mark). */
     private Drawable panelBg(float r) {
-        Drawable base = Ui.rect(Ui.P.dark ? 0x8E121019 : 0xA9FBFAFF, r);
+        Drawable base = Ui.rect(Ui.P.dark ? 0x58121019 : 0x73FBFAFF, r);
         return new LayerDrawable(new Drawable[]{base, new GlassDrawable(r, true).overlayFrost()});
     }
 
