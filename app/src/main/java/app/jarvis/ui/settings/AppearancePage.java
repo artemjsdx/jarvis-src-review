@@ -54,7 +54,7 @@ public class AppearancePage extends SettingsPage {
                 Ui.refreshMotion(ctx, mode);
             } }));
         motionPad.addView(PageUi.note(ctx, "Сниженная: без движения, только короткие затухания. Выкл: всё мгновенно. "
-            + "Если в Android отключены анимации, действует «Выкл»."), Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+            + "Если в Android отключены анимации, действует «Выкл»."), Ui.lpm(-2, -2, 0, 8, 0, 0));
         LinearLayout demo = Ui.row(ctx);
         demo.setPadding(0, Ui.dp(12), 0, 0);
         demo.addView(Ui.text(ctx, "Пример переключателя", Ui.BODY), Ui.lpwm(1f, 0, 0, 8, 0));
@@ -87,7 +87,7 @@ public class AppearancePage extends SettingsPage {
         glassPad.addView(Widgets.segmented(ctx, new String[]{"Авто", "Полный", "Упрощ.", "Выкл"}, glassSel,
             new Widgets.IntListener() { @Override public void on(int index) {
                 j.settings.set(GlassLevel.KEY, glassLevels[index].key);
-            } }), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+            } }), Ui.lpm(-1, -2, 0, 8, 0, 0));
         glassCard.addView(glassPad);
         content.addView(glassCard);
 
@@ -100,11 +100,11 @@ public class AppearancePage extends SettingsPage {
             j.settings.set(Settings.USER_CALL, s.trim());
             refreshPreview();
         } });
-        callPad.addView(Widgets.fieldBox(ctx, e), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
-        callPad.addView(PageUi.note(ctx, "Например: Саша или шеф. Пусто — Jarvis обращается без имени."), Ui.lpm(-2, -2, 0, Ui.dp(6), 0, 0));
+        callPad.addView(Widgets.fieldBox(ctx, e), Ui.lpm(-1, -2, 0, 8, 0, 0));
+        callPad.addView(PageUi.note(ctx, "Например: Саша или шеф. Пусто — Jarvis обращается без имени."), Ui.lpm(-2, -2, 0, 6, 0, 0));
         TextView preview = Ui.chip(ctx, callPreviewText(), Ui.P.accent);
         preview.setTag("callPreview");
-        callPad.addView(preview, Ui.lpm(-2, -2, 0, Ui.dp(10), 0, 0));
+        callPad.addView(preview, Ui.lpm(-2, -2, 0, 10, 0, 0));
         callCard.addView(callPad);
         content.addView(callCard);
 
