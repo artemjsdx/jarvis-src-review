@@ -90,7 +90,7 @@ public class LlmPage extends SettingsPage {
         content.addView(providerHost);
         rebuildProviderRow();
         configHost = Ui.column(ctx);
-        content.addView(configHost, Ui.lpm(-1, -2, 0, Ui.dp(12), 0, 0));
+        content.addView(configHost, Ui.lpm(-1, -2, 0, 12, 0, 0));
         rebuildConfig();
         content.addView(Widgets.sectionTitle(ctx, "Модель"));
         modelCardHost = Ui.column(ctx);
@@ -157,16 +157,16 @@ public class LlmPage extends SettingsPage {
         t.setSingleLine(true);
         t.setEllipsize(TextUtils.TruncateAt.MIDDLE);
         head.addView(t);
-        head.addView(Ui.text(ctx, (p == null ? pid : p.name) + " · " + sourceLabel(caps), Ui.CAPTION, Ui.P.text3), Ui.lpm(-2, -2, 0, Ui.dp(2), 0, 0));
+        head.addView(Ui.text(ctx, (p == null ? pid : p.name) + " · " + sourceLabel(caps), Ui.CAPTION, Ui.P.text3), Ui.lpm(-2, -2, 0, 2, 0, 0));
         card.addView(head);
         if (!model.isEmpty()) {
-            card.addView(CapChips.chips(ctx, caps), Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(8), Ui.dp(16), 0));
+            card.addView(CapChips.chips(ctx, caps), Ui.lpm(-1, -2, 16, 8, 16, 0));
             TextView price = CapChips.priceLine(ctx, caps);
-            if (price != null) card.addView(price, Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(6), Ui.dp(16), 0));
+            if (price != null) card.addView(price, Ui.lpm(-1, -2, 16, 6, 16, 0));
         }
         ModelCatalog.Status st = j.catalog.status(pid);
         card.addView(Ui.text(ctx, statusLine(st), Ui.CAPTION, st.lastError.isEmpty() ? Ui.P.text3 : Ui.P.warn),
-            Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(8), Ui.dp(16), 0));
+            Ui.lpm(-1, -2, 16, 8, 16, 0));
         Widgets.divide(card);
         LinearLayout btns = Ui.row(ctx);
         btns.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(14), Ui.dp(12));
@@ -231,7 +231,7 @@ public class LlmPage extends SettingsPage {
             tile.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
                 ModelSwitch.request(host, parts[0], parts[1], new Runnable() { @Override public void run() { rebuildAll(); } });
             } });
-            strip.addView(tile, Ui.lpm(-2, -2, 0, 0, Ui.dp(8), 0));
+            strip.addView(tile, Ui.lpm(-2, -2, 0, 0, 8, 0));
         }
         sv.addView(strip);
         recentHost.addView(sv);
@@ -263,7 +263,7 @@ public class LlmPage extends SettingsPage {
             p.verified == null || p.verified.isEmpty()
                 ? "Дата независимой проверки не указана."
                 : "Проверено: " + p.verified));
-        card.addView(accessHead, Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(10), Ui.dp(16), Ui.dp(10)));
+        card.addView(accessHead, Ui.lpm(-1, -2, 16, 10, 16, 10));
 
         if (p.keyRequired || j.secrets.has("key." + pid)) {
             Widgets.divide(card);
@@ -318,7 +318,7 @@ public class LlmPage extends SettingsPage {
         } }));
         card.addView(importRow);
         configHost.addView(card);
-        configHost.addView(proxyCard(), Ui.lpm(-1, -2, 0, Ui.dp(12), 0, 0));
+        configHost.addView(proxyCard(), Ui.lpm(-1, -2, 0, 12, 0, 0));
     }
 
     private View baseUrlBlock(final ProviderPreset p) {
@@ -327,7 +327,7 @@ public class LlmPage extends SettingsPage {
         TextView t = Ui.text(ctx, "Адрес API", Ui.BODY);
         t.setTypeface(Ui.medium);
         block.addView(t);
-        block.addView(PageUi.note(ctx, "OpenAI-совместимый адрес; обычно заканчивается на /v1"), Ui.lpm(-2, -2, 0, Ui.dp(2), 0, 0));
+        block.addView(PageUi.note(ctx, "OpenAI-совместимый адрес; обычно заканчивается на /v1"), Ui.lpm(-2, -2, 0, 2, 0, 0));
         final EditText e = PageUi.saveField(ctx, p.baseUrl.isEmpty() ? "https://…/v1" : p.baseUrl, j.settings.get("llm.baseUrl." + p.id), new PageUi.TextListener() { @Override public void on(String s) {
             String v = s.trim();
             if (!v.isEmpty() && !v.startsWith("http://") && !v.startsWith("https://")) {
@@ -337,7 +337,7 @@ public class LlmPage extends SettingsPage {
             if (v.isEmpty()) j.settings.remove("llm.baseUrl." + p.id); else j.settings.set("llm.baseUrl." + p.id, v);
             host.overlays().toast(v.isEmpty() ? "Адрес сброшен" : "Адрес сохранён", 0);
         } });
-        block.addView(Widgets.fieldBox(ctx, e), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+        block.addView(Widgets.fieldBox(ctx, e), Ui.lpm(-1, -2, 0, 8, 0, 0));
         return block;
     }
 
@@ -345,9 +345,9 @@ public class LlmPage extends SettingsPage {
         LinearLayout card = Widgets.card(ctx);
         TextView t = Ui.text(ctx, "Прокси для LLM", Ui.BODY);
         t.setTypeface(Ui.medium);
-        card.addView(t, Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(12), Ui.dp(16), 0));
+        card.addView(t, Ui.lpm(-2, -2, 16, 12, 16, 0));
         card.addView(PageUi.note(ctx, "Только для LLM · HTTP или SOCKS5 · пусто — напрямую"),
-            Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(2), Ui.dp(16), 0));
+            Ui.lpm(-1, -2, 16, 2, 16, 0));
         final EditText e = PageUi.saveField(ctx, "например, socks5://127.0.0.1:1080", j.settings.get(Settings.LLM_PROXY), new PageUi.TextListener() { @Override public void on(String s) {
             String v = s.trim();
             if (v.isEmpty()) { j.settings.remove(Settings.LLM_PROXY); host.overlays().toast("Прокси отключён", 0); return; }
@@ -359,7 +359,7 @@ public class LlmPage extends SettingsPage {
                 host.overlays().toast("Неверный прокси: " + err.getMessage(), 2);
             }
         } });
-        card.addView(Widgets.fieldBox(ctx, e), Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(14)));
+        card.addView(Widgets.fieldBox(ctx, e), Ui.lpm(-1, -2, 16, 8, 16, 14));
         return card;
     }
 
@@ -367,7 +367,7 @@ public class LlmPage extends SettingsPage {
     private void renderCheckIdle() {
         checkHost.removeAllViews();
         checkHost.addView(Ui.button(ctx, "Проверить подключение", R.drawable.ic_activity, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runConnectionCheck(); } }));
-        checkHost.addView(PageUi.note(ctx, "Реальный запрос: список моделей и короткий тестовый ответ."), Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+        checkHost.addView(PageUi.note(ctx, "Реальный запрос: список моделей и короткий тестовый ответ."), Ui.lpm(-2, -2, 0, 8, 0, 0));
     }
 
     /** Runs GET /models then one tiny streaming completion; also invoked from headless previews. */
@@ -431,9 +431,9 @@ public class LlmPage extends SettingsPage {
         checkHost.addView(row);
         checkHost.addView(PageUi.caption(ctx, "Моделей: " + PageUi.group(modelCount)
             + " · первый токен: " + (firstMs < 0 ? totalMs : firstMs) + " мс"
-            + " · всего: " + totalMs + " мс"), Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+            + " · всего: " + totalMs + " мс"), Ui.lpm(-2, -2, 0, 8, 0, 0));
         checkHost.addView(PageUi.note(ctx, "Ответ модели: " + (answer.isEmpty() ? "(пусто)" : "«" + (answer.length() > 40 ? answer.substring(0, 40) + "…" : answer) + "»")),
-            Ui.lpm(-2, -2, 0, Ui.dp(3), 0, 0));
+            Ui.lpm(-2, -2, 0, 3, 0, 0));
     }
 
     private void renderCheckFail(final LlmException e) {
@@ -443,10 +443,10 @@ public class LlmPage extends SettingsPage {
         row.addView(Ui.space(ctx, 8, 1));
         row.addView(Ui.iconButton(ctx, R.drawable.ic_refresh, 36, Ui.P.text2, new Runnable() { @Override public void run() { renderCheckIdle(); } }));
         checkHost.addView(row);
-        checkHost.addView(PageUi.caption(ctx, e.userMessage), Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+        checkHost.addView(PageUi.caption(ctx, e.userMessage), Ui.lpm(-2, -2, 0, 8, 0, 0));
         if (e.kind == LlmException.Kind.GEO_BLOCK)
             checkHost.addView(PageUi.note(ctx, "Сервер закрыл доступ из вашей страны. Варианты: прокси на этой странице, VPN на всём устройстве или Mercury через OpenRouter как запасной провайдер."),
-                Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+                Ui.lpm(-2, -2, 0, 4, 0, 0));
         LinearLayout btns = Ui.row(ctx);
         btns.addView(Ui.button(ctx, "Подробности", R.drawable.ic_info, Ui.BTN_GHOST, new Runnable() { @Override public void run() {
             Dialogs.info(host, "Технические подробности", e.technical.isEmpty() ? e.toString() : "HTTP " + e.status + "\n" + e.technical);
@@ -458,7 +458,7 @@ public class LlmPage extends SettingsPage {
                     + "2. OpenRouter: агрегатор, Mercury доступна как inception/mercury-3 без VPN. Выберите провайдера OpenRouter, получите ключ на openrouter.ai и сохраните его.\n\n"
                     + "3. VPN на всём устройстве тоже подходит, но влияет на весь трафик телефона.");
             } }));
-        checkHost.addView(btns, Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+        checkHost.addView(btns, Ui.lpm(-2, -2, 0, 8, 0, 0));
     }
 
     private static String readable(Throwable t) {
@@ -494,12 +494,12 @@ public class LlmPage extends SettingsPage {
         details.addView(title);
         fallbackSummary = Ui.text(ctx, fallbackSummaryText(), Ui.CAPTION, Ui.P.text2);
         fallbackSummary.setMaxLines(2);
-        details.addView(fallbackSummary, Ui.lpm(-1, -2, 0, Ui.dp(4), 0, 0));
+        details.addView(fallbackSummary, Ui.lpm(-1, -2, 0, 4, 0, 0));
         summaryRow.addView(details, Ui.lpw(1f));
         final TextView toggle = Ui.text(ctx, fallbackExpanded ? "Свернуть" : "Изменить", Ui.CAPTION, Ui.P.accent);
         toggle.setGravity(Gravity.CENTER);
         toggle.setMinHeight(Ui.dp(38));
-        summaryRow.addView(toggle, Ui.lpm(-2, -2, Ui.dp(8), 0, 0, 0));
+        summaryRow.addView(toggle, Ui.lpm(-2, -2, 8, 0, 0, 0));
         summaryRow.setClickable(true);
         summaryRow.setFocusable(true);
         summaryRow.setContentDescription("Резервные провайдеры. " + fallbackSummaryText() + ". Нажмите для настройки");
@@ -513,7 +513,7 @@ public class LlmPage extends SettingsPage {
         fallbackOptions.setVisibility(fallbackExpanded ? View.VISIBLE : View.GONE);
         fallbackOptions.addView(PageUi.note(ctx,
             "Jarvis использует выбранные запасные подключения, только если основной провайдер не отвечает."),
-            Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(6), Ui.dp(16), Ui.dp(8)));
+            Ui.lpm(-1, -2, 16, 6, 16, 8));
         List<String> sel = j.settings.getList(Settings.LLM_FALLBACKS);
         for (final ProviderPreset p : Presets.all()) {
             boolean on = sel.isEmpty() ? p.id.equals("openrouter") : sel.contains(p.id);
