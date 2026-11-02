@@ -57,7 +57,7 @@ public final class SearchProvidersPage extends SettingsPage {
         explanation.addView(Ui.text(ctx,
             "Текущая цепочка web_search не меняется. Ниже можно подключить дополнительные сервисы, и Джарвис сам выберет подходящий. " +
             "Ни один не получает ваши ключи из других аккаунтов автоматически.",
-            Ui.CAPTION, Ui.P.text2), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+            Ui.CAPTION, Ui.P.text2), Ui.lpm(-1, -2, 0, 8, 0, 0));
         explanation.addView(HelpPopup.button(ctx, host, "Как Джарвис выбирает поиск",
             "1. Обычный web_search по-прежнему работает без изменений.",
             "2. Вы сохраняете ключ отдельного провайдера и нажимаете «Проверить». Jarvis выполняет настоящий поисковый запрос.",
@@ -69,7 +69,7 @@ public final class SearchProvidersPage extends SettingsPage {
             "Проверка выполняет настоящий запрос; без результатов нельзя включить поисковик.",
             "Отключение не удаляет ключ, а замена ключа требует повторной проверки."));
         for (ExtraSearch.Provider p : ExtraSearch.CATALOG)
-            column.addView(providerCard(p), Ui.lpm(-1, -2, 0, Ui.dp(14), 0, 0));
+            column.addView(providerCard(p), Ui.lpm(-1, -2, 0, 14, 0, 0));
         LinearLayout mcp = Widgets.card(ctx);
         mcp.setPadding(Ui.dp(16), Ui.dp(15), Ui.dp(16), Ui.dp(15));
         LinearLayout mcpTitle = Ui.row(ctx);
@@ -84,25 +84,25 @@ public final class SearchProvidersPage extends SettingsPage {
             "Три независимых удалённых сервиса: Parallel Search, Exa Search и Firecrawl Search. " +
             "Анонимный доступ ограничен по частоте. Каждый проверяется реальным поиском перед включением. " +
             "Управление — в существующем разделе внешних MCP-серверов.",
-            Ui.CAPTION, Ui.P.text2), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, Ui.dp(12)));
+            Ui.CAPTION, Ui.P.text2), Ui.lpm(-1, -2, 0, 8, 0, 12));
         mcp.addView(WrapButton.create(ctx, "Подключить Parallel MCP бесплатно",
             R.drawable.ic_plug, Ui.BTN_GLASS,
             () -> addSearchMcp("parallel-search", "Parallel Search MCP",
                 "https://search.parallel.ai/mcp", "web_search", "web_fetch")),
-            Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(9)));
+            Ui.lpm(-1, -2, 0, 0, 0, 9));
         mcp.addView(WrapButton.create(ctx, "Подключить Exa MCP бесплатно",
             R.drawable.ic_plug, Ui.BTN_GLASS,
             () -> addSearchMcp("exa-search", "Exa Search MCP",
                 "https://mcp.exa.ai/mcp", "web_search_exa", "web_fetch_exa")),
-            Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(9)));
+            Ui.lpm(-1, -2, 0, 0, 0, 9));
         mcp.addView(WrapButton.create(ctx, "Подключить Firecrawl MCP бесплатно",
             R.drawable.ic_plug, Ui.BTN_GLASS,
             () -> addSearchMcp("firecrawl-search", "Firecrawl Search MCP",
                 "https://mcp.firecrawl.dev/v2/mcp", "firecrawl_search", "firecrawl_scrape")),
-            Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(9)));
+            Ui.lpm(-1, -2, 0, 0, 0, 9));
         mcp.addView(WrapButton.create(ctx, "Управлять MCP-серверами", R.drawable.ic_plug,
             Ui.BTN_GHOST, () -> host.navigate("settings/mcpsrv")));
-        column.addView(mcp, Ui.lpm(-1, -2, 0, Ui.dp(18), 0, 0));
+        column.addView(mcp, Ui.lpm(-1, -2, 0, 18, 0, 0));
     }
 
     private View sectionHeader(String title, String... guide) {
@@ -136,11 +136,11 @@ public final class SearchProvidersPage extends SettingsPage {
         String flag = p.id.equals(testing) ? "проверка…" : valid ? "работает · включён" :
             enabled && hasKey ? "нужна повторная проверка" : hasKey ? "ключ сохранён · выключен" : "не настроен";
         status.addView(Widgets.pill(ctx, flag, valid ? Widgets.OK : Widgets.MUTED));
-        card.addView(status, Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
+        card.addView(status, Ui.lpm(-1, -2, 0, 10, 0, 0));
         card.addView(Ui.text(ctx, p.purpose, Ui.CAPTION, Ui.P.text2),
-            Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
+            Ui.lpm(-1, -2, 0, 10, 0, 0));
         card.addView(Ui.text(ctx, p.freeText, Ui.CAPTION, Ui.P.text3),
-            Ui.lpm(-1, -2, 0, Ui.dp(5), 0, 0));
+            Ui.lpm(-1, -2, 0, 5, 0, 0));
 
         LinearLayout toggleRow = Ui.row(ctx);
         toggleRow.addView(Ui.text(ctx, enabled ? "Использовать в агенте" : "Не использовать в агенте",
@@ -154,12 +154,12 @@ public final class SearchProvidersPage extends SettingsPage {
             j.settings.setBool(ExtraSearch.keyEnabled(p.id), on);
             render();
         }));
-        card.addView(toggleRow, Ui.lpm(-1, -2, 0, Ui.dp(12), 0, Ui.dp(4)));
+        card.addView(toggleRow, Ui.lpm(-1, -2, 0, 12, 0, 4));
 
         LinearLayout row = Ui.row(ctx);
         row.addView(WrapButton.create(ctx, hasKey ? "Ключ: " + Secrets.mask(j.secrets.get(p.secret)) : "Добавить API-ключ",
             0, Ui.BTN_GLASS, () -> editKey(p)), Ui.lpw(1f));
-        card.addView(row, Ui.lpm(-1, -2, 0, Ui.dp(10), 0, Ui.dp(8)));
+        card.addView(row, Ui.lpm(-1, -2, 0, 10, 0, 8));
 
         LinearLayout actions = Ui.row(ctx);
         actions.addView(WrapButton.create(ctx, p.id.equals(testing) ? "Проверяю…" : "Проверить",
@@ -180,7 +180,7 @@ public final class SearchProvidersPage extends SettingsPage {
                 "Последняя успешная проверка: " + new java.text.SimpleDateFormat("dd.MM, HH:mm",
                     java.util.Locale.ROOT).format(new java.util.Date(parseLong(when))) +
                     (ms.isEmpty() ? "" : " · " + ms + " мс"),
-                Ui.CAPTION, Ui.P.text3), Ui.lpm(-1, -2, 0, Ui.dp(9), 0, 0));
+                Ui.CAPTION, Ui.P.text3), Ui.lpm(-1, -2, 0, 9, 0, 0));
         }
         return card;
     }
