@@ -79,9 +79,10 @@ public final class HelpPopup {
             LinearLayout visual = Ui.row(c);
             visual.setGravity(Gravity.CENTER_VERTICAL);
             String[] labels = diagramLabels(title, lower, n);
-            visual.addView(node(c, labels[0], R.drawable.ic_sliders), new LinearLayout.LayoutParams(0, Ui.dp(78), 1));
+            int[] icons = diagramIcons(title, lower);
+            visual.addView(node(c, labels[0], icons[0]), new LinearLayout.LayoutParams(0, Ui.dp(78), 1));
             visual.addView(Ui.text(c, "→", Ui.BODY, Ui.P.accent), Ui.lpm(-2, -2, Ui.dp(6), 0, Ui.dp(6), 0));
-            visual.addView(node(c, labels[1], R.drawable.ic_check), new LinearLayout.LayoutParams(0, Ui.dp(78), 1));
+            visual.addView(node(c, labels[1], icons[1]), new LinearLayout.LayoutParams(0, Ui.dp(78), 1));
             illustration.addView(visual);
             progressDots.removeAllViews();
             for (int i = 0; i < steps.length; i++) {
@@ -115,6 +116,31 @@ public final class HelpPopup {
         label.setMaxLines(2);
         box.addView(label, Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
         return box;
+    }
+
+    /** Distinct, crisp Android vector art for every guide family rather than copied slider/check graphics. */
+    private static int[] diagramIcons(String title, String line) {
+        String s = (title + " " + line).toLowerCase(java.util.Locale.ROOT);
+        if (s.contains("поиск") || s.contains("search") || s.contains("exa")
+                || s.contains("tavily") || s.contains("serper"))
+            return new int[]{R.drawable.ic_search, R.drawable.ic_globe};
+        if (s.contains("mcp") || s.contains("сервер") || s.contains("мост"))
+            return new int[]{R.drawable.ic_bot, R.drawable.ic_plug};
+        if (s.contains("озвуч") || s.contains("tts") || s.contains("голос"))
+            return new int[]{R.drawable.ic_file_text, R.drawable.ic_speaker};
+        if (s.contains("микрофон") || s.contains("распозна") || s.contains("stt")
+                || s.contains("джарвис"))
+            return new int[]{R.drawable.ic_mic, R.drawable.ic_ear};
+        if (s.contains("api") || s.contains("ключ") || s.contains("токен")
+                || s.contains("авторизац"))
+            return new int[]{R.drawable.ic_key, R.drawable.ic_shield};
+        if (s.contains("тема") || s.contains("стекл") || s.contains("анимац"))
+            return new int[]{R.drawable.ic_palette, R.drawable.ic_eye};
+        if (s.contains("музык") || s.contains("песн"))
+            return new int[]{R.drawable.ic_music, R.drawable.ic_play};
+        if (s.contains("батаре") || s.contains("фон") || s.contains("автозапуск"))
+            return new int[]{R.drawable.ic_battery, R.drawable.ic_check};
+        return new int[]{R.drawable.ic_sliders, R.drawable.ic_check};
     }
 
     /** Each topic has a different two-node illustration: settings, search, speech, keys, devices, etc. */
