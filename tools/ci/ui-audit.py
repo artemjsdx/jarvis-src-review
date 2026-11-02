@@ -375,13 +375,18 @@ def visit_settings_page(pid):
     # only if the uiautomator tree exposes a precise label (avoid random tap on controls).
     if pid==GROUPS[group][0]:
         candidates=[n for n in getnodes(t) if
-            n.attrib.get("content-desc","").startswith(("Справка", "Подсказка", "Помощь"))
+            n.attrib.get("content-desc","").startswith(("Справка", "Подсказка", "Помощь", "Объяснение:"))
             or n.attrib.get("content-desc","") == "?"]
         if candidates:
             try:
                 x,y=center(candidates[0]);tap(x,y);wait(.55)
                 ht,hb=dump()
                 rec["snapshots"].append(capture("settings/"+pid,"help",ht,hb))
+                # Help is a paged guide. Verify that the forward navigation renders
+                # an actual second step rather than silently replacing the whole overlay.
+                if tap_text(ht,"Далее"):
+                    ht2,hb2=dump()
+                    rec["snapshots"].append(capture("settings/"+pid,"help-step2",ht2,hb2))
                 back()
             except Exception as ex:rec["warnings"].append("help-error:"+str(ex))
     if process:
