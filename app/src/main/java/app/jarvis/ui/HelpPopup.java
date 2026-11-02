@@ -31,7 +31,7 @@ public final class HelpPopup {
 
         // Visual legend: a compact miniature flow of the feature, not unrelated stock imagery.
         LinearLayout illustration = Ui.column(c);
-        body.addView(illustration, Ui.lpm(-1, -2, 0, Ui.dp(4), 0, Ui.dp(14)));
+        body.addView(illustration, Ui.lpm(-1, -2, 0, 4, 0, 14));
 
         TextView progress = Ui.text(c, "", Ui.CAPTION, Ui.P.text3);
         progress.setGravity(Gravity.CENTER);
@@ -39,7 +39,7 @@ public final class HelpPopup {
 
         LinearLayout progressDots = Ui.row(c);
         progressDots.setGravity(Gravity.CENTER);
-        body.addView(progressDots, Ui.lpm(-1, -2, 0, Ui.dp(8), 0, Ui.dp(12)));
+        body.addView(progressDots, Ui.lpm(-1, -2, 0, 8, 0, 12));
 
         TextView pageTitle = Ui.text(c, "", Ui.BODY);
         pageTitle.setTypeface(Ui.medium);
@@ -47,7 +47,7 @@ public final class HelpPopup {
         TextView explanation = Ui.text(c, "", Ui.BODY, Ui.P.text2);
         explanation.setSingleLine(false);
         explanation.setTextIsSelectable(true);
-        body.addView(explanation, Ui.lpm(-1, -2, 0, Ui.dp(9), 0, 0));
+        body.addView(explanation, Ui.lpm(-1, -2, 0, 9, 0, 0));
 
         final OverlayHost.Layer[] layer = new OverlayHost.Layer[1];
         LinearLayout actions = Ui.row(c);
@@ -59,7 +59,7 @@ public final class HelpPopup {
         next.setPadding(Ui.dp(12), Ui.dp(12), Ui.dp(12), Ui.dp(12));
         actions.addView(prev, new LinearLayout.LayoutParams(0, -2, 1));
         actions.addView(next, new LinearLayout.LayoutParams(0, -2, 1));
-        body.addView(actions, Ui.lpm(-1, -2, 0, Ui.dp(18), 0, 0));
+        body.addView(actions, Ui.lpm(-1, -2, 0, 18, 0, 0));
 
         final Runnable[] repaint = {null};
         repaint[0] = () -> {
@@ -82,7 +82,7 @@ public final class HelpPopup {
             String[] labels = diagramLabels(title, lower, n);
             int[] icons = diagramIcons(title, lower);
             visual.addView(node(c, labels[0], icons[0]), new LinearLayout.LayoutParams(0, Ui.dp(78), 1));
-            visual.addView(Ui.text(c, "→", Ui.BODY, Ui.P.accent), Ui.lpm(-2, -2, Ui.dp(6), 0, Ui.dp(6), 0));
+            visual.addView(Ui.text(c, "→", Ui.BODY, Ui.P.accent), Ui.lpm(-2, -2, 6, 0, 6, 0));
             visual.addView(node(c, labels[1], icons[1]), new LinearLayout.LayoutParams(0, Ui.dp(78), 1));
             illustration.addView(visual);
             progressDots.removeAllViews();
@@ -135,7 +135,7 @@ public final class HelpPopup {
         TextView label = Ui.text(c, text, Ui.CAPTION, Ui.P.text2);
         label.setGravity(Gravity.CENTER);
         label.setMaxLines(2);
-        box.addView(label, Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+        box.addView(label, Ui.lpm(-1, -2, 0, 6, 0, 0));
         return box;
     }
 
