@@ -150,9 +150,8 @@ public final class ExtraSearch {
             JSONObject body = new JSONObject();
             J.put(body, "objective", "Find reliable web sources for: " + request.text());
             J.put(body, "search_queries", new JSONArray().put(request.text()));
-            JSONObject settings = new JSONObject();
-            J.put(settings, "max_results", Math.max(1, Math.min(10, request.limit)));
-            J.put(body, "advanced_settings", settings);
+            J.put(body, "mode", "fast");
+            J.put(body, "max_chars_total", 3200);
             SearchBackends.Reply rep = SearchBackends.post(label(), "https://api.parallel.ai/v1/search",
                 SearchBackends.headers("Content-Type", "application/json", "x-api-key", key),
                 body.toString(), proxy, cancel);
