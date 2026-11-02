@@ -81,12 +81,17 @@ public final class SearchProvidersPage extends SettingsPage {
         mcp.addView(WrapButton.create(ctx, "Подключить Parallel MCP бесплатно",
             R.drawable.ic_plug, Ui.BTN_GLASS,
             () -> addSearchMcp("parallel-search", "Parallel Search MCP",
-                "https://search.parallel.ai/mcp")),
+                "https://search.parallel.ai/mcp", "web_search", "web_fetch")),
             Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(9)));
         mcp.addView(WrapButton.create(ctx, "Подключить Exa MCP бесплатно",
             R.drawable.ic_plug, Ui.BTN_GLASS,
             () -> addSearchMcp("exa-search", "Exa Search MCP",
-                "https://mcp.exa.ai/mcp")),
+                "https://mcp.exa.ai/mcp", "web_search_exa", "web_fetch_exa")),
+            Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(9)));
+        mcp.addView(WrapButton.create(ctx, "Подключить Firecrawl MCP бесплатно",
+            R.drawable.ic_plug, Ui.BTN_GLASS,
+            () -> addSearchMcp("firecrawl-search", "Firecrawl Search MCP",
+                "https://mcp.firecrawl.dev/v2/mcp", "firecrawl_search", "firecrawl_scrape")),
             Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(9)));
         mcp.addView(WrapButton.create(ctx, "Управлять MCP-серверами", R.drawable.ic_plug,
             Ui.BTN_GHOST, () -> host.navigate("settings/mcpsrv")));
@@ -174,7 +179,8 @@ public final class SearchProvidersPage extends SettingsPage {
     }
 
     /** Install a known hosted, keyless search MCP. Connection is actually tested before success is claimed. */
-    private void addSearchMcp(final String id, final String name, final String url) {
+    private void addSearchMcp(final String id, final String name, final String url,
+                              final String searchTool, final String fetchTool) {
         if (j.mcp.hub().config(id) != null) {
             host.overlays().toast(name + ": сервер уже сохранён; откройте MCP-серверы", 0);
             host.navigate("settings/mcpsrv");
@@ -194,13 +200,11 @@ public final class SearchProvidersPage extends SettingsPage {
                 cfg.exposure = ServerConfig.Exposure.AUTO;
                 cfg.confirmWrites = true;
                 // Only web-search and web-fetch tools may reach the model from these presets.
-                cfg.allow.add("web_search");
-                cfg.allow.add("web_fetch");
-                cfg.allow.add("web_search_exa");
-                cfg.allow.add("web_fetch_exa");
+                cfg.allow.add(searchTool);
+                cfg.allow.add(fetchTool);
                 j.mcp.hub().save(cfg, null);
                 List<String> names = j.mcp.hub().testServer(id, new CancelToken());
-                if (!names.contains("web_search") && !names.contains("web_search_exa"))
+                if (!names.contains(searchTool))
                     throw new IllegalStateException("Сервер подключился, но инструмента поиска в нём нет.");
                 success = true;
                 message = "MCP подключён, список инструментов получен: " + names.size() +
