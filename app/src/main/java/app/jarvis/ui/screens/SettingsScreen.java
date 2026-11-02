@@ -37,18 +37,18 @@ import java.util.List;
  */
 public class SettingsScreen extends Screen {
     /** Page ids in display order; the list groups them into cards below. */
-    private static final String[] PAGES = {"llm", "voice", "wake", "sounds", "music", "sandbox", "adb", "background", "appearance", "advanced", "diagnostics", "mcp", "mcpsrv", "telegram", "context", "triggers"};
+    private static final String[] PAGES = {"llm", "voice", "wake", "sounds", "music", "sandbox", "adb", "background", "appearance", "advanced", "diagnostics", "mcp", "mcpsrv", "telegram", "context", "triggers", "search"};
 
     private static final String[] TITLES = {"Языковая модель (LLM)", "Голос и озвучка", "Обращение и распознавание", "Звук и микрофон", "Музыка",
         "Песочница и инструменты", "ADB по Wi-Fi", "Фон и батарея", "Внешний вид", "Дополнительно", "Диагностика", "Мост для агента", "Внешние MCP-серверы", "Telegram-аккаунты",
-        "Контекст и промпт", "Фразы-триггеры"};
+        "Контекст и промпт", "Фразы-триггеры", "Дополнительный веб-поиск"};
 
     private static final int[] ICONS = {R.drawable.ic_bot, R.drawable.ic_voice, R.drawable.ic_ear, R.drawable.ic_volume, R.drawable.ic_music,
         R.drawable.ic_folder, R.drawable.ic_plug, R.drawable.ic_battery, R.drawable.ic_palette, R.drawable.ic_wrench, R.drawable.ic_activity, R.drawable.ic_plug,
-        R.drawable.ic_plug, R.drawable.ic_plug, R.drawable.ic_layers, R.drawable.ic_bolt};
+        R.drawable.ic_plug, R.drawable.ic_plug, R.drawable.ic_layers, R.drawable.ic_bolt, R.drawable.ic_search};
 
     /** Groups of page ids, each rendered as one card with a section title. */
-    private static final String[][] GROUPS = {{"llm", "context"}, {"music", "triggers", "sandbox"}, {"adb", "background"}, {"appearance"}, {"advanced", "diagnostics", "mcp", "mcpsrv", "telegram"}};
+    private static final String[][] GROUPS = {{"llm", "context", "search"}, {"music", "triggers", "sandbox"}, {"adb", "background"}, {"appearance"}, {"advanced", "diagnostics", "mcp", "mcpsrv", "telegram"}};
 
     private static final String[] GROUP_TITLES = {"Подключение", "Музыка и данные", "Система", "Интерфейс", "Обслуживание"};
 
@@ -70,6 +70,7 @@ public class SettingsScreen extends Screen {
         {"Аккаунты Telegram для агента: вход по коду, QR или импорт сессии. Права и подтверждения настраиваются здесь.", "Сервер Telegram запускается в Termux; приложение только управляет им."},
         {"Что уходит модели при каждом запросе: правила, память, инструменты, история, и сколько это занимает от окна контекста.", "Память, история и напоминания правил настраиваются здесь."},
         {"«Когда говорю X — сделай Y». Готовое действие выполняется сразу, без нейросети; инструкция — для модели, на секунду дольше."},
+        {"Новые источники поиска работают рядом с обычным поиском, а не вместо него.", "API-ключ хранится даже при выключении провайдера. Для активации нужен реальный тест."},
     };
 
     private FrameLayout root;
@@ -160,6 +161,7 @@ public class SettingsScreen extends Screen {
                 case "telegram": return app.jarvis.ui.settings.TelegramPage.statusLine(j);
                 case "context": return app.jarvis.ui.settings.ContextPage.statusLine(j);
                 case "triggers": return app.jarvis.ui.settings.TriggersPage.statusLine(j);
+                case "search": return app.jarvis.ui.settings.SearchProvidersPage.statusLine(j);
                 default: return "";
             }
         } catch (Throwable t) {
@@ -269,6 +271,7 @@ public class SettingsScreen extends Screen {
                 case "telegram": return new app.jarvis.ui.settings.TelegramPage(host);
                 case "context": return new app.jarvis.ui.settings.ContextPage(host);
                 case "triggers": return new app.jarvis.ui.settings.TriggersPage(host);
+                case "search": return new app.jarvis.ui.settings.SearchProvidersPage(host);
                 default: return null;
             }
         } catch (Throwable t) {
