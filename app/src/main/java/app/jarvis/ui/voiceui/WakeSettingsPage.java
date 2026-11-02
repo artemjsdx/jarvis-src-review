@@ -94,25 +94,25 @@ public class WakeSettingsPage extends SettingsPage {
         tx.addView(t);
         micNote = Ui.text(ctx, micProblemText(), Ui.CAPTION, Ui.P.text3);
         micNote.setMaxLines(3);
-        tx.addView(micNote, Ui.lpm(-2, -2, 0, Ui.dp(2), 0, 0));
+        tx.addView(micNote, Ui.lpm(-2, -2, 0, 2, 0, 0));
         row.addView(tx, Ui.lpw(1f));
         row.addView(Widgets.toggle(ctx, j.settings.getBool(Settings.WAKE_ENABLED, false), new Widgets.Toggle.Listener() { @Override public void onChanged(boolean on) {
             j.settings.setBool(Settings.WAKE_ENABLED, on);
             if (j.voice != null) j.voice.setWakeEnabled(on);
             micNote.setText(micProblemText());
-        } }), Ui.lpm(-2, -2, Ui.dp(8), 0, 0, 0));
+        } }), Ui.lpm(-2, -2, 8, 0, 0, 0));
         card.addView(row);
 
         Widgets.divide(card);
-        card.addView(VoiceUiKit.caption(ctx, "Фразы обращения (через запятую)"), Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(12), Ui.dp(16), 0));
+        card.addView(VoiceUiKit.caption(ctx, "Фразы обращения (через запятую)"), Ui.lpm(-2, -2, 16, 12, 16, 0));
         final EditText phrases = VoiceUiKit.saveField(ctx, DEFAULT_PHRASES, j.settings.get(Settings.WAKE_PHRASES), new VoiceUiKit.TextListener() { @Override public void on(String s) {
             String v = s.trim();
             if (v.isEmpty()) j.settings.remove(Settings.WAKE_PHRASES);
             else j.settings.set(Settings.WAKE_PHRASES, v);
         } });
-        card.addView(Widgets.fieldBox(ctx, phrases), Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(8), Ui.dp(16), 0));
+        card.addView(Widgets.fieldBox(ctx, phrases), Ui.lpm(-1, -2, 16, 8, 16, 0));
         card.addView(VoiceUiKit.note(ctx, "Пусто = список по умолчанию (серый текст). Распознавание уже рассчитано на типовые ослышки вроде «жарвис»."),
-            Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(4), Ui.dp(16), Ui.dp(12)));
+            Ui.lpm(-2, -2, 16, 4, 16, 12));
 
         Widgets.divide(card);
         LinearLayout aec = Ui.row(ctx);
@@ -120,12 +120,12 @@ public class WakeSettingsPage extends SettingsPage {
         TextView at = Ui.text(ctx, "Эхоподавление", Ui.BODY);
         at.setTypeface(Ui.medium);
         atx.addView(at);
-        atx.addView(VoiceUiKit.note(ctx, "Не отдавать в распознавание звук из динамика: ассистент не услышит сам себя."), Ui.lpm(-2, -2, 0, Ui.dp(2), 0, 0));
+        atx.addView(VoiceUiKit.note(ctx, "Не отдавать в распознавание звук из динамика: ассистент не услышит сам себя."), Ui.lpm(-2, -2, 0, 2, 0, 0));
         aec.addView(atx, Ui.lpw(1f));
         aec.addView(Widgets.toggle(ctx, j.settings.getBool(Settings.WAKE_AEC, true), new Widgets.Toggle.Listener() { @Override public void onChanged(boolean on) {
             j.settings.setBool(Settings.WAKE_AEC, on);
-        } }), Ui.lpm(-2, -2, Ui.dp(8), 0, 0, 0));
-        card.addView(aec, Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(12)));
+        } }), Ui.lpm(-2, -2, 8, 0, 0, 0));
+        card.addView(aec, Ui.lpm(-2, -2, 16, 12, 16, 12));
         return card;
     }
 
@@ -158,7 +158,7 @@ public class WakeSettingsPage extends SettingsPage {
                 j.settings.remove(Settings.WAKE_STT);
                 renderStt();
                 host.overlays().toast("Цепочка сброшена; подключите нужные API-ключи", 1);
-            }), Ui.lpm(-1, -2, 0, Ui.dp(12), 0, Ui.dp(8)));
+            }), Ui.lpm(-1, -2, 0, 12, 0, 8));
 
         List<SttProvider> providers = j.listen == null ? new ArrayList<SttProvider>() : sttList();
         List<String> chain = new ArrayList<>(j.settings.getList(Settings.STT_CHAIN));
@@ -203,8 +203,8 @@ public class WakeSettingsPage extends SettingsPage {
                 p.isConfigured() ? "доступен для проверки" : "не настроен",
                 p.isConfigured() ? Widgets.MUTED : Widgets.WARN));
             if (!p.info().official) flags.addView(Widgets.pill(ctx, "неофициальный", Widgets.WARN),
-                Ui.lpm(-2, -2, Ui.dp(8), 0, 0, 0));
-            card.addView(flags, Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+                Ui.lpm(-2, -2, 8, 0, 0, 0));
+            card.addView(flags, Ui.lpm(-1, -2, 0, 6, 0, 0));
 
             ProviderStatus status = p.lastStatus();
             String state = status == ProviderStatus.NEVER ? "Не проверялся" :
@@ -212,17 +212,17 @@ public class WakeSettingsPage extends SettingsPage {
             String destination = p.info().sendsDataTo;
             card.addView(VoiceUiKit.note(ctx, state +
                 (destination == null || destination.isEmpty() ? "" : " · " + destination)),
-                Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+                Ui.lpm(-1, -2, 0, 6, 0, 0));
 
             if (p.info().needsKey) {
                 String keyName = secretName(pid);
                 String hint = keyName.isEmpty() ? "ключ провайдера" : Secrets.mask(j.secrets.get(keyName));
                 card.addView(WrapButton.create(ctx, "API: " + hint, 0, Ui.BTN_GLASS,
-                    () -> editProviderCredentials(pid)), Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
+                    () -> editProviderCredentials(pid)), Ui.lpm(-1, -2, 0, 10, 0, 0));
                 if ("cloudflare-stt".equals(pid)) {
                     String account = j.settings.get("stt.cloudflare.accountId", "");
                     card.addView(WrapButton.create(ctx, "Account ID: " + (account.isEmpty() ? "не задан" : "задан"),
-                        0, Ui.BTN_GLASS, () -> editAccountId()), Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+                        0, Ui.BTN_GLASS, () -> editAccountId()), Ui.lpm(-1, -2, 0, 6, 0, 0));
                 }
             }
 
@@ -231,7 +231,7 @@ public class WakeSettingsPage extends SettingsPage {
                 ? "Включён · приоритет " + (priority + 1)
                 : "Не используется для команд", Ui.CAPTION, Ui.P.text2), Ui.lpw(1f));
             enabled.addView(Widgets.toggle(ctx, selected, on -> toggleStt(pid, on)));
-            card.addView(enabled, Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
+            card.addView(enabled, Ui.lpm(-1, -2, 0, 10, 0, 0));
 
             if (selected) {
                 LinearLayout rank = Ui.row(ctx);
@@ -241,7 +241,7 @@ public class WakeSettingsPage extends SettingsPage {
                     "Повысить приоритет " + p.info().name, () -> moveStt(pid, -1)));
                 if (priority < chain.size() - 1) rank.addView(Ui.iconButton(ctx, R.drawable.ic_arrow_down, 40, Ui.P.text2,
                     "Понизить приоритет " + p.info().name, () -> moveStt(pid, 1)));
-                card.addView(rank, Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
+                card.addView(rank, Ui.lpm(-1, -2, 0, 6, 0, 0));
             }
 
             LinearLayout tests = Ui.row(ctx);
@@ -250,7 +250,7 @@ public class WakeSettingsPage extends SettingsPage {
             tests.addView(Ui.space(ctx, 8, 1));
             tests.addView(WrapButton.create(ctx, "Образец", 0, Ui.BTN_GLASS,
                 () -> runSampleCheck(pid)), Ui.lpw(1f));
-            card.addView(tests, Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
+            card.addView(tests, Ui.lpm(-1, -2, 0, 10, 0, 0));
 
             card.addView(WrapButton.create(ctx,
                 pid.equals(wakeStt) ? "Выбран для облачной проверки «Джарвис»" :
@@ -258,15 +258,15 @@ public class WakeSettingsPage extends SettingsPage {
                 R.drawable.ic_star, Ui.BTN_GHOST, () -> {
                     j.settings.set(Settings.WAKE_STT, pid);
                     renderStt();
-                }), Ui.lpm(-1, -2, 0, Ui.dp(6), 0, 0));
-            sttHost.addView(card, Ui.lpm(-1, -2, 0, Ui.dp(12), 0, 0));
+                }), Ui.lpm(-1, -2, 0, 6, 0, 0));
+            sttHost.addView(card, Ui.lpm(-1, -2, 0, 12, 0, 0));
         }
 
-        sttHost.addView(checkHost, Ui.lpm(-1, -2, 0, Ui.dp(16), 0, 0));
+        sttHost.addView(checkHost, Ui.lpm(-1, -2, 0, 16, 0, 0));
         sttHost.addView(VoiceUiKit.note(ctx,
             "Микрофон: реальное распознавание вашей фразы. Образец: проверка без микрофона. " +
             "Для обращения «Джарвис» офлайн-Vosk выбирается отдельно на вкладке «Обращение»."),
-            Ui.lpm(-1, -2, 0, Ui.dp(10), 0, 0));
+            Ui.lpm(-1, -2, 0, 10, 0, 0));
     }
 
     private static String secretName(String id) {
@@ -446,14 +446,14 @@ public class WakeSettingsPage extends SettingsPage {
     private View languageCard() {
         LinearLayout card = Widgets.card(ctx);
         card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14));
-        card.addView(VoiceUiKit.caption(ctx, "Язык распознавания речи"), Ui.lpm(-2, -2, 0, 0, 0, Ui.dp(8)));
+        card.addView(VoiceUiKit.caption(ctx, "Язык распознавания речи"), Ui.lpm(-2, -2, 0, 0, 0, 8));
         final EditText lang = VoiceUiKit.saveField(ctx, "ru", j.settings.get(Settings.STT_LANGUAGE, "ru"), new VoiceUiKit.TextListener() { @Override public void on(String s) {
             String v = s.trim().toLowerCase(java.util.Locale.ROOT);
             if (v.isEmpty()) { j.settings.remove(Settings.STT_LANGUAGE); return; }
             j.settings.set(Settings.STT_LANGUAGE, v);
             host.overlays().toast("Язык: " + v, 0);
         } });
-        card.addView(Widgets.fieldBox(ctx, lang), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(8)));
+        card.addView(Widgets.fieldBox(ctx, lang), Ui.lpm(-1, -2, 0, 0, 0, 8));
         card.addView(VoiceUiKit.note(ctx, "Используется и обращением, и командами; провайдеры с фиксированным языком игнорируют это поле."));
         return card;
     }
@@ -467,7 +467,7 @@ public class WakeSettingsPage extends SettingsPage {
         String mode = j.settings.get(Settings.WAKE_ENGINE, WakeEngine.AUTO);
         for (int i = 0; i < values.length; i++) if (values[i].equals(mode)) selected = i;
         card.addView(VoiceUiKit.caption(ctx, "Распознавание обращения"),
-            Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(8)));
+            Ui.lpm(-1, -2, 0, 0, 0, 8));
         card.addView(Widgets.segmented(ctx,
             new String[]{"Авто", "Офлайн", "Облако"}, selected, index -> {
                 j.settings.set(Settings.WAKE_ENGINE, values[index]);
@@ -475,7 +475,7 @@ public class WakeSettingsPage extends SettingsPage {
             }));
         card.addView(VoiceUiKit.note(ctx,
             "Авто использует Vosk, если модель установлена; иначе облако. «Офлайн» не использует облако для обнаружения обращения."),
-            Ui.lpm(-1, -2, 0, Ui.dp(8), 0, Ui.dp(12)));
+            Ui.lpm(-1, -2, 0, 8, 0, 12));
 
         File modelDir = new File(ctx.getFilesDir(), "models/" + WakePack.MODEL_NAME);
         modelStatus = Ui.text(ctx, new WakePack(modelDir,
@@ -484,9 +484,9 @@ public class WakeSettingsPage extends SettingsPage {
             : "Офлайн-модель не установлена. Без неё «Авто» обращается к платным/ограниченным STT.",
             Ui.CAPTION, Ui.P.text2);
         modelStatus.setSingleLine(false);
-        card.addView(modelStatus, Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(8)));
+        card.addView(modelStatus, Ui.lpm(-1, -2, 0, 0, 0, 8));
         card.addView(WrapButton.create(ctx, "Установить офлайн-модель (46 МБ)", R.drawable.ic_download,
-            Ui.BTN_GLASS, () -> installModel()), Ui.lpm(-1, -2, 0, 0, 0, Ui.dp(12)));
+            Ui.BTN_GLASS, () -> installModel()), Ui.lpm(-1, -2, 0, 0, 0, 12));
 
         LinearLayout confirm = Ui.row(ctx);
         confirm.addView(Ui.text(ctx, "Подтверждать «Джарвис» через облако", Ui.CAPTION), Ui.lpw(1f));
@@ -494,7 +494,7 @@ public class WakeSettingsPage extends SettingsPage {
             on -> j.settings.setBool("wake.cloudConfirm", on)));
         card.addView(confirm);
         card.addView(VoiceUiKit.note(ctx, "Выключено по умолчанию: обнаруженное Vosk обращение срабатывает даже без кредитов OpenRouter."),
-            Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+            Ui.lpm(-1, -2, 0, 8, 0, 0));
         return card;
     }
 
