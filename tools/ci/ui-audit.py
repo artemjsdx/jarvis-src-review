@@ -80,13 +80,23 @@ results["device"] = {"resolution": [W,H], "abi": shell("getprop","ro.product.cpu
 def dump():
     global seq
     seq += 1
-    adb("shell","uiautomator","dump","/sdcard/jv-ui.xml",timeout=25)
-    b=adb("exec-out","cat","/sdcard/jv-ui.xml",timeout=20,binary=True)
-    try:
-        tree=ET.fromstring(b)
-    except Exception as ex:
-        raise RuntimeError("Invalid hierarchy xml: "+str(ex))
-    return tree,b
+    # Android's UIAutomator sometimes returns the shell error text or a partial
+    # XML file immediately after emulator boot. Retry transient dumps rather
+    # than treating an emulator readiness race as a product regression.
+    last_error = ""
+    for attempt in range(4):
+        try:
+            adb("shell","uiautomator","dump","/sdcard/jv-ui.xml",timeout=30)
+            b=adb("exec-out","cat","/sdcard/jv-ui.xml",timeout=20,binary=True)
+            tree=ET.fromstring(b)
+            if tree.tag != "hierarchy":
+                raise ValueError("unexpected hierarchy root: " + tree.tag)
+            return tree,b
+        except Exception as ex:
+            last_error = str(ex)
+            if attempt < 3:
+                wait(1.5 + attempt)
+    raise RuntimeError("UIAutomator hierarchy unavailable after four attempts: " + last_error)
 
 def getnodes(tree):
     return list(tree.iter("node"))
