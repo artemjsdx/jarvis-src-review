@@ -16,13 +16,14 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 GROUPS = {
-    "a": ["llm", "context"],
+    "a": ["llm", "context", "search"],
     "b": ["music", "triggers", "sandbox"],
     "c": ["adb", "background", "appearance", "advanced"],
     "d": ["diagnostics", "mcp", "mcpsrv", "telegram"]
 }
 TITLES = {
     "llm": "Языковая модель (LLM)",
+    "search": "Дополнительный веб-поиск",
     "context": "Контекст и промпт",
     "sounds": "Звук и микрофон",
     "music": "Музыка",
