@@ -12,6 +12,7 @@ import app.jarvis.core.web.SearchHit;
 import app.jarvis.core.web.SearchRequest;
 import app.jarvis.core.web.WebConfig;
 import app.jarvis.data.Secrets;
+import app.jarvis.data.Settings;
 import app.jarvis.ui.Dialogs;
 import app.jarvis.ui.HelpPopup;
 import app.jarvis.ui.Host;
@@ -146,7 +147,8 @@ public final class SearchProvidersPage extends SettingsPage {
 
     private boolean isVerifiedKey(ExtraSearch.Provider p) {
         String current = ExtraSearch.fingerprint(p.id, j.secrets.get(p.secret));
-        return !current.isEmpty() && current.equals(j.settings.get(ExtraSearch.keyChecked(p.id), ""));
+        return !current.isEmpty() && current.equals(j.settings.get(ExtraSearch.keyChecked(p.id), ""))
+            && System.currentTimeMillis() - parseLong(j.settings.get(ExtraSearch.keyCheckedAt(p.id), "")) < 7L*24*3600*1000;
     }
 
     private static long parseLong(String s) {
