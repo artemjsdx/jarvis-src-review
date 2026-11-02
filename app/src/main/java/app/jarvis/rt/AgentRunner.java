@@ -468,7 +468,7 @@ public final class AgentRunner {
         String mcpLine = j.mcp.promptLine();
         if (!mcpLine.isEmpty()) ex.append(mcpLine).append('\n');
         String extraWeb = ExtraSearch.agentSummary(j.settings::get, j.secrets::get);
-        if (!extraWeb.isEmpty()) ex.append(extraWeb).append('\\n');
+        if (!extraWeb.isEmpty()) ex.append(extraWeb).append('\n');
         i.extra = ex.toString();
         return i;
     }
