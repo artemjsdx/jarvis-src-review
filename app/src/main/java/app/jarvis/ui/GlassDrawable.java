@@ -49,10 +49,16 @@ public final class GlassDrawable extends Drawable {
         Ui.Pal p = Ui.P;
         // Keep a little translucency for backdrop blur, but screen-space accent
         // blobs may never read as an overlay ON TOP of a neutral card.
-        underlay.setColor(overlayFrost ? (p.dark ? 0x7624232C : 0x8CF6F5FA) :
-            (p.dark ? (strong ? 0xE124232C : 0xDB24232B) : 0xEAF6F5FA));
-        int top = strong ? Ui.alpha(p.glassTop, Math.min(1f, android.graphics.Color.alpha(p.glassTop) / 255f * 1.6f)) : p.glassTop;
-        int bot = strong ? Ui.alpha(p.glassBottom, Math.min(1f, android.graphics.Color.alpha(p.glassBottom) / 255f * 1.6f)) : p.glassBottom;
+        // Real background blur must remain visible through the card fill.
+        // Previously the 86-92% opaque underlay hid the frosted wallpaper almost completely.
+        underlay.setColor(overlayFrost ? (p.dark ? 0x5224232C : 0x6CF6F5FA) :
+            (p.dark ? (strong ? 0xAA24232C : 0x9224232B) : 0xA0F6F5FA));
+        float topOpacity = overlayFrost ? (p.dark ? 0.11f : 0.20f) :
+            (p.dark ? (strong ? 0.22f : 0.16f) : 0.25f);
+        float bottomOpacity = overlayFrost ? (p.dark ? 0.07f : 0.13f) :
+            (p.dark ? 0.09f : 0.18f);
+        int top = Ui.alpha(p.glassTop, topOpacity);
+        int bot = Ui.alpha(p.glassBottom, bottomOpacity);
         fill.setShader(new LinearGradient(0, b.top, 0, b.bottom, top, bot, Shader.TileMode.CLAMP));
         int hiC = glow != 0 ? glow : p.strokeHi;
         border.setShader(new LinearGradient(b.left, b.top, b.right, b.bottom, hiC, glow != 0 ? Ui.alpha(glow, 0.25f) : p.strokeLo, Shader.TileMode.CLAMP));
