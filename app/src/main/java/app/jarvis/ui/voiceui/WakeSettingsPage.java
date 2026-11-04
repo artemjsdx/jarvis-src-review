@@ -252,13 +252,22 @@ public class WakeSettingsPage extends SettingsPage {
                 () -> runSampleCheck(pid)), Ui.lpw(1f));
             card.addView(tests, Ui.lpm(-1, -2, 0, 10, 0, 0));
 
-            card.addView(WrapButton.create(ctx,
-                pid.equals(wakeStt) ? "Выбран для облачной проверки «Джарвис»" :
-                    "Использовать для проверки «Джарвис»",
-                R.drawable.ic_star, Ui.BTN_GHOST, () -> {
-                    j.settings.set(Settings.WAKE_STT, pid);
-                    renderStt();
-                }), Ui.lpm(-1, -2, 0, 6, 0, 0));
+            if (pid.equals(wakeStt)) {
+                // A selected wake provider needs a status, not another full-width
+                // button. Vosk is local and must never be labelled "cloud".
+                card.addView(VoiceUiKit.note(ctx,
+                    "Обращение «Джарвис»: " +
+                        ("vosk-local".equals(pid) ? "локальная проверка" : "выбран облачный сервис")),
+                    Ui.lpm(-1, -2, 0, 7, 0, 0));
+            } else {
+                card.addView(WrapButton.create(ctx,
+                    "vosk-local".equals(pid) ? "Выбрать для локального обращения" :
+                        "Использовать для проверки «Джарвис»",
+                    R.drawable.ic_star, Ui.BTN_GHOST, () -> {
+                        j.settings.set(Settings.WAKE_STT, pid);
+                        renderStt();
+                    }), Ui.lpm(-1, -2, 0, 6, 0, 0));
+            }
             sttHost.addView(card, Ui.lpm(-1, -2, 0, 12, 0, 0));
         }
 
