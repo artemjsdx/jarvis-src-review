@@ -188,7 +188,7 @@ public class WakeSettingsPage extends SettingsPage {
             final boolean selected = chain.contains(pid);
             final int priority = chain.indexOf(pid);
             LinearLayout card = Widgets.card(ctx);
-            card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(12));
+            card.setPadding(Ui.dp(16), Ui.dp(11), Ui.dp(16), Ui.dp(11));
 
             LinearLayout heading = Ui.row(ctx);
             TextView name = Ui.text(ctx, p.info().name, Ui.BODY);
@@ -209,10 +209,10 @@ public class WakeSettingsPage extends SettingsPage {
             ProviderStatus status = p.lastStatus();
             String state = status == ProviderStatus.NEVER ? "Не проверялся" :
                 status.ok ? "Последняя проверка прошла" : "Ошибка последней проверки";
-            String destination = p.info().sendsDataTo;
-            card.addView(VoiceUiKit.note(ctx, state +
-                (destination == null || destination.isEmpty() ? "" : " · " + destination)),
-                Ui.lpm(-1, -2, 0, 6, 0, 0));
+            // Privacy destination is available in the provider's detailed ? guide.
+            // Repeating the entire sentence on every card made STT unusably tall.
+            card.addView(VoiceUiKit.note(ctx, state),
+                Ui.lpm(-1, -2, 0, 4, 0, 0));
 
             if (p.info().needsKey) {
                 String keyName = secretName(pid);
