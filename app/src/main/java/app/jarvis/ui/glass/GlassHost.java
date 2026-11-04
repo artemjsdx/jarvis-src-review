@@ -52,6 +52,7 @@ public final class GlassHost extends FrameLayout {
     // UI-thread only. A static content tree needs one snapshot, not another full
     // software redraw every 40 ms while a glass overlay is visible.
     private boolean contentDirty = true;
+    private boolean modalBackdropBlur;
     private final Runnable recapture = new Runnable() { @Override public void run() { invalidate(); } };
 
     public GlassHost(Context c) {
@@ -97,6 +98,25 @@ public final class GlassHost extends FrameLayout {
 
     /** Dock, dialogs, toasts and floating buttons go here. */
     public FrameLayout overlay() { return overlay; }
+
+    /**
+     * A modal's scrim should defocus the entire scene, not merely tint it.
+     * Localized GlassSurface blur remains active inside the modal itself.
+     * This hardware RenderEffect is only attached while a dialog/sheet is visible.
+     */
+    public void setModalBackdropBlur(boolean wanted) {
+        boolean active = wanted && android.os.Build.VERSION.SDK_INT >= 31 && GlassLevel.blur();
+        if (active == modalBackdropBlur) return;
+        modalBackdropBlur = active;
+        if (android.os.Build.VERSION.SDK_INT >= 31) {
+            content.setRenderEffect(active
+                ? android.graphics.RenderEffect.createBlurEffect(
+                    Ui.dpf(12f), Ui.dpf(12f), android.graphics.Shader.TileMode.CLAMP)
+                : null);
+        }
+        contentDirty = true;
+        invalidate();
+    }
 
     /** The static wallpaper that content-layer glass blurs. It must not move or animate. */
     public void setBackdrop(View v) {
