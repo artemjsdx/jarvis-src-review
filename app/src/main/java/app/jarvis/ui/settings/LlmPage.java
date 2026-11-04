@@ -268,7 +268,8 @@ public class LlmPage extends SettingsPage {
             p.note.isEmpty() ? "Нет дополнительного описания провайдера." : p.note,
             p.verified == null || p.verified.isEmpty()
                 ? "Дата независимой проверки не указана."
-                : "Проверено: " + p.verified));
+                : "Проверено: " + p.verified,
+            "Кнопка «Проверить» делает реальный запрос: получает список моделей и короткий ответ. «Импорт» загружает ваши API-ключи из файла."));
         card.addView(accessHead, Ui.lpm(-1, -2, 16, 8, 16, 8));
 
         if (p.keyRequired || j.secrets.has("key." + pid)) {
@@ -313,16 +314,9 @@ public class LlmPage extends SettingsPage {
 
         Widgets.divide(card);
         checkHost = Ui.column(ctx);
-        checkHost.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(12));
+        checkHost.setPadding(Ui.dp(16), Ui.dp(9), Ui.dp(16), Ui.dp(11));
         renderCheckIdle();
         card.addView(checkHost);
-        Widgets.divide(card);
-        LinearLayout importRow = Ui.row(ctx);
-        importRow.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(14), Ui.dp(12));
-        importRow.addView(Ui.button(ctx, "Импорт ключей из файла", R.drawable.ic_upload, Ui.BTN_GHOST, new Runnable() { @Override public void run() {
-            host.pickDocument(screen(), REQ_IMPORT_KEYS, new String[]{"application/json", "text/plain"}, false);
-        } }));
-        card.addView(importRow);
         configHost.addView(card);
         configHost.addView(proxyCard(), Ui.lpm(-1, -2, 0, 14, 0, 0));
     }
@@ -393,8 +387,20 @@ public class LlmPage extends SettingsPage {
     // ------------------------------------------------------------------------------- connection check
     private void renderCheckIdle() {
         checkHost.removeAllViews();
-        checkHost.addView(Ui.button(ctx, "Проверить подключение", R.drawable.ic_activity, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runConnectionCheck(); } }));
-        checkHost.addView(PageUi.note(ctx, "Реальный запрос: список моделей и короткий тестовый ответ."), Ui.lpm(-2, -2, 0, 8, 0, 0));
+        LinearLayout actions = Ui.row(ctx);
+        View test = Ui.button(ctx, "Проверить", R.drawable.ic_activity, Ui.BTN_GLASS,
+            new Runnable() { @Override public void run() { runConnectionCheck(); } });
+        test.setContentDescription("Проверить подключение к языковой модели");
+        actions.addView(test, new LinearLayout.LayoutParams(0, -2, 1f));
+        actions.addView(Ui.space(ctx, 8, 1));
+        View importKeys = Ui.button(ctx, "Импорт", R.drawable.ic_upload, Ui.BTN_GHOST,
+            new Runnable() { @Override public void run() {
+                host.pickDocument(screen(), REQ_IMPORT_KEYS,
+                    new String[]{"application/json", "text/plain"}, false);
+            } });
+        importKeys.setContentDescription("Импорт API-ключей из файла");
+        actions.addView(importKeys, new LinearLayout.LayoutParams(0, -2, 1f));
+        checkHost.addView(actions);
     }
 
     /** Runs GET /models then one tiny streaming completion; also invoked from headless previews. */
