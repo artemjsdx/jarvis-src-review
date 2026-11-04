@@ -77,7 +77,8 @@ public final class HelpPopup {
                     n == steps.length - 1 ? "Что важно запомнить" : "Как это использовать");
             pageTitle.setText(heading);
             explanation.setText(line);
-            prev.setVisibility(n == 0 ? View.GONE : View.VISIBLE);
+            // Keep action columns fixed so the primary button never jumps sideways.
+            prev.setVisibility(n == 0 ? View.INVISIBLE : View.VISIBLE);
             next.setText(n == steps.length - 1 ? "Готово" : "Далее");
             illustration.removeAllViews();
 
@@ -98,15 +99,40 @@ public final class HelpPopup {
                     i == 0 ? 0 : Ui.dp(5), 0, 0, 0));
             }
         };
-        prev.setOnClickListener(v -> { if (current[0] > 0) { current[0]--; repaint[0].run(); animateStep(illustration, pageTitle, explanation, progress, progressDots); } });
-        next.setOnClickListener(v -> {
-            if (current[0] == steps.length - 1) {
-                h.overlays().dismiss(layer[0]);
-            } else {
-                current[0]++;
+        // Two-phase step transition: fade old diagram/text OUT, replace the
+        // content only once invisible, then fade the new step IN. Prevent
+        // rapid taps from interrupting an in-flight transition.
+        final boolean[] transitioning = {false};
+        final View[] animated = {illustration, pageTitle, explanation, progress, progressDots};
+        final java.util.function.IntConsumer navigateStep = delta -> {
+            if (transitioning[0]) return;
+            final int target = current[0] + delta;
+            if (target < 0 || target >= steps.length) return;
+            long outMs = Motion.fade(130);
+            if (outMs == 0) {
+                current[0] = target;
                 repaint[0].run();
-                animateStep(illustration, pageTitle, explanation, progress, progressDots);
+                return;
             }
+            transitioning[0] = true;
+            for (View part : animated) {
+                part.animate().cancel();
+                part.animate().alpha(0f)
+                    .translationY(Motion.mode() == Motion.FULL ? -Ui.dp(6) : 0f)
+                    .setDuration(outMs).setInterpolator(Motion.ACCELERATE).start();
+            }
+            illustration.animate().withEndAction(() -> {
+                current[0] = target;
+                repaint[0].run();
+                animateStep(animated);
+                transitioning[0] = false;
+            }).start();
+        };
+        prev.setOnClickListener(v -> navigateStep.accept(-1));
+        next.setOnClickListener(v -> {
+            if (transitioning[0]) return;
+            if (current[0] == steps.length - 1) h.overlays().dismiss(layer[0]);
+            else navigateStep.accept(1);
         });
         repaint[0].run();
         layer[0] = Dialogs.sheet(h, title, body, true);
