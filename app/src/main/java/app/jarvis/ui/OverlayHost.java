@@ -18,6 +18,7 @@ import android.widget.TextView;
 import app.jarvis.R;
 import app.jarvis.ui.motion.Motion;
 import app.jarvis.ui.glass.Glass;
+import app.jarvis.ui.glass.GlassHost;
 import app.jarvis.ui.glass.GlassLevel;
 import java.util.ArrayList;
 
@@ -98,6 +99,8 @@ public final class OverlayHost extends FrameLayout {
         l.panel = panel;
         addView(panel, lp);
         stack.add(l);
+        GlassHost glassHost = Glass.hostOf(this);
+        if (glassHost != null) glassHost.setModalBackdropBlur(true);
 
         l.scrim.animate().alpha(1f).setDuration(Motion.fade(Motion.D_BASE)).start();
         if (sheet) {
@@ -165,6 +168,8 @@ public final class OverlayHost extends FrameLayout {
             @Override public void run() {
                 removeView(l.panel);
                 removeView(l.scrim);
+                GlassHost glassHost = Glass.hostOf(OverlayHost.this);
+                if (glassHost != null) glassHost.setModalBackdropBlur(!stack.isEmpty());
                 if (l.onDismiss != null) l.onDismiss.run();
             }
         });
