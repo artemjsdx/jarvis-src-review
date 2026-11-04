@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import app.jarvis.ui.Ui;
+import app.jarvis.ui.OverlayHost;
 import java.util.ArrayList;
 
 /**
@@ -109,10 +110,18 @@ public final class GlassHost extends FrameLayout {
         if (active == modalBackdropBlur) return;
         modalBackdropBlur = active;
         if (android.os.Build.VERSION.SDK_INT >= 31) {
-            content.setRenderEffect(active
+            android.graphics.RenderEffect effect = active
                 ? android.graphics.RenderEffect.createBlurEffect(
                     Ui.dpf(12f), Ui.dpf(12f), android.graphics.Shader.TileMode.CLAMP)
-                : null);
+                : null;
+            content.setRenderEffect(effect);
+            // The dock is a separate overlay sibling, outside the content layer.
+            // Without this, sharp dock glyphs remain visible THROUGH the help
+            // sheet even though the underlying page is correctly blurred.
+            for (int i = 0; i < overlay.getChildCount(); i++) {
+                View child = overlay.getChildAt(i);
+                if (!(child instanceof OverlayHost)) child.setRenderEffect(effect);
+            }
         }
         contentDirty = true;
         invalidate();
