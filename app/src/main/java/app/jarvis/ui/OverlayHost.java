@@ -62,7 +62,7 @@ public final class OverlayHost extends FrameLayout {
         // THROUGH dialog content. Use an opaque-enough fallback in that case.
         boolean blurred = GlassLevel.blur();
         Drawable base = Ui.rect(blurred ?
-            (Ui.P.dark ? 0x58121019 : 0x73FBFAFF) :
+            (Ui.P.dark ? 0x3A121019 : 0x60FBFAFF) :
             (Ui.P.dark ? 0xDF121019 : 0xEAFBFAFF), r);
         return new LayerDrawable(new Drawable[]{base, new GlassDrawable(r, true).overlayFrost()});
     }
