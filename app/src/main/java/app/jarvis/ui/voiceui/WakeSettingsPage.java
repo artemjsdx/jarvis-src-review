@@ -58,7 +58,10 @@ public class WakeSettingsPage extends SettingsPage {
         ScrollView sv = Ui.scroll(ctx);
         sv.setFillViewport(true);
         content = Ui.column(ctx);
-        content.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(24));
+        // Voice Studio already supplies 16dp outer margins. Avoid nesting a second
+        // 16dp inset that shrinks every STT card and crowds its controls.
+        int horizontal = panel == Panel.BOTH ? Ui.dp(16) : 0;
+        content.setPadding(horizontal, Ui.dp(8), horizontal, Ui.dp(24));
         if (panel != Panel.RECOGNITION) {
             content.addView(Widgets.sectionTitle(ctx, "Слово «Джарвис»"));
             content.addView(wakeCard());
@@ -69,9 +72,7 @@ public class WakeSettingsPage extends SettingsPage {
         }
         if (panel != Panel.WAKE) {
             content.addView(Widgets.sectionTitle(ctx, "Кто превращает голос в текст (STT)"));
-            content.addView(VoiceUiKit.note(ctx,
-                "STT не зависит от DeepSeek и озвучки. Каждый сервис использует собственный ключ и лимиты. " +
-                "OpenRouter здесь не является языковой моделью."));
+            // The brief STT explanation lives in renderStt(), not duplicated above it.
             sttHost = Ui.column(ctx);
             content.addView(sttHost);
             renderStt();
@@ -142,8 +143,7 @@ public class WakeSettingsPage extends SettingsPage {
         checkHost = Ui.column(ctx);
 
         sttHost.addView(VoiceUiKit.note(ctx,
-            "Распознавание (STT) превращает вашу речь в текст перед отправкой в DeepSeek. " +
-            "Оно отдельно от модели LLM и от голоса озвучки. Включайте только нужные сервисы."));
+            "Речь → текст. Распознавание отдельно от LLM и озвучки; каждый сервис имеет собственные ключи и лимиты."));
 
         sttHost.addView(WrapButton.create(ctx, "Сбросить на бесплатную цепочку",
             0, Ui.BTN_GLASS, () -> {
