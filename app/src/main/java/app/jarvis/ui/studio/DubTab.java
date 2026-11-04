@@ -192,7 +192,7 @@ public class DubTab {
 
         View build() {
             LinearLayout card = Widgets.card(ctx);
-            card.setPadding(Ui.dp(16), Ui.dp(16), Ui.dp(16), Ui.dp(18));
+            card.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(14));
 
             LinearLayout head = Ui.row(ctx);
             TextView name = Ui.text(ctx, info.name, Ui.BODY);
@@ -204,7 +204,7 @@ public class DubTab {
             LinearLayout badges = Ui.row(ctx);
             badges.addView(Widgets.pill(ctx, StudioKit.officialLabel(info),
                 info.official ? Widgets.MUTED : Widgets.WARN));
-            card.addView(badges, Ui.lpm(-1, -2, 0, 8, 0, 0));
+            card.addView(badges, Ui.lpm(-1, -2, 0, 6, 0, 0));
 
             String inChain = chainPosition();
             if (!inChain.isEmpty()) {
