@@ -67,7 +67,7 @@ public final class GenerationCard {
     }
 
     private void divide(LinearLayout pad) {
-        pad.addView(Ui.divider(c), Ui.lpm(-1, 1, 0, Ui.dp(12), 0, Ui.dp(2)));
+        pad.addView(Ui.divider(c), Ui.lpm(-1, 1, 0, 12, 0, 2));
     }
 
     private LinearLayout head(String title, String help) {
@@ -83,7 +83,7 @@ public final class GenerationCard {
 
     private void reasoning(LinearLayout pad) {
         pad.addView(head("Уровень рассуждений", "Сколько модель думает перед ответом. Доступные уровни берутся из описания модели у провайдера. "
-            + "Уровень, которого модель не принимает, не отправляется, а выбирается «Авто»."), Ui.lpm(-1, -2, 0, 6, 0, Ui.dp(6)));
+            + "Уровень, которого модель не принимает, не отправляется, а выбирается «Авто»."), Ui.lpm(-1, -2, 0, 6, 0, 6));
         final String selected = j.settings.get(Settings.LLM_REASONING, "low");
         final TextView[] cells = new TextView[LEVEL_VALUES.length];
         CapChips.Flow grid = new CapChips.Flow(c);
@@ -258,7 +258,7 @@ public final class GenerationCard {
                 int n = Math.round(v);
                 val.setText(n + " тыс. символов истории");
                 j.settings.set(Settings.LLM_CONTEXT_CHARS, String.valueOf(n * 1000));
-            } }), Ui.lpm(-1, 32, 0, Ui.dp(2), 0, 0));
+            } }), Ui.lpm(-1, 32, 0, 2, 0, 0));
         }
     }
 
@@ -287,7 +287,7 @@ public final class GenerationCard {
                 int n = Math.round(v);
                 val.setText(n + " шагов");
                 j.settings.set(Settings.LLM_MAX_STEPS, String.valueOf(n));
-            } }), Ui.lpm(-1, 32, 0, Ui.dp(2), 0, 0));
+            } }), Ui.lpm(-1, 32, 0, 2, 0, 0));
         }
     }
 }

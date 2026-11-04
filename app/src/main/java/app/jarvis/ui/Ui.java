@@ -309,7 +309,7 @@ public final class Ui {
         TextView v = text(c, title.toString().toUpperCase(java.util.Locale.ROOT), CAPTION, P.text3);
         v.setTypeface(medium);
         v.setLetterSpacing(0.08f);
-        v.setPadding(dp(S.SM - 2), dp(S.LG + S.XS), 0, dp(S.SM));
+        v.setPadding(dp(S.SM - 2), dp(S.LG), 0, dp(S.SM));
         return v;
     }
 

@@ -13,6 +13,7 @@ import app.jarvis.core.agent.AgentCommentPolicy;
 import app.jarvis.core.agent.DirectCommands;
 import app.jarvis.core.agent.PromptReport;
 import app.jarvis.core.agent.Prompts;
+import app.jarvis.core.web.ExtraSearch;
 import app.jarvis.core.agent.SpeechStreamer;
 import app.jarvis.core.agent.StepLimit;
 import app.jarvis.core.agent.ToolRouter;
@@ -466,6 +467,8 @@ public final class AgentRunner {
             ex.append("Озвучка ElevenLabs v3/v4 понимает теги эмоций в квадратных скобках по-английски: не больше одного на фразу, например [whispers] или [sighs]; используй редко.\n");
         String mcpLine = j.mcp.promptLine();
         if (!mcpLine.isEmpty()) ex.append(mcpLine).append('\n');
+        String extraWeb = ExtraSearch.agentSummary(j.settings::get, j.secrets::get);
+        if (!extraWeb.isEmpty()) ex.append(extraWeb).append('\n');
         i.extra = ex.toString();
         return i;
     }

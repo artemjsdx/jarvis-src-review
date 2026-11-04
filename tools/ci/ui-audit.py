@@ -16,13 +16,14 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 GROUPS = {
-    "a": ["llm", "context"],
+    "a": ["llm", "context", "search"],
     "b": ["music", "triggers", "sandbox"],
     "c": ["adb", "background", "appearance", "advanced"],
     "d": ["diagnostics", "mcp", "mcpsrv", "telegram"]
 }
 TITLES = {
     "llm": "Языковая модель (LLM)",
+    "search": "Дополнительный веб-поиск",
     "context": "Контекст и промпт",
     "sounds": "Звук и микрофон",
     "music": "Музыка",
@@ -79,13 +80,23 @@ results["device"] = {"resolution": [W,H], "abi": shell("getprop","ro.product.cpu
 def dump():
     global seq
     seq += 1
-    adb("shell","uiautomator","dump","/sdcard/jv-ui.xml",timeout=25)
-    b=adb("exec-out","cat","/sdcard/jv-ui.xml",timeout=20,binary=True)
-    try:
-        tree=ET.fromstring(b)
-    except Exception as ex:
-        raise RuntimeError("Invalid hierarchy xml: "+str(ex))
-    return tree,b
+    # Android's UIAutomator sometimes returns the shell error text or a partial
+    # XML file immediately after emulator boot. Retry transient dumps rather
+    # than treating an emulator readiness race as a product regression.
+    last_error = ""
+    for attempt in range(4):
+        try:
+            adb("shell","uiautomator","dump","/sdcard/jv-ui.xml",timeout=30)
+            b=adb("exec-out","cat","/sdcard/jv-ui.xml",timeout=20,binary=True)
+            tree=ET.fromstring(b)
+            if tree.tag != "hierarchy":
+                raise ValueError("unexpected hierarchy root: " + tree.tag)
+            return tree,b
+        except Exception as ex:
+            last_error = str(ex)
+            if attempt < 3:
+                wait(1.5 + attempt)
+    raise RuntimeError("UIAutomator hierarchy unavailable after four attempts: " + last_error)
 
 def getnodes(tree):
     return list(tree.iter("node"))
@@ -374,13 +385,18 @@ def visit_settings_page(pid):
     # only if the uiautomator tree exposes a precise label (avoid random tap on controls).
     if pid==GROUPS[group][0]:
         candidates=[n for n in getnodes(t) if
-            n.attrib.get("content-desc","").startswith(("Справка", "Подсказка", "Помощь"))
+            n.attrib.get("content-desc","").startswith(("Справка", "Подсказка", "Помощь", "Объяснение:"))
             or n.attrib.get("content-desc","") == "?"]
         if candidates:
             try:
                 x,y=center(candidates[0]);tap(x,y);wait(.55)
                 ht,hb=dump()
                 rec["snapshots"].append(capture("settings/"+pid,"help",ht,hb))
+                # Help is a paged guide. Verify that the forward navigation renders
+                # an actual second step rather than silently replacing the whole overlay.
+                if tap_text(ht,"Далее"):
+                    ht2,hb2=dump()
+                    rec["snapshots"].append(capture("settings/"+pid,"help-step2",ht2,hb2))
                 back()
             except Exception as ex:rec["warnings"].append("help-error:"+str(ex))
     if process:

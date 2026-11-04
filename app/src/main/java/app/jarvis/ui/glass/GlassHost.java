@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import app.jarvis.ui.Ui;
+import app.jarvis.ui.OverlayHost;
 import java.util.ArrayList;
 
 /**
@@ -29,6 +30,8 @@ public final class GlassHost extends FrameLayout {
     }
 
     private static final float BLUR_DP = 16f;
+    // Text and controls beneath floating sheets must dissolve rather than remain legible.
+    private static final float OVERLAY_BLUR_DP = 24f;
     private static final float CAPTURE_MARGIN_DP = 40f;
     private static final long THROTTLE_FULL_MS = 40, THROTTLE_REDUCED_MS = 120;
     private static final float SCALE_FULL = 0.25f, SCALE_REDUCED = 0.16f;
@@ -50,6 +53,7 @@ public final class GlassHost extends FrameLayout {
     // UI-thread only. A static content tree needs one snapshot, not another full
     // software redraw every 40 ms while a glass overlay is visible.
     private boolean contentDirty = true;
+    private boolean modalBackdropBlur;
     private final Runnable recapture = new Runnable() { @Override public void run() { invalidate(); } };
 
     public GlassHost(Context c) {
@@ -95,6 +99,33 @@ public final class GlassHost extends FrameLayout {
 
     /** Dock, dialogs, toasts and floating buttons go here. */
     public FrameLayout overlay() { return overlay; }
+
+    /**
+     * A modal's scrim should defocus the entire scene, not merely tint it.
+     * Localized GlassSurface blur remains active inside the modal itself.
+     * This hardware RenderEffect is only attached while a dialog/sheet is visible.
+     */
+    public void setModalBackdropBlur(boolean wanted) {
+        boolean active = wanted && android.os.Build.VERSION.SDK_INT >= 31 && GlassLevel.blur();
+        if (active == modalBackdropBlur) return;
+        modalBackdropBlur = active;
+        if (android.os.Build.VERSION.SDK_INT >= 31) {
+            android.graphics.RenderEffect effect = active
+                ? android.graphics.RenderEffect.createBlurEffect(
+                    Ui.dpf(12f), Ui.dpf(12f), android.graphics.Shader.TileMode.CLAMP)
+                : null;
+            content.setRenderEffect(effect);
+            // The dock is a separate overlay sibling, outside the content layer.
+            // Without this, sharp dock glyphs remain visible THROUGH the help
+            // sheet even though the underlying page is correctly blurred.
+            for (int i = 0; i < overlay.getChildCount(); i++) {
+                View child = overlay.getChildAt(i);
+                if (!(child instanceof OverlayHost)) child.setRenderEffect(effect);
+            }
+        }
+        contentDirty = true;
+        invalidate();
+    }
 
     /** The static wallpaper that content-layer glass blurs. It must not move or animate. */
     public void setBackdrop(View v) {
@@ -198,7 +229,7 @@ public final class GlassHost extends FrameLayout {
         if (needCapture && (now - lastCaptureMs >= throttle || !blur.recorded())) {
             lastCaptureMs = now;
             contentDirty = false;
-            blur.capture(content, region, Ui.dpf(BLUR_DP));
+            blur.capture(content, region, Ui.dpf(OVERLAY_BLUR_DP));
         } else if (needCapture) {
             // Only schedule if the content actually changed; constant overlay
             // animations must not force a full software capture each frame.

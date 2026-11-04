@@ -1,18 +1,19 @@
 package app.jarvis.ui.settings.llm;
 
 import android.view.View;
-import app.jarvis.R;
-import app.jarvis.ui.Dialogs;
+import app.jarvis.ui.HelpPopup;
 import app.jarvis.ui.Host;
-import app.jarvis.ui.Ui;
 
-/** A small "?" button that explains a setting in a plain dialog. */
+/** All LLM settings question marks use the same illustrated, paginated guide as the rest of Jarvis. */
 public final class Help {
     private Help() { }
 
     public static View button(final Host host, final String title, final String text) {
-        return Ui.iconButton(host.context(), R.drawable.ic_help, 28, Ui.P.text3, new Runnable() { @Override public void run() {
-            Dialogs.info(host, title, text);
-        } });
+        String body = text == null ? "" : text.trim();
+        // Existing LLM descriptions are individually authored. Split long paragraphs into steps
+        // rather than displaying them in an unscrollable plain dialog.
+        String[] pages = body.isEmpty() ? new String[]{"Настройка: " + title}
+            : body.split("\\n\\s*\\n+");
+        return HelpPopup.button(host.context(), host, title, pages);
     }
 }

@@ -96,6 +96,7 @@ public class McpServersPage extends SettingsPage {
         if (content == null) return;
         lastSignature = signature();
         if (openId == null) renderList(); else renderDetail(openId);
+        refreshSectionHelps();
     }
 
     private static String clip(String s, int max) {

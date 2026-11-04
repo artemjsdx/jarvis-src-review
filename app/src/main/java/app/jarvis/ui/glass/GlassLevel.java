@@ -3,7 +3,7 @@ package app.jarvis.ui.glass;
 import android.os.Build;
 
 /**
- * Glass quality, from the user's setting {@code ui.glass}. AUTO starts at FULL and steps down (FULL, REDUCED, OFF) when the
+ * Glass quality, from the user's setting {@code ui.glass}. AUTO starts at FULL and steps down to REDUCED (never silently OFF) when the
  * measured frame time of glass animations stays above budget (see {@link FrameGovernor}).
  */
 public enum GlassLevel {
@@ -48,8 +48,7 @@ public enum GlassLevel {
     static boolean stepDown() {
         GlassLevel now = automatic;
         if (now == FULL) automatic = REDUCED;
-        else if (now == REDUCED) automatic = OFF;
-        else return false;
+        else return false; // Never silently remove backdrop blur from glass cards.
         return true;
     }
 }

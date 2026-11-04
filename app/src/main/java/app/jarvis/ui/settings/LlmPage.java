@@ -58,6 +58,11 @@ public class LlmPage extends SettingsPage {
     private LinearLayout recentHost;
     private LinearLayout generationHost;
     private LinearLayout fallbackCard;
+    private LinearLayout fallbackOptions;
+    private TextView fallbackSummary;
+    private boolean fallbackExpanded;
+    private boolean keyEditorExpanded;
+    private boolean proxyExpanded;
     private boolean checking;
     private final CancelToken checkCancel = new CancelToken();
     private final ModelCatalog.Listener catalogListener = new ModelCatalog.Listener() {
@@ -72,7 +77,12 @@ public class LlmPage extends SettingsPage {
 
     @Override public String title() { return "Языковая модель (LLM)"; }
 
-    @Override public void onShow() { j.catalog.addListener(catalogListener); }
+    @Override public void onShow() {
+        j.catalog.addListener(catalogListener);
+        // A different screen may have changed window flags after Activity.onResume.
+        // API credentials are masked in the UI; diagnostics screenshots remain allowed.
+        host.activity().getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE);
+    }
 
     @Override public void onHide() { j.catalog.removeListener(catalogListener); }
 
@@ -83,10 +93,10 @@ public class LlmPage extends SettingsPage {
         content.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(24));
         content.addView(Widgets.sectionTitle(ctx, "Провайдер"));
         providerHost = Ui.column(ctx);
-        content.addView(providerHost);
+        content.addView(providerHost, Ui.lpm(-1, -2, 0, 0, 0, 0));
         rebuildProviderRow();
         configHost = Ui.column(ctx);
-        content.addView(configHost);
+        content.addView(configHost, Ui.lpm(-1, -2, 0, 12, 0, 0));
         rebuildConfig();
         content.addView(Widgets.sectionTitle(ctx, "Модель"));
         modelCardHost = Ui.column(ctx);
@@ -121,7 +131,7 @@ public class LlmPage extends SettingsPage {
         ProviderPreset p = Presets.get(j.providerId());
         LinearLayout card = Widgets.card(ctx);
         card.addView(Widgets.row(ctx, 0, p == null ? "Провайдер не выбран" : p.name,
-            p == null || p.note.isEmpty() ? "Нажмите, чтобы выбрать из списка" : p.note,
+            p == null ? "Выберите подключение" : "Нажмите, чтобы сменить провайдера",
             keyBadge(p), new Runnable() { @Override public void run() { openProviders(); } }));
         providerHost.addView(card);
     }
@@ -147,30 +157,30 @@ public class LlmPage extends SettingsPage {
         ModelCaps caps = j.catalog.caps(pid, model);
         LinearLayout card = Widgets.card(ctx);
         LinearLayout head = Ui.column(ctx);
-        head.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), 0);
+        head.setPadding(Ui.dp(16), Ui.dp(10), Ui.dp(16), 0);
         TextView t = Ui.text(ctx, model.isEmpty() ? "Модель не выбрана" : model, Ui.BODY);
         t.setTypeface(Ui.mono);
         t.setSingleLine(true);
         t.setEllipsize(TextUtils.TruncateAt.MIDDLE);
         head.addView(t);
-        head.addView(Ui.text(ctx, (p == null ? pid : p.name) + " · " + sourceLabel(caps), Ui.CAPTION, Ui.P.text3), Ui.lpm(-2, -2, 0, Ui.dp(2), 0, 0));
+        head.addView(Ui.text(ctx, (p == null ? pid : p.name) + " · " + sourceLabel(caps), Ui.CAPTION, Ui.P.text3), Ui.lpm(-2, -2, 0, 2, 0, 0));
         card.addView(head);
         if (!model.isEmpty()) {
-            card.addView(CapChips.chips(ctx, caps), Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(8), Ui.dp(16), 0));
+            card.addView(CapChips.chips(ctx, caps), Ui.lpm(-1, -2, 16, 6, 16, 0));
             TextView price = CapChips.priceLine(ctx, caps);
-            if (price != null) card.addView(price, Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(6), Ui.dp(16), 0));
+            if (price != null) card.addView(price, Ui.lpm(-1, -2, 16, 6, 16, 0));
         }
         ModelCatalog.Status st = j.catalog.status(pid);
         card.addView(Ui.text(ctx, statusLine(st), Ui.CAPTION, st.lastError.isEmpty() ? Ui.P.text3 : Ui.P.warn),
-            Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(8), Ui.dp(16), 0));
+            Ui.lpm(-1, -2, 16, 6, 16, 0));
         Widgets.divide(card);
         LinearLayout btns = Ui.row(ctx);
-        btns.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(14), Ui.dp(12));
-        btns.addView(Ui.button(ctx, "Выбрать модель", R.drawable.ic_edit, Ui.BTN_PRIMARY, new Runnable() { @Override public void run() {
+        btns.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(14), Ui.dp(10));
+        btns.addView(Ui.button(ctx, "Сменить модель", R.drawable.ic_edit, Ui.BTN_PRIMARY, new Runnable() { @Override public void run() {
             ModelBrowser.open(host, pid, new Runnable() { @Override public void run() { rebuildAll(); } });
         } }));
         btns.addView(Ui.space(ctx, 8, 1));
-        btns.addView(Ui.button(ctx, "Обновить список", R.drawable.ic_refresh, Ui.BTN_GLASS, new Runnable() { @Override public void run() {
+        btns.addView(Ui.button(ctx, "Обновить", R.drawable.ic_refresh, Ui.BTN_GLASS, new Runnable() { @Override public void run() {
             j.catalog.refresh(pid);
         } }));
         card.addView(btns);
@@ -227,7 +237,7 @@ public class LlmPage extends SettingsPage {
             tile.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
                 ModelSwitch.request(host, parts[0], parts[1], new Runnable() { @Override public void run() { rebuildAll(); } });
             } });
-            strip.addView(tile, Ui.lpm(-2, -2, 0, 0, Ui.dp(8), 0));
+            strip.addView(tile, Ui.lpm(-2, -2, 0, 0, 8, 0));
         }
         sv.addView(strip);
         recentHost.addView(sv);
@@ -258,12 +268,44 @@ public class LlmPage extends SettingsPage {
             p.note.isEmpty() ? "Нет дополнительного описания провайдера." : p.note,
             p.verified == null || p.verified.isEmpty()
                 ? "Дата независимой проверки не указана."
-                : "Проверено: " + p.verified));
-        card.addView(accessHead, Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(8)));
+                : "Проверено: " + p.verified,
+            "Кнопка «Проверить» делает реальный запрос: получает список моделей и короткий ответ. «Импорт» загружает ваши API-ключи из файла."));
+        card.addView(accessHead, Ui.lpm(-1, -2, 16, 8, 16, 8));
 
         if (p.keyRequired || j.secrets.has("key." + pid)) {
             Widgets.divide(card);
-            card.addView(new KeyBlock(host, p, new Runnable() { @Override public void run() { rebuildProviderRow(); } }).view());
+            LinearLayout keyRow = Ui.row(ctx);
+            keyRow.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(14), Ui.dp(8));
+            TextView keyLabel = Ui.text(ctx,
+                j.secrets.has("key." + pid) ? "API-ключ сохранён" : "API-ключ не задан",
+                Ui.BODY, j.secrets.has("key." + pid) ? Ui.P.text2 : Ui.P.warn);
+            keyRow.addView(keyLabel, Ui.lpw(1f));
+            TextView keyAction = Ui.text(ctx, keyEditorExpanded ? "Свернуть" : "Настроить", Ui.CAPTION, Ui.P.accent);
+            keyAction.setGravity(Gravity.CENTER);
+            keyAction.setMinHeight(Ui.dp(40));
+            keyRow.addView(keyAction);
+            keyRow.setClickable(true);
+            keyRow.setFocusable(true);
+            keyRow.setContentDescription("Управление API-ключом провайдера. " + keyLabel.getText());
+            final LinearLayout editor = Ui.column(ctx);
+            editor.setVisibility(keyEditorExpanded ? View.VISIBLE : View.GONE);
+            if (keyEditorExpanded) editor.addView(
+                new KeyBlock(host, p, new Runnable() { @Override public void run() {
+                    rebuildProviderRow();
+                    keyLabel.setText(j.secrets.has("key." + pid) ? "API-ключ сохранён" : "API-ключ не задан");
+                } }).view());
+            keyRow.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
+                keyEditorExpanded = !keyEditorExpanded;
+                keyAction.setText(keyEditorExpanded ? "Свернуть" : "Настроить");
+                if (keyEditorExpanded && editor.getChildCount() == 0) editor.addView(
+                    new KeyBlock(host, p, new Runnable() { @Override public void run() {
+                        rebuildProviderRow();
+                        keyLabel.setText(j.secrets.has("key." + pid) ? "API-ключ сохранён" : "API-ключ не задан");
+                    } }).view());
+                editor.setVisibility(keyEditorExpanded ? View.VISIBLE : View.GONE);
+            } });
+            card.addView(keyRow);
+            card.addView(editor);
         }
         if (pid.equals("custom")) {
             Widgets.divide(card);
@@ -272,18 +314,11 @@ public class LlmPage extends SettingsPage {
 
         Widgets.divide(card);
         checkHost = Ui.column(ctx);
-        checkHost.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(12));
+        checkHost.setPadding(Ui.dp(16), Ui.dp(9), Ui.dp(16), Ui.dp(11));
         renderCheckIdle();
         card.addView(checkHost);
-        Widgets.divide(card);
-        LinearLayout importRow = Ui.row(ctx);
-        importRow.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(14), Ui.dp(12));
-        importRow.addView(Ui.button(ctx, "Импорт ключей из файла", R.drawable.ic_upload, Ui.BTN_GHOST, new Runnable() { @Override public void run() {
-            host.pickDocument(screen(), REQ_IMPORT_KEYS, new String[]{"application/json", "text/plain"}, false);
-        } }));
-        card.addView(importRow);
         configHost.addView(card);
-        configHost.addView(proxyCard());
+        configHost.addView(proxyCard(), Ui.lpm(-1, -2, 0, 14, 0, 0));
     }
 
     private View baseUrlBlock(final ProviderPreset p) {
@@ -292,7 +327,7 @@ public class LlmPage extends SettingsPage {
         TextView t = Ui.text(ctx, "Адрес API", Ui.BODY);
         t.setTypeface(Ui.medium);
         block.addView(t);
-        block.addView(PageUi.note(ctx, "OpenAI-совместимый адрес; обычно заканчивается на /v1"), Ui.lpm(-2, -2, 0, Ui.dp(2), 0, 0));
+        block.addView(PageUi.note(ctx, "OpenAI-совместимый адрес; обычно заканчивается на /v1"), Ui.lpm(-2, -2, 0, 2, 0, 0));
         final EditText e = PageUi.saveField(ctx, p.baseUrl.isEmpty() ? "https://…/v1" : p.baseUrl, j.settings.get("llm.baseUrl." + p.id), new PageUi.TextListener() { @Override public void on(String s) {
             String v = s.trim();
             if (!v.isEmpty() && !v.startsWith("http://") && !v.startsWith("https://")) {
@@ -302,37 +337,70 @@ public class LlmPage extends SettingsPage {
             if (v.isEmpty()) j.settings.remove("llm.baseUrl." + p.id); else j.settings.set("llm.baseUrl." + p.id, v);
             host.overlays().toast(v.isEmpty() ? "Адрес сброшен" : "Адрес сохранён", 0);
         } });
-        block.addView(Widgets.fieldBox(ctx, e), Ui.lpm(-1, -2, 0, Ui.dp(8), 0, 0));
+        block.addView(Widgets.fieldBox(ctx, e), Ui.lpm(-1, -2, 0, 8, 0, 0));
         return block;
     }
 
+    /**
+     * Proxy is an advanced, rarely changed setting. Keep the default LLM screen
+     * compact: one readable row instead of a permanent 140dp form card.
+     */
     private View proxyCard() {
         LinearLayout card = Widgets.card(ctx);
-        TextView t = Ui.text(ctx, "Прокси для LLM", Ui.BODY);
-        t.setTypeface(Ui.medium);
-        card.addView(t, Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(12), Ui.dp(16), 0));
-        card.addView(PageUi.note(ctx, "http://хост:порт или socks5://хост:порт; пусто — прямое подключение. Действует только на запросы к языковой модели."),
-            Ui.lpm(-2, -2, Ui.dp(16), Ui.dp(2), Ui.dp(16), 0));
-        final EditText e = PageUi.saveField(ctx, "например, socks5://127.0.0.1:1080", j.settings.get(Settings.LLM_PROXY), new PageUi.TextListener() { @Override public void on(String s) {
-            String v = s.trim();
-            if (v.isEmpty()) { j.settings.remove(Settings.LLM_PROXY); host.overlays().toast("Прокси отключён", 0); return; }
-            try {
-                Http.parseProxy(v);
-                j.settings.set(Settings.LLM_PROXY, v);
-                host.overlays().toast("Прокси сохранён", 1);
-            } catch (Throwable err) {
-                host.overlays().toast("Неверный прокси: " + err.getMessage(), 2);
-            }
-        } });
-        card.addView(Widgets.fieldBox(ctx, e), Ui.lpm(-1, -2, Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(14)));
+        final LinearLayout details = Ui.column(ctx);
+        details.setPadding(Ui.dp(16), Ui.dp(2), Ui.dp(16), Ui.dp(12));
+        details.setVisibility(proxyExpanded ? View.VISIBLE : View.GONE);
+        final LinearLayout[] rowRef = new LinearLayout[1];
+        String initial = j.settings.get(Settings.LLM_PROXY);
+        rowRef[0] = Widgets.row(ctx, 0, "Прокси для LLM",
+            initial.isEmpty() ? "Напрямую · нажмите для настройки" : "Настроен · нажмите для изменения",
+            null, () -> {
+                proxyExpanded = !proxyExpanded;
+                details.setVisibility(proxyExpanded ? View.VISIBLE : View.GONE);
+            });
+        card.addView(rowRef[0]);
+        details.addView(PageUi.note(ctx, "HTTP или SOCKS5 · действует только для языковой модели."),
+            Ui.lpm(-1, -2, 0, 0, 0, 6));
+        final EditText e = PageUi.saveField(ctx, "например, socks5://127.0.0.1:1080",
+            initial, new PageUi.TextListener() { @Override public void on(String raw) {
+                String v = raw.trim();
+                if (v.isEmpty()) {
+                    j.settings.remove(Settings.LLM_PROXY);
+                    Widgets.setSubtitle(rowRef[0], "Напрямую · нажмите для настройки");
+                    host.overlays().toast("Прокси отключён", 0);
+                    return;
+                }
+                try {
+                    Http.parseProxy(v);
+                    j.settings.set(Settings.LLM_PROXY, v);
+                    Widgets.setSubtitle(rowRef[0], "Настроен · нажмите для изменения");
+                    host.overlays().toast("Прокси сохранён", 1);
+                } catch (Throwable err) {
+                    host.overlays().toast("Неверный прокси: " + err.getMessage(), 2);
+                }
+            } });
+        details.addView(Widgets.fieldBox(ctx, e));
+        card.addView(details);
         return card;
     }
 
     // ------------------------------------------------------------------------------- connection check
     private void renderCheckIdle() {
         checkHost.removeAllViews();
-        checkHost.addView(Ui.button(ctx, "Проверить подключение", R.drawable.ic_activity, Ui.BTN_GLASS, new Runnable() { @Override public void run() { runConnectionCheck(); } }));
-        checkHost.addView(PageUi.note(ctx, "Реальный запрос: список моделей и короткий тестовый ответ."), Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+        LinearLayout actions = Ui.row(ctx);
+        View test = Ui.button(ctx, "Проверить", R.drawable.ic_activity, Ui.BTN_GLASS,
+            new Runnable() { @Override public void run() { runConnectionCheck(); } });
+        test.setContentDescription("Проверить подключение к языковой модели");
+        actions.addView(test, new LinearLayout.LayoutParams(0, -2, 1f));
+        actions.addView(Ui.space(ctx, 8, 1));
+        View importKeys = Ui.button(ctx, "Импорт", R.drawable.ic_upload, Ui.BTN_GHOST,
+            new Runnable() { @Override public void run() {
+                host.pickDocument(screen(), REQ_IMPORT_KEYS,
+                    new String[]{"application/json", "text/plain"}, false);
+            } });
+        importKeys.setContentDescription("Импорт API-ключей из файла");
+        actions.addView(importKeys, new LinearLayout.LayoutParams(0, -2, 1f));
+        checkHost.addView(actions);
     }
 
     /** Runs GET /models then one tiny streaming completion; also invoked from headless previews. */
@@ -396,9 +464,9 @@ public class LlmPage extends SettingsPage {
         checkHost.addView(row);
         checkHost.addView(PageUi.caption(ctx, "Моделей: " + PageUi.group(modelCount)
             + " · первый токен: " + (firstMs < 0 ? totalMs : firstMs) + " мс"
-            + " · всего: " + totalMs + " мс"), Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+            + " · всего: " + totalMs + " мс"), Ui.lpm(-2, -2, 0, 8, 0, 0));
         checkHost.addView(PageUi.note(ctx, "Ответ модели: " + (answer.isEmpty() ? "(пусто)" : "«" + (answer.length() > 40 ? answer.substring(0, 40) + "…" : answer) + "»")),
-            Ui.lpm(-2, -2, 0, Ui.dp(3), 0, 0));
+            Ui.lpm(-2, -2, 0, 3, 0, 0));
     }
 
     private void renderCheckFail(final LlmException e) {
@@ -408,10 +476,10 @@ public class LlmPage extends SettingsPage {
         row.addView(Ui.space(ctx, 8, 1));
         row.addView(Ui.iconButton(ctx, R.drawable.ic_refresh, 36, Ui.P.text2, new Runnable() { @Override public void run() { renderCheckIdle(); } }));
         checkHost.addView(row);
-        checkHost.addView(PageUi.caption(ctx, e.userMessage), Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+        checkHost.addView(PageUi.caption(ctx, e.userMessage), Ui.lpm(-2, -2, 0, 8, 0, 0));
         if (e.kind == LlmException.Kind.GEO_BLOCK)
             checkHost.addView(PageUi.note(ctx, "Сервер закрыл доступ из вашей страны. Варианты: прокси на этой странице, VPN на всём устройстве или Mercury через OpenRouter как запасной провайдер."),
-                Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
+                Ui.lpm(-2, -2, 0, 4, 0, 0));
         LinearLayout btns = Ui.row(ctx);
         btns.addView(Ui.button(ctx, "Подробности", R.drawable.ic_info, Ui.BTN_GHOST, new Runnable() { @Override public void run() {
             Dialogs.info(host, "Технические подробности", e.technical.isEmpty() ? e.toString() : "HTTP " + e.status + "\n" + e.technical);
@@ -423,7 +491,7 @@ public class LlmPage extends SettingsPage {
                     + "2. OpenRouter: агрегатор, Mercury доступна как inception/mercury-3 без VPN. Выберите провайдера OpenRouter, получите ключ на openrouter.ai и сохраните его.\n\n"
                     + "3. VPN на всём устройстве тоже подходит, но влияет на весь трафик телефона.");
             } }));
-        checkHost.addView(btns, Ui.lpm(-2, -2, 0, Ui.dp(8), 0, 0));
+        checkHost.addView(btns, Ui.lpm(-2, -2, 0, 8, 0, 0));
     }
 
     private static String readable(Throwable t) {
@@ -432,16 +500,53 @@ public class LlmPage extends SettingsPage {
     }
 
     // ------------------------------------------------------------------------------- fallbacks
+    private String fallbackSummaryText() {
+        List<String> selected = j.settings.getList(Settings.LLM_FALLBACKS);
+        if (selected.isEmpty()) return "OpenRouter включён по умолчанию";
+        StringBuilder names = new StringBuilder();
+        int count = 0;
+        for (ProviderPreset p : Presets.all()) {
+            if (!selected.contains(p.id)) continue;
+            if (count < 2) {
+                if (names.length() > 0) names.append(", ");
+                names.append(p.name);
+            }
+            count++;
+        }
+        if (count == 0) return "Не выбрано запасных провайдеров";
+        return count > 2 ? "Выбрано: " + count + " · " + names + "…" : names.toString();
+    }
+
     private LinearLayout fallbackCard() {
         LinearLayout card = Widgets.card(ctx);
-        LinearLayout intro = Ui.column(ctx);
-        intro.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(16), Ui.dp(4));
-        TextView t = Ui.text(ctx, "Если основной провайдер недоступен", Ui.BODY);
-        t.setTypeface(Ui.medium);
-        intro.addView(t);
-        intro.addView(PageUi.note(ctx, "Например: Mercury через OpenRouter, если Inception недоступен из вашей страны. Используются только запасные с заданным ключом."),
-            Ui.lpm(-2, -2, 0, Ui.dp(4), 0, 0));
-        card.addView(intro);
+        LinearLayout summaryRow = Ui.row(ctx);
+        summaryRow.setPadding(Ui.dp(16), Ui.dp(12), Ui.dp(14), Ui.dp(12));
+        LinearLayout details = Ui.column(ctx);
+        TextView title = Ui.text(ctx, "Резервные подключения", Ui.BODY);
+        title.setTypeface(Ui.medium);
+        details.addView(title);
+        fallbackSummary = Ui.text(ctx, fallbackSummaryText(), Ui.CAPTION, Ui.P.text2);
+        fallbackSummary.setMaxLines(2);
+        details.addView(fallbackSummary, Ui.lpm(-1, -2, 0, 4, 0, 0));
+        summaryRow.addView(details, Ui.lpw(1f));
+        final TextView toggle = Ui.text(ctx, fallbackExpanded ? "Свернуть" : "Изменить", Ui.CAPTION, Ui.P.accent);
+        toggle.setGravity(Gravity.CENTER);
+        toggle.setMinHeight(Ui.dp(38));
+        summaryRow.addView(toggle, Ui.lpm(-2, -2, 8, 0, 0, 0));
+        summaryRow.setClickable(true);
+        summaryRow.setFocusable(true);
+        summaryRow.setContentDescription("Резервные провайдеры. " + fallbackSummaryText() + ". Нажмите для настройки");
+        summaryRow.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
+            fallbackExpanded = !fallbackExpanded;
+            fallbackOptions.setVisibility(fallbackExpanded ? View.VISIBLE : View.GONE);
+            toggle.setText(fallbackExpanded ? "Свернуть" : "Изменить");
+        } });
+        card.addView(summaryRow);
+        fallbackOptions = Ui.column(ctx);
+        fallbackOptions.setVisibility(fallbackExpanded ? View.VISIBLE : View.GONE);
+        fallbackOptions.addView(PageUi.note(ctx,
+            "Jarvis использует выбранные запасные подключения, только если основной провайдер не отвечает."),
+            Ui.lpm(-1, -2, 16, 6, 16, 8));
         List<String> sel = j.settings.getList(Settings.LLM_FALLBACKS);
         for (final ProviderPreset p : Presets.all()) {
             boolean on = sel.isEmpty() ? p.id.equals("openrouter") : sel.contains(p.id);
@@ -456,17 +561,15 @@ public class LlmPage extends SettingsPage {
                 refreshFallbackChecks();
             } });
             row.setTag("fbtrail." + p.id);
-            if (p.id.equals("openrouter")) {
-                LinearLayout tx = (LinearLayout) row.getChildAt(0);
-                tx.addView(PageUi.note(ctx, "рекомендуется для обхода гео-блока Inception"), Ui.lpm(-2, -2, 0, Ui.dp(2), 0, 0));
-            }
-            card.addView(row);
+            fallbackOptions.addView(row);
         }
+        card.addView(fallbackOptions);
         return card;
     }
 
     private void refreshFallbackChecks() {
         List<String> sel = j.settings.getList(Settings.LLM_FALLBACKS);
+        if (fallbackSummary != null) fallbackSummary.setText(fallbackSummaryText());
         for (ProviderPreset p : Presets.all()) {
             View row = content.findViewWithTag("fbtrail." + p.id);
             if (!(row instanceof LinearLayout)) continue;

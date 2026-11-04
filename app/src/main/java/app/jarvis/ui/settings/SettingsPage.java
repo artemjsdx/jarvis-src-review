@@ -54,6 +54,11 @@ public abstract class SettingsPage {
      * Text labels have no click handlers; the help button is a separate 34dp target.
      * Existing custom section headers (e.g. SoundsPage) already supply their own help.
      */
+    /** Safe to call whenever a dynamically rendered page has added new section headings. */
+    public final void refreshSectionHelps() {
+        if (root != null) decorateSectionHeadings(root);
+    }
+
     private void decorateSectionHeadings(View parentView) {
         if (!(parentView instanceof ViewGroup)) return;
         ViewGroup parent = (ViewGroup) parentView;
@@ -62,12 +67,16 @@ public abstract class SettingsPage {
             if (child instanceof TextView && "jarvis.section.help".equals(child.getTag()) && parent instanceof LinearLayout) {
                 TextView label = (TextView) child;
                 String heading = label.getText().toString();
+                // Mark once; repeated scans must never nest question mark rows endlessly.
+                label.setTag(null);
                 // Preserve the existing outer spacing; replace only the inner layout.
                 ViewGroup.LayoutParams original = label.getLayoutParams();
                 parent.removeViewAt(i);
                 LinearLayout line = Ui.row(ctx);
+                // Page margins are 16dp; card actions have another 16dp internal inset. Match that shared trailing edge.
+                line.setPadding(0, 0, Ui.dp(16), 0);
                 line.addView(label, new LinearLayout.LayoutParams(0, -2, 1f));
-                line.addView(HelpPopup.button(ctx, host, heading, SectionHelp.describe(heading)));
+                line.addView(HelpPopup.button(ctx, host, heading, SectionHelp.guide(heading)));
                 parent.addView(line, i, original);
             } else {
                 decorateSectionHeadings(child);

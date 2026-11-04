@@ -148,7 +148,7 @@ public class StudioScreen extends app.jarvis.ui.Screen {
                 wakePage.onShow();
                 break;
             case 3:
-                if (behaviorPage == null) behaviorPage = new VoiceSettingsPage(host);
+                if (behaviorPage == null) behaviorPage = new VoiceSettingsPage(host, true);
                 v = behaviorPage.view();
                 behaviorPage.onShow();
                 break;
@@ -161,7 +161,7 @@ public class StudioScreen extends app.jarvis.ui.Screen {
                 v = pron.view();
                 break;
             case 6:
-                if (soundsPage == null) soundsPage = new SoundsPage(host);
+                if (soundsPage == null) soundsPage = new SoundsPage(host, true);
                 v = soundsPage.view();
                 soundsPage.onShow();
                 break;

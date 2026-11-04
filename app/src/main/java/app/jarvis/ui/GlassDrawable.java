@@ -22,6 +22,7 @@ public final class GlassDrawable extends Drawable {
     private final RectF r = new RectF(), inner = new RectF();
     private final float radius, stroke;
     private final boolean strong;
+    private boolean overlayFrost;
     private int glow;
 
     public GlassDrawable(float radiusDp, boolean strong) {
@@ -34,6 +35,9 @@ public final class GlassDrawable extends Drawable {
         hi.setStrokeWidth(Math.max(1f, Ui.dpf(0.6f)));
     }
 
+    /** Overlay panels should reveal the genuinely blurred screen instead of layering two almost opaque fills. */
+    public GlassDrawable overlayFrost() { overlayFrost = true; invalidateSelf(); return this; }
+
     /** Optional accent glow tint blended into the border (e.g. active/listening). */
     public GlassDrawable glow(int color) { glow = color; invalidateSelf(); return this; }
 
@@ -45,9 +49,16 @@ public final class GlassDrawable extends Drawable {
         Ui.Pal p = Ui.P;
         // Keep a little translucency for backdrop blur, but screen-space accent
         // blobs may never read as an overlay ON TOP of a neutral card.
-        underlay.setColor(p.dark ? (strong ? 0xE124232C : 0xDB24232B) : 0xEAF6F5FA);
-        int top = strong ? Ui.alpha(p.glassTop, Math.min(1f, android.graphics.Color.alpha(p.glassTop) / 255f * 1.6f)) : p.glassTop;
-        int bot = strong ? Ui.alpha(p.glassBottom, Math.min(1f, android.graphics.Color.alpha(p.glassBottom) / 255f * 1.6f)) : p.glassBottom;
+        // Real background blur must remain visible through the card fill.
+        // Previously the 86-92% opaque underlay hid the frosted wallpaper almost completely.
+        underlay.setColor(overlayFrost ? (p.dark ? 0x8B24232C : 0xA8F6F5FA) :
+            (p.dark ? (strong ? 0xAA24232C : 0x9224232B) : 0xA0F6F5FA));
+        float topOpacity = overlayFrost ? (p.dark ? 0.12f : 0.16f) :
+            (p.dark ? (strong ? 0.22f : 0.16f) : 0.25f);
+        float bottomOpacity = overlayFrost ? (p.dark ? 0.06f : 0.10f) :
+            (p.dark ? 0.09f : 0.18f);
+        int top = Ui.alpha(p.glassTop, topOpacity);
+        int bot = Ui.alpha(p.glassBottom, bottomOpacity);
         fill.setShader(new LinearGradient(0, b.top, 0, b.bottom, top, bot, Shader.TileMode.CLAMP));
         int hiC = glow != 0 ? glow : p.strokeHi;
         border.setShader(new LinearGradient(b.left, b.top, b.right, b.bottom, hiC, glow != 0 ? Ui.alpha(glow, 0.25f) : p.strokeLo, Shader.TileMode.CLAMP));

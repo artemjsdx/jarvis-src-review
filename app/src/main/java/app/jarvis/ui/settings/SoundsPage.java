@@ -43,6 +43,7 @@ public class SoundsPage extends SettingsPage {
     private static String packNote = "";
 
     private final Cues cues;
+    private final boolean embedded;
     private LinearLayout column;
     private TextView micSub, packSub;
     private final Runnable tick = new Runnable() {
@@ -52,8 +53,11 @@ public class SoundsPage extends SettingsPage {
         }
     };
 
-    public SoundsPage(Host host) {
+    public SoundsPage(Host host) { this(host, false); }
+
+    public SoundsPage(Host host, boolean embedded) {
         super(host);
+        this.embedded = embedded;
         cues = new Cues(ctx, j.settings, j.journal);
     }
 
@@ -82,7 +86,8 @@ public class SoundsPage extends SettingsPage {
         ScrollView sv = Ui.scroll(ctx);
         sv.setFillViewport(true);
         column = Ui.column(ctx);
-        column.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(24));
+        int h = embedded ? 0 : Ui.dp(16);
+        column.setPadding(h, Ui.dp(8), h, Ui.dp(24));
         sv.addView(column);
         fill();
         return sv;
