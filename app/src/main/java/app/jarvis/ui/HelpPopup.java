@@ -40,6 +40,11 @@ public final class HelpPopup {
         LinearLayout progressDots = Ui.row(c);
         progressDots.setGravity(Gravity.CENTER);
         body.addView(progressDots, Ui.lpm(-1, -2, 0, 6, 0, 10));
+        // A single-page explanation has no pagination, so don't waste a row on 1/1.
+        if (steps.length == 1) {
+            progress.setVisibility(View.GONE);
+            progressDots.setVisibility(View.GONE);
+        }
 
         TextView pageTitle = Ui.text(c, "", Ui.BODY);
         pageTitle.setTypeface(Ui.medium);
@@ -78,7 +83,8 @@ public final class HelpPopup {
             pageTitle.setText(heading);
             explanation.setText(line);
             // Keep action columns fixed so the primary button never jumps sideways.
-            prev.setVisibility(n == 0 ? View.INVISIBLE : View.VISIBLE);
+            prev.setVisibility(steps.length == 1 ? View.GONE :
+                (n == 0 ? View.INVISIBLE : View.VISIBLE));
             next.setText(n == steps.length - 1 ? "Готово" : "Далее");
             illustration.removeAllViews();
 
