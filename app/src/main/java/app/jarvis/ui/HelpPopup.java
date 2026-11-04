@@ -117,16 +117,19 @@ public final class HelpPopup {
             transitioning[0] = true;
             for (View part : animated) {
                 part.animate().cancel();
-                part.animate().alpha(0f)
+                android.view.ViewPropertyAnimator animation = part.animate().alpha(0f)
                     .translationY(Motion.mode() == Motion.FULL ? -Ui.dp(6) : 0f)
-                    .setDuration(outMs).setInterpolator(Motion.ACCELERATE).start();
+                    .setDuration(outMs).setInterpolator(Motion.ACCELERATE);
+                if (part == illustration) {
+                    animation.withEndAction(() -> {
+                        current[0] = target;
+                        repaint[0].run();
+                        animateStep(animated);
+                        transitioning[0] = false;
+                    });
+                }
+                animation.start();
             }
-            illustration.animate().withEndAction(() -> {
-                current[0] = target;
-                repaint[0].run();
-                animateStep(animated);
-                transitioning[0] = false;
-            }).start();
         };
         prev.setOnClickListener(v -> navigateStep.accept(-1));
         next.setOnClickListener(v -> {
