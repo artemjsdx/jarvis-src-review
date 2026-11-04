@@ -29,6 +29,8 @@ public final class GlassHost extends FrameLayout {
     }
 
     private static final float BLUR_DP = 16f;
+    // Text and controls beneath floating sheets must dissolve rather than remain legible.
+    private static final float OVERLAY_BLUR_DP = 24f;
     private static final float CAPTURE_MARGIN_DP = 40f;
     private static final long THROTTLE_FULL_MS = 40, THROTTLE_REDUCED_MS = 120;
     private static final float SCALE_FULL = 0.25f, SCALE_REDUCED = 0.16f;
@@ -198,7 +200,7 @@ public final class GlassHost extends FrameLayout {
         if (needCapture && (now - lastCaptureMs >= throttle || !blur.recorded())) {
             lastCaptureMs = now;
             contentDirty = false;
-            blur.capture(content, region, Ui.dpf(BLUR_DP));
+            blur.capture(content, region, Ui.dpf(OVERLAY_BLUR_DP));
         } else if (needCapture) {
             // Only schedule if the content actually changed; constant overlay
             // animations must not force a full software capture each frame.
