@@ -94,7 +94,7 @@ public final class Motion {
                 v.setScaleY(mode == FULL ? 0.985f : 1f);
                 v.setPivotY(h);
                 v.animate().alpha(1f).translationY(0).scaleX(1f).scaleY(1f)
-                    .setDuration(mode == FULL ? D_XSLOW : fade(D_BASE))
+                    .setDuration(mode == FULL ? screenTime(700) : fade(D_BASE))
                     .setInterpolator(DECELERATE).start();
                 break;
             case DIALOG:
@@ -124,7 +124,7 @@ public final class Motion {
             case SHEET:
                 v.animate().translationY(mode == FULL ? h : 0f).alpha(0f)
                     .scaleX(mode == FULL ? 0.985f : 1f)
-                    .setDuration(mode == FULL ? D_SLOW : fade(D_FAST))
+                    .setDuration(mode == FULL ? screenTime(460) : fade(D_FAST))
                     .setInterpolator(ACCELERATE).withEndAction(runOnce(end)).start();
                 break;
             case DIALOG:
