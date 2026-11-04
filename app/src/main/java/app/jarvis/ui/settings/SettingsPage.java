@@ -73,8 +73,8 @@ public abstract class SettingsPage {
                 ViewGroup.LayoutParams original = label.getLayoutParams();
                 parent.removeViewAt(i);
                 LinearLayout line = Ui.row(ctx);
-                // The page already has 16dp horizontal padding: an extra inset shifted ? left of card actions.
-                line.setPadding(0, 0, 0, 0);
+                // Page margins are 16dp; card actions have another 16dp internal inset. Match that shared trailing edge.
+                line.setPadding(0, 0, Ui.dp(16), 0);
                 line.addView(label, new LinearLayout.LayoutParams(0, -2, 1f));
                 line.addView(HelpPopup.button(ctx, host, heading, SectionHelp.guide(heading)));
                 parent.addView(line, i, original);
