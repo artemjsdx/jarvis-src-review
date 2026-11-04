@@ -40,8 +40,14 @@ public class VoiceSettingsPage extends SettingsPage {
 
     private LinearLayout content;
     private LinearLayout chainHost;
+    private final boolean embedded;
 
-    public VoiceSettingsPage(Host host) { super(host); }
+    public VoiceSettingsPage(Host host) { this(host, false); }
+
+    public VoiceSettingsPage(Host host, boolean embedded) {
+        super(host);
+        this.embedded = embedded;
+    }
 
     @Override public String title() { return "Голос и озвучка"; }
 
@@ -49,7 +55,8 @@ public class VoiceSettingsPage extends SettingsPage {
         ScrollView sv = Ui.scroll(ctx);
         sv.setFillViewport(true);
         content = Ui.column(ctx);
-        content.setPadding(Ui.dp(16), Ui.dp(8), Ui.dp(16), Ui.dp(24));
+        int h = embedded ? 0 : Ui.dp(16);
+        content.setPadding(h, Ui.dp(8), h, Ui.dp(24));
         rebuild();
         sv.addView(content);
         return sv;
