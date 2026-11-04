@@ -62,6 +62,7 @@ public class LlmPage extends SettingsPage {
     private TextView fallbackSummary;
     private boolean fallbackExpanded;
     private boolean keyEditorExpanded;
+    private boolean proxyExpanded;
     private boolean checking;
     private final CancelToken checkCancel = new CancelToken();
     private final ModelCatalog.Listener catalogListener = new ModelCatalog.Listener() {
@@ -76,7 +77,12 @@ public class LlmPage extends SettingsPage {
 
     @Override public String title() { return "Языковая модель (LLM)"; }
 
-    @Override public void onShow() { j.catalog.addListener(catalogListener); }
+    @Override public void onShow() {
+        j.catalog.addListener(catalogListener);
+        // A different screen may have changed window flags after Activity.onResume.
+        // API credentials are masked in the UI; diagnostics screenshots remain allowed.
+        host.activity().getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE);
+    }
 
     @Override public void onHide() { j.catalog.removeListener(catalogListener); }
 
@@ -125,7 +131,7 @@ public class LlmPage extends SettingsPage {
         ProviderPreset p = Presets.get(j.providerId());
         LinearLayout card = Widgets.card(ctx);
         card.addView(Widgets.row(ctx, 0, p == null ? "Провайдер не выбран" : p.name,
-            p == null || p.note.isEmpty() ? "Нажмите, чтобы выбрать из списка" : p.note,
+            p == null ? "Выберите подключение" : "Нажмите, чтобы сменить провайдера",
             keyBadge(p), new Runnable() { @Override public void run() { openProviders(); } }));
         providerHost.addView(card);
     }
@@ -341,25 +347,46 @@ public class LlmPage extends SettingsPage {
         return block;
     }
 
+    /**
+     * Proxy is an advanced, rarely changed setting. Keep the default LLM screen
+     * compact: one readable row instead of a permanent 140dp form card.
+     */
     private View proxyCard() {
         LinearLayout card = Widgets.card(ctx);
-        TextView t = Ui.text(ctx, "Прокси для LLM", Ui.BODY);
-        t.setTypeface(Ui.medium);
-        card.addView(t, Ui.lpm(-2, -2, 16, 10, 16, 0));
-        card.addView(PageUi.note(ctx, "Только для LLM · HTTP или SOCKS5 · пусто — напрямую"),
-            Ui.lpm(-1, -2, 16, 2, 16, 0));
-        final EditText e = PageUi.saveField(ctx, "например, socks5://127.0.0.1:1080", j.settings.get(Settings.LLM_PROXY), new PageUi.TextListener() { @Override public void on(String s) {
-            String v = s.trim();
-            if (v.isEmpty()) { j.settings.remove(Settings.LLM_PROXY); host.overlays().toast("Прокси отключён", 0); return; }
-            try {
-                Http.parseProxy(v);
-                j.settings.set(Settings.LLM_PROXY, v);
-                host.overlays().toast("Прокси сохранён", 1);
-            } catch (Throwable err) {
-                host.overlays().toast("Неверный прокси: " + err.getMessage(), 2);
-            }
-        } });
-        card.addView(Widgets.fieldBox(ctx, e), Ui.lpm(-1, -2, 16, 8, 16, 12));
+        final LinearLayout details = Ui.column(ctx);
+        details.setPadding(Ui.dp(16), Ui.dp(2), Ui.dp(16), Ui.dp(12));
+        details.setVisibility(proxyExpanded ? View.VISIBLE : View.GONE);
+        final LinearLayout[] rowRef = new LinearLayout[1];
+        String initial = j.settings.get(Settings.LLM_PROXY);
+        rowRef[0] = Widgets.row(ctx, 0, "Прокси для LLM",
+            initial.isEmpty() ? "Напрямую · нажмите для настройки" : "Настроен · нажмите для изменения",
+            null, () -> {
+                proxyExpanded = !proxyExpanded;
+                details.setVisibility(proxyExpanded ? View.VISIBLE : View.GONE);
+            });
+        card.addView(rowRef[0]);
+        details.addView(PageUi.note(ctx, "HTTP или SOCKS5 · действует только для языковой модели."),
+            Ui.lpm(-1, -2, 0, 0, 0, 6));
+        final EditText e = PageUi.saveField(ctx, "например, socks5://127.0.0.1:1080",
+            initial, new PageUi.TextListener() { @Override public void on(String raw) {
+                String v = raw.trim();
+                if (v.isEmpty()) {
+                    j.settings.remove(Settings.LLM_PROXY);
+                    Widgets.setSubtitle(rowRef[0], "Напрямую · нажмите для настройки");
+                    host.overlays().toast("Прокси отключён", 0);
+                    return;
+                }
+                try {
+                    Http.parseProxy(v);
+                    j.settings.set(Settings.LLM_PROXY, v);
+                    Widgets.setSubtitle(rowRef[0], "Настроен · нажмите для изменения");
+                    host.overlays().toast("Прокси сохранён", 1);
+                } catch (Throwable err) {
+                    host.overlays().toast("Неверный прокси: " + err.getMessage(), 2);
+                }
+            } });
+        details.addView(Widgets.fieldBox(ctx, e));
+        card.addView(details);
         return card;
     }
 
